@@ -1,0 +1,6 @@
+[submodule "perceptron"]
+	path = perceptron
+	url = https://github.com/erelsgl/perceptron.git
+[submodule "classifier"]
+	path = classifier
+	url = https://github.com/erelsgl/classifier.git

@@ -1,0 +1,20 @@
+{
+    "name": "machine-learning",
+    "description": "A collection of machine learning projects and demos",
+    "version": "0.1.0",
+    "author": "Erel Segal-haLevi <erelsgl@gmail.com>",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/erelsgl/machine-learning.git"
+    },
+    "dependencies" : {
+        "underscore" : ">=1.1.0"
+    },
+    "devDependencies" : {
+        "mocha"  : ">=1.0.0",
+        "cradle" : ">=0.2.0",
+        "should" : ">=0.6.0",
+        "async" : ">=0.1.18"
+    },
+    "keywords": ["classifier", "machine learning"]
+}

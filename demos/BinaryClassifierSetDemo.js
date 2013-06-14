@@ -1,3 +1,10 @@
+/**
+ * Demonstrates combining several binary classifiers to produce a multi-class classifier.cross-validation testing of a classifier.
+ * 
+ * @author Erel Segal-Halevi
+ * @since 2013-06
+ */
+
 var util = require('util');
 console.log("BinaryClassifierSet demo start");
 

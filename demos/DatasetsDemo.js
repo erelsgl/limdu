@@ -1,3 +1,10 @@
+/**
+ * Demonstrates partitioning datasets to train-set and test-set.
+ * 
+ * @author Erel Segal-Halevi
+ * @since 2013-06
+ */
+
 console.log("Datasets demo start");
 
 var datasets = require('../datasets');

@@ -1,8 +1,8 @@
 var associative = require("./associative");
 
 /**
- * BinaryClassifierSet - a set of binary classifiers.
- * Each sample can belong to zero or more classes.
+ * BinaryClassifierSet - combines several binary classifiers to produce a multi-class classifier,
+ * 	where each sample can belong to zero or more classes.
  */
 
 var BinaryClassifierSet = function(binaryClassifierType, binaryClassifierOptions, classifierSetOptions) {

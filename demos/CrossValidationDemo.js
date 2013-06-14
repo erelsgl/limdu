@@ -1,3 +1,10 @@
+/**
+ * Demonstrates cross-validation testing of a classifier.
+ * 
+ * @author Erel Segal-Halevi
+ * @since 2013-06
+ */
+
 var util = require('util');
 var classifier = require('../classifier');
 var datasets = require('../datasets');

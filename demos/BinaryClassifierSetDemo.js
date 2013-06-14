@@ -15,7 +15,8 @@ bcs.train("get this for cheap !!!", ['spam']);
 
 //console.log(JSON.stringify(bcs.toJSON()));
 
-var classes = bcs.classify("cheap clocks !!!"); 
-console.dir(classes);  
+var newDocument = "cheap clocks !!!";
+var classes = bcs.classify(newDocument); 
+console.log("'"+newDocument+"' is "+classes);  
 
 console.log("BinaryClassifierSet demo end");

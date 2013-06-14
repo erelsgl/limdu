@@ -3,31 +3,37 @@ var classifier = require('./classifier');
 var BinaryClassifierSet = require('./BinaryClassifierSet');
 var datasets = require('./datasets');
 var PrecisionRecall = require("./PrecisionRecall");
+var train_and_test = require('./train_and_test').train_and_test;
+var associative = require('./associative');
 
-console.log("BinaryClassifierSet demo start");
+console.log("main demo start");
 
 var dataset = datasets.read("datasets/Dataset1Woz.txt");
-//console.dir(dataset);
-//console.dir(dataset.allClasses);
+var numOfFolds = 10; // for 10-fold cross-validation
 
-// TRAIN:
-var bcs = new BinaryClassifierSet(classifier.Bayesian, {}, {});
-bcs.addClasses(dataset.allClasses);
-for (var i=0; i<dataset.length; ++i)
-	bcs.train(dataset[i].sample, dataset[i].classes);
+var binaryClassifierType =  classifier.Bayesian;
+var binaryClassifierOptions = {};
+var microAverage = new PrecisionRecall();
+var macroAverage = new PrecisionRecall();
+var verbosity = 1;
 
-//console.log(JSON.stringify(bcs.toJSON()));
+datasets.partitions(dataset, numOfFolds, function(partition) {
+	train_and_test(
+		binaryClassifierType, binaryClassifierOptions,
+		partition.train, partition.test, verbosity,
+		microAverage, macroAverage
+	);
+});
 
-// TEST ON TRAINING DATA:
-var pr = new PrecisionRecall();
-for (var i=0; i<dataset.length; ++i) {
-	var expectedClasses = dataset[i].classes;
-	var actualClasses = bcs.classify(dataset[i].sample);
-	console.log("\n"+dataset[i].sample+": ");
-	pr.addCases(expectedClasses, actualClasses, true);
-}
-console.log("\n\nFULL RESULTS:")
-console.dir(pr.fullResults());
-console.log("\nSUMMARY: "+pr.shortResults());
+associative.multiply_scalar(macroAverage, 1/numOfFolds);
 
-console.log("BinaryClassifierSet demo end");
+console.log("\n\nMACRO AVERAGE FULL STATS:")
+console.dir(macroAverage.fullStats());
+console.log("\nSUMMARY: "+macroAverage.shortStats());
+
+microAverage.calculateStats();
+console.log("\n\nMICRO AVERAGE FULL STATS:")
+console.dir(microAverage.fullStats());
+console.log("\nSUMMARY: "+microAverage.shortStats());
+
+console.log("main demo end");

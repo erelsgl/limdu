@@ -1,19 +1,21 @@
 /**
  * Static utilities for associative arrays (= hashes = Javascript objects).
+ * 
  * @author Erel Segal-Halevi
+ * @since 2013-06
  */
  
-var api = {};
-
 /**
  * add one associative array to another.
  * @param target [input and output]
  * @param source [input]: will be added to target.
  */
-api.add  = function(target, source) {
+exports.add  = function(target, source) {
 	for (var feature in source) {
 		if (!(feature in target))
 			target[feature]=0;
+		if (target[feature] instanceof Function)
+			continue;
 		target[feature] += source[feature];
 	}
 }
@@ -23,10 +25,12 @@ api.add  = function(target, source) {
  * @param target [input and output]
  * @param source [input]: target will be multiplied by it.
  */
-api.multiply  = function(target, source) {
+exports.multiply  = function(target, source) {
 	for (var feature in source) {
 		if (!(feature in target))
 			target[feature]=1;
+		if (target[feature] instanceof Function)
+			continue;
 		target[feature] *= source[feature];
 	}
 }
@@ -36,8 +40,10 @@ api.multiply  = function(target, source) {
  * @param target [input and output]
  * @param source [input]: target will be multiplied by it.
  */
-api.multiply_scalar  = function(target, source) {
+exports.multiply_scalar  = function(target, source) {
 	for (var feature in target) {
+		if (target[feature] instanceof Function)
+			continue;
 		target[feature] *= source;
 	}
 }
@@ -48,7 +54,7 @@ api.multiply_scalar  = function(target, source) {
  * @param weights [input]
  * @note Usually, there are much less features than weights.
  */
-api.inner_product = function(features, weights) {
+exports.inner_product = function(features, weights) {
 	var result = 0;
 	for (var feature in features) {
 			if (feature in weights) {
@@ -60,21 +66,21 @@ api.inner_product = function(features, weights) {
 	return result;
 }
 
-api.sum_of_values = function(weights) {
+exports.sum_of_values = function(weights) {
 	var result = 0;
 	for (var feature in weights)
 		result += weights[feature];
 	return result;
 }
 
-api.sum_of_absolute_values = function(weights) {
+exports.sum_of_absolute_values = function(weights) {
 	var result = 0;
 	for (var feature in weights)
 		result += Math.abs(weights[feature]);
 	return result;
 }
 
-api.sum_of_square_values = function(weights) {
+exports.sum_of_square_values = function(weights) {
 	var result = 0;
 	for (var feature in weights)
 		result += Math.pow(weights[feature],2);
@@ -85,20 +91,20 @@ api.sum_of_square_values = function(weights) {
  * Normalize the given associative array, such that the sum of values is 1.
  * Unless, of course, the current sum is 0, in which case, nothing is done. 
  */
-api.normalize_sum_of_values_to_1 = function(features) {
-	var sum = api.sum_of_absolute_values(features);
+exports.normalize_sum_of_values_to_1 = function(features) {
+	var sum = exports.sum_of_absolute_values(features);
 	if (sum!=0)
-		api.multiply_scalar(features, 1/sum);
+		exports.multiply_scalar(features, 1/sum);
 }
 
 /**
  * Normalize the given associative array, such that the sum of squares of the values is 1.
  * Unless, of course, the current sum is 0, in which case, nothing is done. 
  */
-api.normalize_sum_of_squares_to_1 = function(features) {
-	var sum = api.sum_of_square_values(features);
+exports.normalize_sum_of_squares_to_1 = function(features) {
+	var sum = exports.sum_of_square_values(features);
 	if (sum!=0)
-		api.multiply_scalar(features, 1/Math.sqrt(sum));
+		exports.multiply_scalar(features, 1/Math.sqrt(sum));
 }
 
 
@@ -106,7 +112,7 @@ api.normalize_sum_of_squares_to_1 = function(features) {
  * @param array [input]
  * @return a string of the given associative array, sorted by keys.
  */
-api.stringify_sorted = function(weights, separator) {
+exports.stringify_sorted = function(weights, separator) {
 	var result = "{" + separator;
 	var keys = Object.keys(weights);
 	keys.sort();
@@ -125,13 +131,10 @@ api.stringify_sorted = function(weights, separator) {
 /**
  * Convert an array ['a', 'b', 'c'..] to an object {'a': true, 'b': true, 'c': true}
  */
-api.fromArray = function(array) {
+exports.fromArray = function(array) {
 	var result = {}; 
 	for (var i=0; i<array.length; ++i) {
 		result[array[i]]=true;
 	}
 	return result;
 }
-
-module.exports = api;
-

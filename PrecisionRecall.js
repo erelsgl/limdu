@@ -31,37 +31,37 @@ PrecisionRecall.prototype = {
 
 	/**
 	 * Record the result of a new classes experiment.
-	 * @param log - if true, also log the results. 
+	 * @param verbosity - if positive, also log the results. 
 	 */
-	addCases: function (expectedClasses, actualClasses, log) {
+	addCases: function (expectedClasses, actualClasses, verbosity) {
 		if (Array.isArray(actualClasses))   actualClasses  =associative.fromArray(actualClasses);
 		if (Array.isArray(expectedClasses)) expectedClasses=associative.fromArray(expectedClasses);
 		var allTrue = true;
 		for (var actualClass in actualClasses) {
 			if (actualClass in expectedClasses) { 
-				if (log) console.log("\t\t+++ TRUE POSITIVE: "+actualClass);
+				if (verbosity>0) console.log("\t\t+++ TRUE POSITIVE: "+actualClass);
 				this.TP++;
 			} else {
-				if (log) console.log("\t\t--- FALSE POSITIVE: "+actualClass);
+				if (verbosity>0) console.log("\t\t--- FALSE POSITIVE: "+actualClass);
 				this.FP++;
 				allTrue = false;
 			}
 		}
 		for (var expectedClass in expectedClasses) {
 			if (!(expectedClass in actualClasses)) {
-				if (log) console.log("\t\t--- FALSE NEGATIVE: "+expectedClass);
+				if (verbosity>0) console.log("\t\t--- FALSE NEGATIVE: "+expectedClass);
 				this.FN++;
 				allTrue = false;
 			}
 		}
 		if (allTrue) {
-			if (log) console.log("\t\t*** ALL TRUE!");
+			if (verbosity>0) console.log("\t\t*** ALL TRUE!");
 			this.TRUE++;
 		}
 		this.count++;
 	},
 	
-	fullResults: function() {
+	calculateStats: function() {
 		this.Accuracy = (this.TRUE)/(this.count);
 		this.Precision = this.TP/(this.TP+this.FP);
 		this.Recall = this.TP/(this.TP+this.FN);
@@ -72,8 +72,11 @@ PrecisionRecall.prototype = {
 		return this;
 	},
 	
-	shortResults: function() {
-		this.fullResults();
+	fullStats: function() { 
+		return this; 
+	},
+	
+	shortStats: function() {
 		return sprintf("count=%d Accuracy=%1.0f%% F1=%1.0f%% timePerSample=%1.0f[ms]",
 				this.count, this.Accuracy*100, this.F1*100, this.timePerSampleMillis);
 	}

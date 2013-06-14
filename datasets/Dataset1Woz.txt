@@ -1,0 +1,102 @@
+# A dataset collected from a negotiation of human vs. agent, in a wizard-of-oz setting
+#
+Then go home / {"Quit": true}
+I reject your offer / {"Reject": "previous"}
+Start as a programmer with fast promotion track / {"Offer": {"Promotion Possibilities": "Fast promotion track"}} AND {"Offer": {"Job Description": "Programmer"}}
+I would like to suggest you to work as a programmer for 12000 / {"Offer": {"Job Description": "Programmer"}} AND {"Offer": {"Salary": "12,000 NIS"}}
+hi, i can offer you being a programmer first and have a 10% pension with fast promotion track / {"Offer": {"Job Description": "Programmer"}} AND {"Offer": {"Promotion Possibilities": "Fast promotion track"}} AND {"Offer": {"Pension Fund": "10%"}}
+I agree. / {"Accept": "previous"}
+12000 NIS per month.programmer, company car and 10% pension, fast promotion track and a daily schedule of 9 hours / {"Offer": {"Job Description": "Programmer"}} AND {"Offer": {"Working Hours": "9 hours"}} AND {"Offer": {"Promotion Possibilities": "Fast promotion track"}} AND {"Offer": {"Pension Fund": "10%"}} AND {"Offer": {"Leased Car": "With leased car"}} AND {"Offer": {"Salary": "12,000 NIS"}}
+take it or leave it / {"Insist": "previous"}
+no chance...my last offer was the best i can give you take it or leave it... / {"Insist": "previous"} AND {"Reject": "previous"}
+You can get the Team Manager job, but we still need 10 hours. We will be happy to give you a Fast promotion track. / {"Offer": {"Promotion Possibilities": "Fast promotion track"}} AND {"Offer": {"Working Hours": "10 hours"}} AND {"Offer": {"Job Description": "Team Manager"}}
+I need you to work as a programmer / {"Offer": {"Job Description": "Programmer"}}
+i would give you 12000 NIS you start as team manager with company car, fast promotion track and 10 hours per day / {"Offer": {"Promotion Possibilities": "Fast promotion track"}} AND {"Offer": {"Working Hours": "10 hours"}} AND {"Offer": {"Leased Car": "With leased car"}} AND {"Offer": {"Salary": "12,000 NIS"}} AND {"Offer": {"Job Description": "Team Manager"}}
+10 Hours is a must. I can't change that. / {"Offer": {"Working Hours": "10 hours"}} AND {"Insist": "Working Hours"}
+I offer 12000 NIS per month forwork as a programmer with company car and 10% pension and I offer a fast promotion track and a daily schedule of 10 hours / {"Offer": {"Job Description": "Programmer"}} AND {"Offer": {"Promotion Possibilities": "Fast promotion track"}} AND {"Offer": {"Working Hours": "10 hours"}} AND {"Offer": {"Pension Fund": "10%"}} AND {"Offer": {"Leased Car": "With leased car"}} AND {"Offer": {"Salary": "12,000 NIS"}}
+You can not be a Team Manager. I need a programmer / {"Offer": {"Job Description": "Programmer"}} AND {"Reject": "Job Description"}
+how about 12000 NIS / {"Offer": {"Salary": "12,000 NIS"}}
+I can offer you the job without pension / {"Offer": {"Pension Fund": "0%"}}
+10 hours and we have a deal... / {"Offer": {"Working Hours": "10 hours"}}
+Salary 20000 NIS Job Description Programmer Without leased car Pension Fund 20% Fast promotion track Working Hours 8 hours / {"Offer": {"Job Description": "Programmer"}} AND {"Offer": {"Promotion Possibilities": "Fast promotion track"}} AND {"Offer": {"Pension Fund": "20%"}} AND {"Offer": {"Leased Car": "Without leased car"}} AND {"Offer": {"Working Hours": "8 hours"}} AND {"Offer": {"Salary": "20,000 NIS"}}
+7000 nis its ok> / {"Offer": {"Salary": "7,000 NIS"}}
+Salary 12000 NIS ,Job Description Programmer , With leased car, Pension Fund 10%, Slow promotion track, Working hours 10 hours / {"Offer": {"Job Description": "Programmer"}} AND {"Offer": {"Working Hours": "10 hours"}} AND {"Offer": {"Pension Fund": "10%"}} AND {"Offer": {"Leased Car": "With leased car"}} AND {"Offer": {"Promotion Possibilities": "Slow promotion track"}} AND {"Offer": {"Salary": "12,000 NIS"}}
+I can give you 20000 NIS per month and work as a Programmer and without a company car and with 20% pension and with a fast promotion track and a daily schedule of 10 hours / {"Offer": {"Job Description": "Programmer"}} AND {"Offer": {"Promotion Possibilities": "Fast promotion track"}} AND {"Offer": {"Pension Fund": "20%"}} AND {"Offer": {"Working Hours": "10 hours"}} AND {"Offer": {"Leased Car": "Without leased car"}} AND {"Offer": {"Salary": "20,000 NIS"}}
+Programmer, 12000 NIS, without car slow promotion track, daily 9 hours, 10% pension / {"Offer": {"Job Description": "Programmer"}} AND {"Offer": {"Working Hours": "9 hours"}} AND {"Offer": {"Leased Car": "Without leased car"}} AND {"Offer": {"Pension Fund": "10%"}} AND {"Offer": {"Promotion Possibilities": "Slow promotion track"}} AND {"Offer": {"Salary": "12,000 NIS"}}
+Hello I can give you 12000 NIS per month and work as a Programmer and with a company car and with 20% pension and with a slow promotion track and a daily schedule of 10 hours / {"Offer": {"Job Description": "Programmer"}} AND {"Offer": {"Pension Fund": "20%"}} AND {"Offer": {"Working Hours": "10 hours"}} AND {"Offer": {"Leased Car": "With leased car"}} AND {"Offer": {"Promotion Possibilities": "Slow promotion track"}} AND {"Offer": {"Salary": "12,000 NIS"}}
+i offer: 12000 NIS;Programmer;With leased car;10%;Fast promotion track;9 hours / {"Offer": {"Job Description": "Programmer"}} AND {"Offer": {"Working Hours": "9 hours"}} AND {"Offer": {"Promotion Possibilities": "Fast promotion track"}} AND {"Offer": {"Pension Fund": "10%"}} AND {"Offer": {"Leased Car": "With leased car"}} AND {"Offer": {"Salary": "12,000 NIS"}}
+I offer 7000 NIS per month as a Programmer without a leased car with 10% pension, slow promotion track and 10 working hours a day / {"Offer": {"Job Description": "Programmer"}} AND {"Offer": {"Working Hours": "10 hours"}} AND {"Offer": {"Leased Car": "Without leased car"}} AND {"Offer": {"Pension Fund": "10%"}} AND {"Offer": {"Promotion Possibilities": "Slow promotion track"}} AND {"Offer": {"Salary": "7,000 NIS"}}
+12000 NIS, Programmer, With leased car,20%,Pension Fund ,Fast promotion track,9 hours / {"Offer": {"Job Description": "Programmer"}} AND {"Offer": {"Working Hours": "9 hours"}} AND {"Offer": {"Promotion Possibilities": "Fast promotion track"}} AND {"Offer": {"Pension Fund": "20%"}} AND {"Offer": {"Leased Car": "With leased car"}} AND {"Offer": {"Salary": "12,000 NIS"}}
+i accept your offer / {"Accept": "previous"}
+12000 nis it ok? / {"Offer": {"Salary": "12,000 NIS"}}
+10% / {"Offer": {"Pension Fund": "10%"}}
+start with 12000 but can grow fast / {"Offer": {"Salary": "12,000 NIS"}}
+it is my last offer / {"Insist": "previous"}
+I need a programmer not a Manager. I agree to pay 12000 / {"Offer": {"Job Description": "Programmer"}} AND {"Offer": {"Salary": "12,000 NIS"}} AND {"Reject": "Job Description"}
+Programmer, 12000 NIS, without car, 10% pension, fast promotion track, daily 9 hours / {"Offer": {"Job Description": "Programmer"}} AND {"Offer": {"Working Hours": "9 hours"}} AND {"Offer": {"Promotion Possibilities": "Fast promotion track"}} AND {"Offer": {"Leased Car": "Without leased car"}} AND {"Offer": {"Pension Fund": "10%"}} AND {"Offer": {"Salary": "12,000 NIS"}}
+hi, i offer 12000 NIS per month and work as a Programmer. with out a car and 20% pension and i offer a fast promotion track for a daily schedule of 10 hours / {"Offer": {"Job Description": "Programmer"}} AND {"Offer": {"Promotion Possibilities": "Fast promotion track"}} AND {"Offer": {"Pension Fund": "20%"}} AND {"Offer": {"Working Hours": "10 hours"}} AND {"Offer": {"Leased Car": "Without leased car"}} AND {"Offer": {"Salary": "12,000 NIS"}}
+Everything is fine. But you must work 10 hours. / {"Offer": {"Working Hours": "10 hours"}} AND {"Accept": "previous"}
+I can give you 20000 NIS per month and work as a Programmer and with a company car and with 20% pension and with a fast promotion track and a daily schedule of 10 hours / {"Offer": {"Job Description": "Programmer"}} AND {"Offer": {"Promotion Possibilities": "Fast promotion track"}} AND {"Offer": {"Pension Fund": "20%"}} AND {"Offer": {"Working Hours": "10 hours"}} AND {"Offer": {"Leased Car": "With leased car"}} AND {"Offer": {"Salary": "20,000 NIS"}}
+Leased Car with leased car, job Description Team Manager,Working Hours 10 hours / {"Offer": {"Working Hours": "10 hours"}} AND {"Offer": {"Leased Car": "With leased car"}} AND {"Offer": {"Job Description": "Team Manager"}}
+Salary 7000 Job Description QA Leased Car No agreement Pension Fund 10% / {"Offer": {"Leased Car": "No agreement"}} AND {"Offer": {"Pension Fund": "10%"}} AND {"Offer": {"Job Description": "QA"}} AND {"Offer": {"Salary": "7,000 NIS"}}
+Programmer, 12000 NIS, with car, 10% pension, slow promotion, 9 hours / {"Offer": {"Job Description": "Programmer"}} AND {"Offer": {"Working Hours": "9 hours"}} AND {"Offer": {"Pension Fund": "10%"}} AND {"Offer": {"Leased Car": "With leased car"}} AND {"Offer": {"Promotion Possibilities": "Slow promotion track"}} AND {"Offer": {"Salary": "12,000 NIS"}}
+12000 NIS , Programmer, With leased car, 10% Pension Fund, Fast promotion track,10 hours / {"Offer": {"Job Description": "Programmer"}} AND {"Offer": {"Promotion Possibilities": "Fast promotion track"}} AND {"Offer": {"Working Hours": "10 hours"}} AND {"Offer": {"Pension Fund": "10%"}} AND {"Offer": {"Leased Car": "With leased car"}} AND {"Offer": {"Salary": "12,000 NIS"}}
+I can offer you 12000 NIS as programmer without car and with 20% pension and 8 hours work / {"Offer": {"Job Description": "Programmer"}} AND {"Offer": {"Pension Fund": "20%"}} AND {"Offer": {"Leased Car": "Without leased car"}} AND {"Offer": {"Salary": "12,000 NIS"}} AND {"Offer": {"Working Hours": "8 hours"}}
+I suggest 20% pension / {"Offer": {"Pension Fund": "20%"}}
+pension fund No agreement, job Description Programmer / {"Offer": {"Job Description": "Programmer"}} AND {"Offer": {"Pension Fund": "No agreement"}}
+Team manager, 12000 NIS, without leased car, 10% pension, slow promotion track, 10 daily hours / {"Offer": {"Working Hours": "10 hours"}} AND {"Offer": {"Leased Car": "Without leased car"}} AND {"Offer": {"Pension Fund": "10%"}} AND {"Offer": {"Promotion Possibilities": "Slow promotion track"}} AND {"Offer": {"Salary": "12,000 NIS"}} AND {"Offer": {"Job Description": "Team Manager"}}
+I Agree / {"Accept": "previous"}
+Programmer, 12000 NIS, with leased car, 0% pension, fast promotion track, daily 10 hours / {"Offer": {"Job Description": "Programmer"}} AND {"Offer": {"Promotion Possibilities": "Fast promotion track"}} AND {"Offer": {"Working Hours": "10 hours"}} AND {"Offer": {"Pension Fund": "0%"}} AND {"Offer": {"Leased Car": "With leased car"}} AND {"Offer": {"Salary": "12,000 NIS"}}
+but you will have to work at least 10 hours / {"Offer": {"Working Hours": "10 hours"}}
+Thia is what I need if you do not accept it I will end / {"Insist": "previous"}
+pension 10% and you are hired / {"Offer": {"Pension Fund": "10%"}} AND {"Accept": "previous"}
+you will have to work at least 9 hours / {"Offer": {"Working Hours": "9 hours"}}
+I'm sorry but I can't do anything about the 10 hour issue. That's the company policy for Team Managers. / {"Offer": {"Job Description": "Team Manager"}} AND {"Insist": "Working Hours"}
+You can not be a Team manager I need a programmer / {"Offer": {"Job Description": "Programmer"}} AND {"Reject": "Job Description"}
+I offer 12000 NIS per month as a Programmer without a leased car with 10% pension, fast promotion track and 10 working hours a day / {"Offer": {"Job Description": "Programmer"}} AND {"Offer": {"Promotion Possibilities": "Fast promotion track"}} AND {"Offer": {"Working Hours": "10 hours"}} AND {"Offer": {"Leased Car": "Without leased car"}} AND {"Offer": {"Pension Fund": "10%"}} AND {"Offer": {"Salary": "12,000 NIS"}}
+hi I need a good programmer that will be able to hard and long hours / {"Offer": {"Job Description": "Programmer"}} AND {"Offer": {"Working Hours": "10 hours"}}
+hi, let's start with 7000 NIS / {"Offer": {"Salary": "7,000 NIS"}}
+I would like to suggest you to work as a programmer for 12000 / {"Offer": {"Job Description": "Programmer"}} AND {"Offer": {"Salary": "12,000 NIS"}}
+Programmer, company car , 20% pension , slow promotion track 10 hours, 12000 NIS / {"Offer": {"Job Description": "Programmer"}} AND {"Offer": {"Pension Fund": "20%"}} AND {"Offer": {"Working Hours": "10 hours"}} AND {"Offer": {"Leased Car": "With leased car"}} AND {"Offer": {"Promotion Possibilities": "Slow promotion track"}} AND {"Offer": {"Salary": "12,000 NIS"}}
+I accept your offer but only if pension fund is 10% / {"Offer": {"Pension Fund": "10%"}} AND {"Accept": "previous"}
+hi ok but 10% pension / {"Offer": {"Pension Fund": "10%"}} AND {"Accept": "previous"}
+I offer 12000 NIS per month as a Programmer with a leased car with 20% pension, fast promotion track and 10 working hours a day / {"Offer": {"Job Description": "Programmer"}} AND {"Offer": {"Promotion Possibilities": "Fast promotion track"}} AND {"Offer": {"Pension Fund": "20%"}} AND {"Offer": {"Working Hours": "10 hours"}} AND {"Offer": {"Leased Car": "With leased car"}} AND {"Offer": {"Salary": "12,000 NIS"}}
+10 hours / {"Offer": {"Working Hours": "10 hours"}}
+You can get the Programmer job, but we can offer you only 12000 NIS, and you'll have to work 10 hours. / {"Offer": {"Job Description": "Programmer"}} AND {"Offer": {"Working Hours": "10 hours"}} AND {"Offer": {"Salary": "12,000 NIS"}}
+you want or not? / {"Insist": "previous"}
+yes you can! / {"Insist": "previous"}
+I can offer you the job without a car / {"Offer": {"Leased Car": "Without leased car"}} AND {"Accept": "previous"}
+I can suggest a good salary and good promotion track / {"Offer": {"Promotion Possibilities": "Fast promotion track"}} AND {"Offer": {"Salary": "20,000 NIS"}}
+12000 NIS;Programmer;With leased car;20% pension;Slow promotion track;10 hours / {"Offer": {"Job Description": "Programmer"}} AND {"Offer": {"Pension Fund": "20%"}} AND {"Offer": {"Working Hours": "10 hours"}} AND {"Offer": {"Leased Car": "With leased car"}} AND {"Offer": {"Promotion Possibilities": "Slow promotion track"}} AND {"Offer": {"Salary": "12,000 NIS"}}
+with fast promotion track / {"Offer": {"Promotion Possibilities": "Fast promotion track"}}
+Salary will start with 12000 NIs / {"Offer": {"Salary": "12,000 NIS"}}
+Working hours 10 hours, Salary 12000 NIS, Leased Car No agreement / {"Offer": {"Working Hours": "10 hours"}} AND {"Offer": {"Leased Car": "No agreement"}} AND {"Offer": {"Salary": "12,000 NIS"}}
+10 hours and i will give you fast promotion track / {"Offer": {"Promotion Possibilities": "Fast promotion track"}} AND {"Offer": {"Working Hours": "10 hours"}} AND {"Accept": "previous"}
+Ok you will have 20000 nis, fast track promotion 8 hours a day but with 10% pension / {"Offer": {"Promotion Possibilities": "Fast promotion track"}} AND {"Offer": {"Pension Fund": "10%"}} AND {"Offer": {"Salary": "20,000 NIS"}} AND {"Offer": {"Working Hours": "8 hours"}}
+20000 NIS , Programmer , With leased car,20% Pension Fund , Fast promotion track , 10 hours / {"Offer": {"Job Description": "Programmer"}} AND {"Offer": {"Promotion Possibilities": "Fast promotion track"}} AND {"Offer": {"Pension Fund": "20%"}} AND {"Offer": {"Working Hours": "10 hours"}} AND {"Offer": {"Leased Car": "With leased car"}} AND {"Offer": {"Salary": "20,000 NIS"}}
+Programmer, 12000 NIS, with leased car, slow promotion track, 10 hours / {"Offer": {"Job Description": "Programmer"}} AND {"Offer": {"Working Hours": "10 hours"}} AND {"Offer": {"Leased Car": "With leased car"}} AND {"Offer": {"Promotion Possibilities": "Slow promotion track"}} AND {"Offer": {"Salary": "12,000 NIS"}}
+I agree with the car but not with the pension / {"Accept": "Leased Car"} AND {"Reject": "Pension Fund"}
+i offer 12000 NIS per month for work as a Team Manager with out car. 20% pension and a fast promotion track and a daily schedule of 10 hours / {"Offer": {"Promotion Possibilities": "Fast promotion track"}} AND {"Offer": {"Pension Fund": "20%"}} AND {"Offer": {"Working Hours": "10 hours"}} AND {"Offer": {"Leased Car": "Without leased car"}} AND {"Offer": {"Salary": "12,000 NIS"}} AND {"Offer": {"Job Description": "Team Manager"}}
+ok i accept / {"Accept": "previous"}
+YOU CAN GET 10 PRECENT PENSION FUND / {"Offer": {"Pension Fund": "10%"}}
+You can be a team manager but I can pay you 12000 . / {"Offer": {"Salary": "12,000 NIS"}} AND {"Offer": {"Job Description": "Team Manager"}}
+I need a Programmer, I will pay 12000 NIS per month without leased car, Slow promotion track, and daily schedule of 10 hours / {"Offer": {"Job Description": "Programmer"}} AND {"Offer": {"Working Hours": "10 hours"}} AND {"Offer": {"Leased Car": "Without leased car"}} AND {"Offer": {"Promotion Possibilities": "Slow promotion track"}} AND {"Offer": {"Salary": "12,000 NIS"}}
+ok like you said but 10 hours per day and without company car / {"Offer": {"Working Hours": "10 hours"}} AND {"Offer": {"Leased Car": "Without leased car"}} AND {"Accept": "previous"}
+I can give you 12000 NIS per month and work as a Programmer and with a company car and with 20% pension and with a fast promotion track and a daily schedule of 10 hours / {"Offer": {"Job Description": "Programmer"}} AND {"Offer": {"Promotion Possibilities": "Fast promotion track"}} AND {"Offer": {"Pension Fund": "20%"}} AND {"Offer": {"Working Hours": "10 hours"}} AND {"Offer": {"Leased Car": "With leased car"}} AND {"Offer": {"Salary": "12,000 NIS"}}
+pension fund 10% / {"Offer": {"Pension Fund": "10%"}}
+I accept / {"Accept": "previous"}
+I can give you 20000 NIS per month and work as a Programmer and with a company car and with 10% pension and with a fast promotion track and a daily schedule of 10 hours / {"Offer": {"Job Description": "Programmer"}} AND {"Offer": {"Promotion Possibilities": "Fast promotion track"}} AND {"Offer": {"Working Hours": "10 hours"}} AND {"Offer": {"Pension Fund": "10%"}} AND {"Offer": {"Leased Car": "With leased car"}} AND {"Offer": {"Salary": "20,000 NIS"}}
+12000 its good for yoe? / {"Offer": {"Salary": "12,000 NIS"}}
+Leased car without leased car, Promotion Possibillities Fast promotion track / {"Offer": {"Promotion Possibilities": "Fast promotion track"}} AND {"Offer": {"Leased Car": "Without leased car"}}
+what is the problam? i forgat to say you will have 10% pension... / {"Offer": {"Pension Fund": "10%"}}
+all other details are fine / {"Offer": {"Job Description": "Programmer"}} AND {"Accept": "previous"}
+I can give you 12000 NIS and everything you've requested / {"Offer": {"Salary": "12,000 NIS"}} AND {"Accept": "previous"}
+20% pension, programmer, fast promotion track, with leased car, 12000, 10 hours / {"Offer": {"Job Description": "Programmer"}} AND {"Offer": {"Promotion Possibilities": "Fast promotion track"}} AND {"Offer": {"Pension Fund": "20%"}} AND {"Offer": {"Working Hours": "10 hours"}} AND {"Offer": {"Leased Car": "With leased car"}} AND {"Offer": {"Salary": "12,000 NIS"}}
+There are thousands like you / {"Reject": "previous"}
+to bad...i can live with 9 hours...what are you saying? / {"Offer": {"Working Hours": "9 hours"}}
+Salary 12000 NIS Job Description QA Without leased car Pension Fund 20% Fast promotion track Working Hours 10 hours / {"Offer": {"Promotion Possibilities": "Fast promotion track"}} AND {"Offer": {"Pension Fund": "20%"}} AND {"Offer": {"Working Hours": "10 hours"}} AND {"Offer": {"Leased Car": "Without leased car"}} AND {"Offer": {"Job Description": "QA"}} AND {"Offer": {"Salary": "12,000 NIS"}}
+too bad this is my best offer...are ypu sure? / {"Insist": "previous"}
+I can give you 12000 NIS for programmer with car and no pension / {"Offer": {"Job Description": "Programmer"}} AND {"Offer": {"Pension Fund": "0%"}} AND {"Offer": {"Leased Car": "With leased car"}} AND {"Offer": {"Salary": "12,000 NIS"}}
+12000, Programmer, With leased car, 20% Pension Fund , Fast promotion track , 9 hours / {"Offer": {"Job Description": "Programmer"}} AND {"Offer": {"Working Hours": "9 hours"}} AND {"Offer": {"Promotion Possibilities": "Fast promotion track"}} AND {"Offer": {"Pension Fund": "20%"}} AND {"Offer": {"Leased Car": "With leased car"}} AND {"Offer": {"Salary": "12,000 NIS"}}
+i agree to your offer / {"Accept": "previous"}
+I am OK with your offer / {"Accept": "previous"}

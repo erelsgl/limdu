@@ -8,7 +8,8 @@
         "url": "https://github.com/erelsgl/machine-learning.git"
     },
     "dependencies" : {
-        "underscore" : ">=1.1.0"
+        "underscore" : ">=1.1.0",
+        "sprintf": "*"
     },
     "devDependencies" : {
         "mocha"  : ">=1.0.0",

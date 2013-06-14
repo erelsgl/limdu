@@ -2,7 +2,7 @@ var associative = require("./associative");
 
 /**
  * BinaryClassifierSet - a set of binary classifiers.
- * Each example can belong to zero or more classes.
+ * Each sample can belong to zero or more classes.
  */
 
 var BinaryClassifierSet = function(binaryClassifierType, binaryClassifierOptions, classifierSetOptions) {
@@ -19,8 +19,7 @@ BinaryClassifierSet.prototype = {
 	 * @param classes an object whose KEYS are classes, or an array whose VALUES are classes.
 	 */
 	addClasses: function(classes) {
-		if (Array.isArray(classes))
-			classes=associative.fromArray(classes);
+		if (Array.isArray(classes)) classes=associative.fromArray(classes);
 		for (var aClass in classes)
 			if (!this.mapClassnameToClassifier[aClass]) { 
 				this.mapClassnameToClassifier[aClass] = 
@@ -34,8 +33,7 @@ BinaryClassifierSet.prototype = {
 	 * @param classes an object whose KEYS are classes, or an array whose VALUES are classes.
 	 */
 	train: function(sample, classes) {
-		if (Array.isArray(classes))
-			classes=associative.fromArray(classes);
+		if (Array.isArray(classes)) classes=associative.fromArray(classes);
 		for (var positiveClass in classes) {
 			if (!this.mapClassnameToClassifier[positiveClass]) {  // classifier exists
 				this.mapClassnameToClassifier[positiveClass] = 
@@ -50,6 +48,11 @@ BinaryClassifierSet.prototype = {
 		}
 	},
 
+	/**
+	 * Use the model trained so far to classify a new sample.
+	 * @param sample a document.
+	 * @return an array whose VALUES are classes.
+	 */
 	classify: function(sample) {
 		var classes = {};
 		for (var aClass in this.mapClassnameToClassifier) {
@@ -59,7 +62,7 @@ BinaryClassifierSet.prototype = {
 			if (classification==1)
 				classes[aClass]=true;
 		}
-		return classes;
+		return Object.keys(classes);
 	},
 	
 	toJSON : function(callback) {

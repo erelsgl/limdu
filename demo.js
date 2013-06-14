@@ -1,21 +1,33 @@
 var util = require('util');
-console.log("BinaryClassifierSet demo start");
-
 var classifier = require('./classifier');
 var BinaryClassifierSet = require('./BinaryClassifierSet');
+var datasets = require('./datasets');
+var PrecisionRecall = require("./PrecisionRecall");
 
+console.log("BinaryClassifierSet demo start");
+
+var dataset = datasets.read("datasets/Dataset1Woz.txt");
+//console.dir(dataset);
+//console.dir(dataset.allClasses);
+
+// TRAIN:
 var bcs = new BinaryClassifierSet(classifier.Bayesian, {}, {});
-
-bcs.addClasses(['spam', 'clocks', 'windows', 'important', 'pills'])
-bcs.train("cheap replica watch es", ['spam', 'clocks']);
-bcs.train("your watch is ready", ['clocks', 'important']);
-bcs.train("I don't know if this works on windows", ['windows', 'important']);
-bcs.train("cheap windows !!!", ['windows', 'spam']);
-bcs.train("get this for cheap !!!", ['spam']);
+bcs.addClasses(dataset.allClasses);
+for (var i=0; i<dataset.length; ++i)
+	bcs.train(dataset[i].sample, dataset[i].classes);
 
 //console.log(JSON.stringify(bcs.toJSON()));
 
-var classes = bcs.classify("cheap clocks !!!"); 
-console.dir(classes);  
+// TEST ON TRAINING DATA:
+var pr = new PrecisionRecall();
+for (var i=0; i<dataset.length; ++i) {
+	var expectedClasses = dataset[i].classes;
+	var actualClasses = bcs.classify(dataset[i].sample);
+	console.log("\n"+dataset[i].sample+": ");
+	pr.addCases(expectedClasses, actualClasses, true);
+}
+console.log("\n\nFULL RESULTS:")
+console.dir(pr.fullResults());
+console.log("\nSUMMARY: "+pr.shortResults());
 
 console.log("BinaryClassifierSet demo end");

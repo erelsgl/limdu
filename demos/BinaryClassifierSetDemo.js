@@ -6,12 +6,19 @@
  */
 
 var util = require('util');
+var BinaryClassifierSet = require('../BinaryClassifierSet');
+var datasets = require('../datasets');
+
 console.log("BinaryClassifierSet demo start");
 
-var classifier = require('../classifier');
-var BinaryClassifierSet = require('../BinaryClassifierSet');
 
-var bcs = new BinaryClassifierSet(classifier.Bayesian, {}, {});
+var dataset = datasets.read("../datasets/Dataset1Woz.txt");
+var numOfFolds = 10; // for 10-fold cross-validation
+
+//var binaryClassifierType = require('../classifier').Bayesian; 
+var binaryClassifierType = require('../brain').NeuralNetwork; 
+
+var bcs = new BinaryClassifierSet(binaryClassifierType, {}, {});
 
 bcs.addClasses(['spam', 'clocks', 'windows', 'important', 'pills'])
 bcs.train("cheap replica watch es", ['spam', 'clocks']);

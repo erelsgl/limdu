@@ -6,7 +6,6 @@
  */
 
 var util = require('util');
-var classifier = require('../classifier');
 var datasets = require('../datasets');
 var PrecisionRecall = require("../PrecisionRecall");
 var train_and_test = require('../train_and_test').train_and_test;
@@ -15,9 +14,11 @@ var associative = require('../associative');
 console.log("main demo start");
 
 var dataset = datasets.read("../datasets/Dataset1Woz.txt");
-var numOfFolds = 10; // for 10-fold cross-validation
+var numOfFolds = 5; // for k-fold cross-validation
 
-var binaryClassifierType =  classifier.Bayesian;
+var binaryClassifierType = require('../classifier/lib/bayesian').Bayesian; 
+//var binaryClassifierType = require('../brain').NeuralNetwork; 
+
 var binaryClassifierOptions = {};
 var microAverage = new PrecisionRecall();
 var macroAverage = new PrecisionRecall();

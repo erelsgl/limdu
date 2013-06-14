@@ -4,3 +4,6 @@
 [submodule "perceptron"]
 	path = perceptron
 	url = https://github.com/erelsgl/perceptron.git
+[submodule "brain"]
+	path = brain
+	url = https://github.com/erelsgl/brain.git

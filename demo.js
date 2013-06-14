@@ -1,17 +1,34 @@
 var util = require('util');
-var classifier = require('./classifier');
+var BayesianClassifier = require('./classifier').Bayesian;
+var NeuralNetwork = require('./brain').NeuralNetwork;
 var BinaryClassifierSet = require('./BinaryClassifierSet');
 var datasets = require('./datasets');
 var PrecisionRecall = require("./PrecisionRecall");
 var train_and_test = require('./train_and_test').train_and_test;
 var associative = require('./associative');
 
+var WordsFromText = require('./FeatureExtractor/WordExtractor').WordsFromText;
+
 console.log("main demo start");
+
+var net = new NeuralNetwork();
+
+net.train([{input: WordsFromText("cheap replica watches"), output: [1]},
+           {input: WordsFromText("works on windows?"), output: [0]}]);
+
+console.log(net.run(WordsFromText("replica")));
+console.log(net.run(WordsFromText("windows")));
+console.log(net.run(WordsFromText("replica windows")));
+console.log(net.run(WordsFromText("windows replica")));
+console.log(net.run(WordsFromText("cheap windows replica")));
+console.log(net.run(WordsFromText("wind")));
+console.log(net.run(WordsFromText("chea")));
+process.exit(1);
 
 var dataset = datasets.read("datasets/Dataset1Woz.txt");
 var numOfFolds = 10; // for 10-fold cross-validation
 
-var binaryClassifierType =  classifier.Bayesian;
+var binaryClassifierType = NeuralNetwork; // BayesianClassifier;
 var binaryClassifierOptions = {};
 var microAverage = new PrecisionRecall();
 var macroAverage = new PrecisionRecall();

@@ -26,6 +26,13 @@ BinaryClassifierSet.prototype = {
 					new this.binaryClassifierType(this.binaryClassifierOptions);
 			}
 	},
+	
+	makeSureClassifierExists: function (aClass) {
+		if (!this.mapClassnameToClassifier[aClass]) {  // make sure classifier exists
+			this.mapClassnameToClassifier[aClass] = 
+				new this.binaryClassifierType(this.binaryClassifierOptions);
+		}
+	},
 
 	/**
 	 * Tell the classifier that the given sample belongs to the given classes.
@@ -35,16 +42,50 @@ BinaryClassifierSet.prototype = {
 	train: function(sample, classes) {
 		if (Array.isArray(classes)) classes=associative.fromArray(classes);
 		for (var positiveClass in classes) {
-			if (!this.mapClassnameToClassifier[positiveClass]) {  // classifier exists
-				this.mapClassnameToClassifier[positiveClass] = 
-					new this.binaryClassifierType(this.binaryClassifierOptions);
-			}
+			this.makeSureClassifierExists(positiveClass);
 			this.mapClassnameToClassifier[positiveClass].train(sample, 1);
 		}
 		for (var negativeClass in this.mapClassnameToClassifier) {
-			if (!classes[negativeClass]) {
+			if (!classes[negativeClass])
 				this.mapClassnameToClassifier[negativeClass].train(sample, 0);
+		}
+	},
+
+	/**
+	 * Train the classifier with all the given documents.
+	 * @param dataset an array with objects of the format: {input: sample1, output: [class11, class12...]}
+	 */
+	trainAll: function(dataset) {
+		var mapClassnameToDataset = {};
+		
+		// create positive samples for each class:
+		for (var i=0; i<dataset.length; ++i) {
+			var sample = dataset[i].input;
+			if (Array.isArray(dataset[i].output)) dataset[i].output=associative.fromArray(dataset[i].output);
+			var classes = dataset[i].output;
+			for (var positiveClass in classes) {
+				this.makeSureClassifierExists(positiveClass);
+				if (!(positiveClass in mapClassnameToDataset))  // make sure dataset for this class exists
+					mapClassnameToDataset[positiveClass] = [];
+				mapClassnameToDataset[positiveClass].push({input: sample, output: 1})
 			}
+		}
+		
+		// create negative samples for each class (after all classes are in the array):
+		for (var i=0; i<dataset.length; ++i) {
+			var sample = dataset[i].input;
+			var classes = dataset[i].output;
+			for (var negativeClass in this.mapClassnameToClassifier) {
+				if (!(negativeClass in mapClassnameToDataset))  // make sure dataset for this class exists
+					mapClassnameToDataset[negativeClass] = [];
+				if (!classes[negativeClass])
+					mapClassnameToDataset[negativeClass].push({input: sample, output: 0})
+			}
+		}
+
+		// train all classifiers:
+		for (var aClass in mapClassnameToDataset) {
+			this.mapClassnameToClassifier[aClass].trainAll(	mapClassnameToDataset[aClass]);
 		}
 	},
 

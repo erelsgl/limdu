@@ -96,7 +96,8 @@ BinaryClassifierSet.prototype = {
 
 		// train all classifiers:
 		for (var aClass in mapClassnameToDataset) {
-			this.mapClassnameToClassifier[aClass].trainAll(	mapClassnameToDataset[aClass]);
+			this.mapClassnameToClassifier[aClass].trainAll(	
+				mapClassnameToDataset[aClass]);
 		}
 	},
 

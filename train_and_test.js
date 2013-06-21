@@ -17,12 +17,19 @@ var PrecisionRecall = require("./PrecisionRecall");
  * @param verbosity [int] level of details in log (0 = no log)
  * @param microAverage, macroSum [output] - objects of type PrecisionRecall, used to return the results. 
  */
-exports.train_and_test = function(binaryClassifierType, binaryClassifierOptions, trainSet, testSet, verbosity, microAverage, macroSum) {
+exports.train_and_test = function(
+		classifierOptions, 
+		trainSet, testSet, 
+		verbosity, microAverage, macroSum) {
 	// TRAIN:
-	var bcs = new BinaryClassifierSet(binaryClassifierType, binaryClassifierOptions, {});
+	var bcs = new BinaryClassifierSet(classifierOptions);
 	bcs.addClasses(trainSet.allClasses);
-	for (var i=0; i<trainSet.length; ++i)
-		bcs.train(trainSet[i].input, trainSet[i].output);
+	if (verbosity>0) console.log("\nstart training on "+trainSet.length+" samples, "+(trainSet.allClasses? trainSet.allClasses.length+' classes': ''));
+	var startTime = new Date()
+	if (verbosity>2) console.dir(trainSet);
+	bcs.trainAll(trainSet);
+	var elapsedTime = new Date()-startTime;
+	if (verbosity>0) console.log("end training on "+trainSet.length+" samples, "+(trainSet.allClasses? trainSet.allClasses.length+' classes, ': '')+elapsedTime+" [ms]");
 
 	// TEST:
 	var currentStats = new PrecisionRecall();
@@ -38,9 +45,9 @@ exports.train_and_test = function(binaryClassifierType, binaryClassifierOptions,
 	
 	if (verbosity>0) {
 		if (verbosity>1) {
-			console.log("\n\nFULL RESULTS:")
+			console.log("FULL RESULTS:")
 			console.dir(currentStats.fullStats());
 		}
-		console.log("\nSUMMARY: "+currentStats.shortStats());
+		console.log("SUMMARY: "+currentStats.shortStats()+"\n");
 	}
 }

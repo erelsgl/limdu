@@ -12,7 +12,7 @@ var ClassifierWithFeatureExtractor = require('../ClassifierWithFeatureExtractor'
 console.log("BinaryClassifierSet with feature extractor demo start");
 
 var bcs = new BinaryClassifierSet({
-	binaryClassifierType: ClassifierWithFeatureExtractor,
+	binaryClassifierType: require('../ClassifierWithFeatureExtractor'),
 	binaryClassifierOptions: {
 		classifierType:   require('../brain').NeuralNetwork,
 		featureExtractor: require('../FeatureExtractor/WordExtractor').WordsFromText

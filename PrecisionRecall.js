@@ -1,4 +1,4 @@
-var associative = require("./associative");
+var _ = require("underscore")._;
 var sprintf = require('sprintf').sprintf;
 
 /**

@@ -15,7 +15,7 @@ var bcs = new BinaryClassifierSet({
 	binaryClassifierType: require('../ClassifierWithFeatureExtractor'),
 	binaryClassifierOptions: {
 		classifierType:   require('../brain').NeuralNetwork,
-		featureExtractor: require('../FeatureExtractor/WordExtractor').WordsFromText
+		featureExtractor: require('../FeatureExtractor/WordExtractor').WordsFromText(1)
 	}
 });
 bcs.trainAll([

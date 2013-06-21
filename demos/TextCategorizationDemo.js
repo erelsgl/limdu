@@ -36,9 +36,10 @@ datasets.partitions(dataset, numOfFolds, function(partition) {
 					//log: true
 				},
 				featureExtractor: CollectionOfExtractors([
-				    //WordsFromText, 
-				    //LettersFromText(1), 
-				    LettersFromText(3),
+				    WordsFromText(1),
+				    //WordsFromText(2),
+				    //LettersFromText(2), 
+				    //LettersFromText(3),
 				]), 
 			}
 		},

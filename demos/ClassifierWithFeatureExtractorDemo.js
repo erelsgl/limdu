@@ -12,7 +12,7 @@ console.log("ClassifierWithFeatureExtractor demo start");
 
 var cwfe = new ClassifierWithFeatureExtractor({
 	classifierType:   require('../brain').NeuralNetwork,
-	featureExtractor: require('../FeatureExtractor/WordExtractor').WordsFromText
+	featureExtractor: require('../FeatureExtractor/WordExtractor').WordsFromText(1)
 });
 cwfe.trainAll([
 	{input: "cheap replica watch es", output: [1]},

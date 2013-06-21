@@ -130,7 +130,8 @@ exports.stringify_sorted = function(weights, separator) {
 
 /**
  * Convert an array ['a', 'b', 'c'..] to an object {'a': true, 'b': true, 'c': true}
- */
+ *
+ * NOT NEEDED: Use underscore: _.invert(array)
 exports.fromArray = function(array) {
 	var result = {}; 
 	for (var i=0; i<array.length; ++i) {
@@ -138,3 +139,4 @@ exports.fromArray = function(array) {
 	}
 	return result;
 }
+*/

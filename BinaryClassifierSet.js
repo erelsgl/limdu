@@ -1,13 +1,24 @@
-var associative = require("./associative");
+var _ = require("underscore")._;
 
 /**
  * BinaryClassifierSet - combines several binary classifiers to produce a multi-class classifier,
  * 	where each sample can belong to zero or more classes.
+ * 
+ * @param opts
+ * Must contain the option 'binaryClassifierType' - the type of the base binary classifier.
+ * Can also contain the option 'binaryClassifierOptions' - options that will be sent to the binary classifier constructor.
  */
-
-var BinaryClassifierSet = function(binaryClassifierType, binaryClassifierOptions, classifierSetOptions) {
-	this.binaryClassifierType = binaryClassifierType;
-	this.binaryClassifierOptions = binaryClassifierOptions;
+var BinaryClassifierSet = function(opts) {
+	if (!('binaryClassifierType' in opts)) {
+		console.dir(opts);
+		throw new Error("opts must contain binaryClassifierType");
+	}
+	if (!opts.binaryClassifierType) {
+		console.dir(opts);
+		throw new Error("opts.binaryClassifierType is null");
+	}
+	this.binaryClassifierType = opts.binaryClassifierType;
+	this.binaryClassifierOptions = opts.binaryClassifierOptions;
 	this.mapClassnameToClassifier = {};
 }
 
@@ -19,7 +30,7 @@ BinaryClassifierSet.prototype = {
 	 * @param classes an object whose KEYS are classes, or an array whose VALUES are classes.
 	 */
 	addClasses: function(classes) {
-		if (Array.isArray(classes)) classes=associative.fromArray(classes);
+		if (Array.isArray(classes)) classes=_.invert(classes);
 		for (var aClass in classes)
 			if (!this.mapClassnameToClassifier[aClass]) { 
 				this.mapClassnameToClassifier[aClass] = 
@@ -40,7 +51,7 @@ BinaryClassifierSet.prototype = {
 	 * @param classes an object whose KEYS are classes, or an array whose VALUES are classes.
 	 */
 	train: function(sample, classes) {
-		if (Array.isArray(classes)) classes=associative.fromArray(classes);
+		if (Array.isArray(classes)) classes=_.invert(classes);
 		for (var positiveClass in classes) {
 			this.makeSureClassifierExists(positiveClass);
 			this.mapClassnameToClassifier[positiveClass].train(sample, 1);
@@ -61,7 +72,7 @@ BinaryClassifierSet.prototype = {
 		// create positive samples for each class:
 		for (var i=0; i<dataset.length; ++i) {
 			var sample = dataset[i].input;
-			if (Array.isArray(dataset[i].output)) dataset[i].output=associative.fromArray(dataset[i].output);
+			if (Array.isArray(dataset[i].output)) dataset[i].output=_.invert(dataset[i].output);
 			var classes = dataset[i].output;
 			for (var positiveClass in classes) {
 				this.makeSureClassifierExists(positiveClass);
@@ -99,8 +110,7 @@ BinaryClassifierSet.prototype = {
 		for (var aClass in this.mapClassnameToClassifier) {
 			var classifier = this.mapClassnameToClassifier[aClass];
 			var classification = classifier.classify(sample);
-			//console.log("classification["+aClass+"]="+JSON.stringify(classification));
-			if (classification==1)
+			if (classification>0.5)
 				classes[aClass]=true;
 		}
 		return Object.keys(classes);

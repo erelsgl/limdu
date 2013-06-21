@@ -13,8 +13,10 @@ console.log("main demo start");
 
 var net = new NeuralNetwork();
 
-net.train([{input: WordsFromText("cheap replica watches"), output: [1]},
-           {input: WordsFromText("works on windows?"), output: [0]}]);
+net.trainAll([{input: WordsFromText("cheap replica watches"), output: {'spam': 1, 'cheap': 1, 'nice': 0}},
+           {input: WordsFromText("works on windows?"), output: {'spam': 0, 'windows': 1, 'cheap': 0}},
+           {input: WordsFromText("wind chea"), output: [1]},
+           ]    );
 
 console.log(net.run(WordsFromText("replica")));
 console.log(net.run(WordsFromText("windows")));

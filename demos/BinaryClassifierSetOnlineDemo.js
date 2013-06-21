@@ -8,11 +8,11 @@
 var util = require('util');
 var BinaryClassifierSet = require('../BinaryClassifierSet');
 
-console.log("BinaryClassifierSet demo start");
+console.log("BinaryClassifierSet online-learning demo start");
 
-var binaryClassifierType = require('../classifier').Bayesian; 
-
-var bcs = new BinaryClassifierSet(binaryClassifierType, {}, {});
+var bcs = new BinaryClassifierSet({
+	'binaryClassifierType': require('../classifier').Bayesian
+});
 
 bcs.addClasses(['spam', 'clocks', 'windows', 'important', 'pills'])
 bcs.train("cheap replica watch es", ['spam', 'clocks']);
@@ -28,4 +28,4 @@ console.log("'"+newDocument+"' is "+bcs.classify(newDocument));
 newDocument = "I don't know if this is a replica of windows";
 console.log("'"+newDocument+"' is "+bcs.classify(newDocument));  
 
-console.log("BinaryClassifierSet demo end");
+console.log("BinaryClassifierSet online-learning demo end");

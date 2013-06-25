@@ -14,25 +14,30 @@ var associative = require('../associative');
 var WordsFromText = require('../FeatureExtractor/WordExtractor').WordsFromText;
 var LettersFromText = require('../FeatureExtractor/LetterExtractor').LettersFromText;
 var CollectionOfExtractors = require('../FeatureExtractor/CollectionOfExtractors').CollectionOfExtractors;
+var FeatureLookupTable = require('../FeatureExtractor/FeatureLookupTable');
 
 console.log("text categorization demo start");
 
 var dataset = datasets.read("../datasets/Dataset1Woz.txt");
-var numOfFolds = 2; // for k-fold cross-validation
+var numOfFolds = 5; // for k-fold cross-validation
 
 var microAverage = new PrecisionRecall();
 var macroAverage = new PrecisionRecall();
 var verbosity = 1;
 
 datasets.partitions(dataset, numOfFolds, function(partition) {
-	//partition.train = partition.train.slice(0,16);
+	//partition.train = partition.train.slice(0,3);
+	//partition.test = partition.train;
 	train_and_test(
 		{
-			binaryClassifierType: require('../ClassifierWithFeatureExtractor'),
+			binaryClassifierType: 
+				require('../ClassifierWithFeatureExtractor'),
 			binaryClassifierOptions: {
 				//classifierType:   require('../brain/lib/brain').NeuralNetwork,
-				classifierType:   require('../classifier/lib/bayesian').Bayesian,
+				//classifierType:   require('../classifier/lib/bayesian').Bayesian,
+				classifierType:   require('../svmjs/lib/svm').SVM,
 				classifierOptions: {
+					C: 1.0,
 					//iterations: 10,
 					//log: true
 				},
@@ -40,8 +45,9 @@ datasets.partitions(dataset, numOfFolds, function(partition) {
 				    WordsFromText(1),
 				    //WordsFromText(2),
 				    //LettersFromText(2), 
-				    //LettersFromText(3),
+				    //LettersFromText(4),
 				]),
+				featureLookupTable: new FeatureLookupTable(),
 			}
 		},
 		partition.train, partition.test, verbosity,

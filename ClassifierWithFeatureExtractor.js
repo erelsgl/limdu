@@ -55,6 +55,7 @@ ClassifierWithFeatureExtractor.prototype = {
 	trainAll: function(dataset) {
 		var featureLookupTable = this.featureLookupTable;
 		var featureExtractor = this.featureExtractor;
+		//console.log("BEFORE: "); console.dir(dataset);
 		dataset.forEach(function(datum) {
 			datum.input = featureExtractor(datum.input);
 			if (featureLookupTable)
@@ -64,6 +65,7 @@ ClassifierWithFeatureExtractor.prototype = {
 			if (featureLookupTable)
 				datum.input = featureLookupTable.hashToArray(datum.input);
 		});
+		//console.log("AFTER: "); console.dir(dataset);
 		this.classifier.trainAll(dataset, this.classifierOptions);
 	},
 

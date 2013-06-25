@@ -13,7 +13,7 @@ exports.WordsFromText = function(numOfWords) {
 	return function(sample, features) {
 		var words = sample.split(/\W+/);
 		if (!features) features = {};
-		for (var i in words) {
+		for (var i=0; i<words.length; ++i) {
 			var feature = words.slice(i, i+numOfWords).join(" ");
 			features[feature]=1;
 		}

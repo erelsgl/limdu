@@ -30,7 +30,8 @@ datasets.partitions(dataset, numOfFolds, function(partition) {
 		{
 			binaryClassifierType: require('../ClassifierWithFeatureExtractor'),
 			binaryClassifierOptions: {
-				classifierType:   require('../brain/lib/brain').NeuralNetwork,
+				//classifierType:   require('../brain/lib/brain').NeuralNetwork,
+				classifierType:   require('../classifier/lib/bayesian').Bayesian,
 				classifierOptions: {
 					//iterations: 10,
 					//log: true
@@ -40,7 +41,7 @@ datasets.partitions(dataset, numOfFolds, function(partition) {
 				    //WordsFromText(2),
 				    //LettersFromText(2), 
 				    //LettersFromText(3),
-				]), 
+				]),
 			}
 		},
 		partition.train, partition.test, verbosity,

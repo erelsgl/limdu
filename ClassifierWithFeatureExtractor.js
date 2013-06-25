@@ -5,7 +5,8 @@ var _ = require("underscore")._;
  * 
  * @param opts
  * Must contain the option: 'classifierType' and 'featureExtractor'.
- * Can also contain the option 'classifierOptions' - options that will be sent to the base classifier.
+ * May also contain the option 'classifierOptions' - options that will be sent to the base classifier.
+ * May also contain the option 'featureLookupTable' - an instance of FeatureLookupTable for converting features to numeric indices and back.
  */
 var ClassifierWithFeatureExtractor = function(opts) {
 	if (!opts.classifierType) {
@@ -19,32 +20,51 @@ var ClassifierWithFeatureExtractor = function(opts) {
 	this.classifierType = opts.classifierType;
 	this.featureExtractor = opts.featureExtractor;
 	this.classifierOptions = opts.classifierOptions;
+	this.featureLookupTable = opts.featureLookupTable;
 	
 	this.classifier = new this.classifierType(this.classifierOptions);
 }
 
 ClassifierWithFeatureExtractor.prototype = {
+		
+	sampleToFeatures: function(sample) {
+		var features = this.featureExtractor(sample);
+		var array = features;
+		if (this.featureLookupTable)
+			array = this.featureLookupTable.hashToArray(features);
+		//console.log(JSON.stringify(sample)+" => "+JSON.stringify(features)+" => "+JSON.stringify(array));
+		return array;
+	},
 
 	/**
+	 * Online training: 
 	 * Tell the classifier that the given sample belongs to the given classes.
 	 * @param sample a document.
 	 * @param classes an object whose KEYS are classes, or an array whose VALUES are classes.
 	 */
 	train: function(sample, classes) {
-		sample = this.featureExtractor(sample);
-		this.classifier.train(sample, classes);
+		this.classifier.train(
+			this.sampleToFeatures(sample), classes);
 	},
 
 	/**
+	 * Batch training: 
 	 * Train the classifier with all the given documents.
 	 * @param dataset an array with objects of the format: {input: sample1, output: [class11, class12...]}
 	 */
-	trainAll: function(data) {
-		data = data.map(function(datum) {
-          return _(_(datum).clone()).extend({ 
-        	  input: this.featureExtractor(datum.input) });
-        }, this);
-		this.classifier.trainAll(data);
+	trainAll: function(dataset) {
+		var featureLookupTable = this.featureLookupTable;
+		var featureExtractor = this.featureExtractor;
+		dataset.forEach(function(datum) {
+			datum.input = featureExtractor(datum.input);
+			if (featureLookupTable)
+				featureLookupTable.addFeatures(datum.input);
+        });
+		dataset.forEach(function(datum) {
+			if (featureLookupTable)
+				datum.input = featureLookupTable.hashToArray(datum.input);
+		});
+		this.classifier.trainAll(dataset, this.classifierOptions);
 	},
 
 	/**
@@ -53,8 +73,8 @@ ClassifierWithFeatureExtractor.prototype = {
 	 * @return an array whose VALUES are classes.
 	 */
 	classify: function(sample) {
-		sample = this.featureExtractor(sample);
-		return this.classifier.classify(sample);
+		return this.classifier.classify(
+			this.sampleToFeatures(sample));
 	},
 }
 

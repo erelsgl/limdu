@@ -1,0 +1,339 @@
+{
+	"createNewClassifierString": "function () {\n\tvar FeatureExtractor = require('/home/erelsgl/git/machine-learning/demos/../FeatureExtractor');\n\tvar BinaryClassifierSet = require('/home/erelsgl/git/machine-learning/demos/../BinaryClassifierSet');\n\t\n\treturn new BinaryClassifierSet({\n\t\tbinaryClassifierType: require('/home/erelsgl/git/machine-learning/demos/../classifier/lib/bayesian').Bayesian,\n\t});\n}",
+	"trainedClassifier": {
+		"spam": {
+			"cats": {
+				"0": 2,
+				"1": 3
+			},
+			"words": {
+				"cheap": {
+					"1": 3
+				},
+				"replica": {
+					"1": 1
+				},
+				"watch": {
+					"0": 1,
+					"1": 1
+				},
+				"es": {
+					"1": 1
+				},
+				"your": {
+					"0": 1
+				},
+				"is": {
+					"0": 1
+				},
+				"ready": {
+					"0": 1
+				},
+				"I": {
+					"0": 1
+				},
+				"don": {
+					"0": 1
+				},
+				"t": {
+					"0": 1
+				},
+				"know": {
+					"0": 1
+				},
+				"if": {
+					"0": 1
+				},
+				"this": {
+					"0": 1,
+					"1": 1
+				},
+				"works": {
+					"0": 1
+				},
+				"on": {
+					"0": 1
+				},
+				"windows": {
+					"0": 1,
+					"1": 1
+				},
+				"": {
+					"1": 2
+				},
+				"get": {
+					"1": 1
+				},
+				"for": {
+					"1": 1
+				}
+			}
+		},
+		"clocks": {
+			"cats": {
+				"0": 3,
+				"1": 2
+			},
+			"words": {
+				"cheap": {
+					"0": 2,
+					"1": 1
+				},
+				"replica": {
+					"1": 1
+				},
+				"watch": {
+					"1": 2
+				},
+				"es": {
+					"1": 1
+				},
+				"your": {
+					"1": 1
+				},
+				"is": {
+					"1": 1
+				},
+				"ready": {
+					"1": 1
+				},
+				"I": {
+					"0": 1
+				},
+				"don": {
+					"0": 1
+				},
+				"t": {
+					"0": 1
+				},
+				"know": {
+					"0": 1
+				},
+				"if": {
+					"0": 1
+				},
+				"this": {
+					"0": 2
+				},
+				"works": {
+					"0": 1
+				},
+				"on": {
+					"0": 1
+				},
+				"windows": {
+					"0": 2
+				},
+				"": {
+					"0": 2
+				},
+				"get": {
+					"0": 1
+				},
+				"for": {
+					"0": 1
+				}
+			}
+		},
+		"windows": {
+			"cats": {
+				"0": 3,
+				"1": 2
+			},
+			"words": {
+				"cheap": {
+					"0": 2,
+					"1": 1
+				},
+				"replica": {
+					"0": 1
+				},
+				"watch": {
+					"0": 2
+				},
+				"es": {
+					"0": 1
+				},
+				"your": {
+					"0": 1
+				},
+				"is": {
+					"0": 1
+				},
+				"ready": {
+					"0": 1
+				},
+				"I": {
+					"1": 1
+				},
+				"don": {
+					"1": 1
+				},
+				"t": {
+					"1": 1
+				},
+				"know": {
+					"1": 1
+				},
+				"if": {
+					"1": 1
+				},
+				"this": {
+					"0": 1,
+					"1": 1
+				},
+				"works": {
+					"1": 1
+				},
+				"on": {
+					"1": 1
+				},
+				"windows": {
+					"1": 2
+				},
+				"": {
+					"0": 1,
+					"1": 1
+				},
+				"get": {
+					"0": 1
+				},
+				"for": {
+					"0": 1
+				}
+			}
+		},
+		"important": {
+			"cats": {
+				"0": 3,
+				"1": 2
+			},
+			"words": {
+				"cheap": {
+					"0": 3
+				},
+				"replica": {
+					"0": 1
+				},
+				"watch": {
+					"0": 1,
+					"1": 1
+				},
+				"es": {
+					"0": 1
+				},
+				"your": {
+					"1": 1
+				},
+				"is": {
+					"1": 1
+				},
+				"ready": {
+					"1": 1
+				},
+				"I": {
+					"1": 1
+				},
+				"don": {
+					"1": 1
+				},
+				"t": {
+					"1": 1
+				},
+				"know": {
+					"1": 1
+				},
+				"if": {
+					"1": 1
+				},
+				"this": {
+					"0": 1,
+					"1": 1
+				},
+				"works": {
+					"1": 1
+				},
+				"on": {
+					"1": 1
+				},
+				"windows": {
+					"0": 1,
+					"1": 1
+				},
+				"": {
+					"0": 2
+				},
+				"get": {
+					"0": 1
+				},
+				"for": {
+					"0": 1
+				}
+			}
+		},
+		"pills": {
+			"cats": {
+				"0": 5
+			},
+			"words": {
+				"cheap": {
+					"0": 3
+				},
+				"replica": {
+					"0": 1
+				},
+				"watch": {
+					"0": 2
+				},
+				"es": {
+					"0": 1
+				},
+				"your": {
+					"0": 1
+				},
+				"is": {
+					"0": 1
+				},
+				"ready": {
+					"0": 1
+				},
+				"I": {
+					"0": 1
+				},
+				"don": {
+					"0": 1
+				},
+				"t": {
+					"0": 1
+				},
+				"know": {
+					"0": 1
+				},
+				"if": {
+					"0": 1
+				},
+				"this": {
+					"0": 2
+				},
+				"works": {
+					"0": 1
+				},
+				"on": {
+					"0": 1
+				},
+				"windows": {
+					"0": 2
+				},
+				"": {
+					"0": 2
+				},
+				"get": {
+					"0": 1
+				},
+				"for": {
+					"0": 1
+				}
+			}
+		}
+	}
+}

@@ -20,11 +20,18 @@ var microAverage = new PrecisionRecall();
 var macroAverage = new PrecisionRecall();
 var verbosity = 1;
 
+function createNewClassifier() {
+	var FeatureExtractor = require('../FeatureExtractor');
+	var BinaryClassifierSet = require('../BinaryClassifierSet');
+	
+	return new BinaryClassifierSet({
+		binaryClassifierType: require('../classifier/lib/bayesian').Bayesian,
+	});
+}
+
 datasets.partitions(dataset, numOfFolds, function(partition) {
 	train_and_test(
-		{
-			binaryClassifierType: require('../classifier/lib/bayesian').Bayesian,
-		},
+		createNewClassifier,
 		partition.train, partition.test, verbosity,
 		microAverage, macroAverage
 	);

@@ -131,7 +131,7 @@ BinaryClassifierSet.prototype = {
 				new this.binaryClassifierType(this.binaryClassifierOptions);
 			this.mapClassnameToClassifier[aClass].fromJSON(json[aClass]);
 		}
-	    return this;
+		return this;
 	},
 }
 

@@ -11,11 +11,6 @@ var PrecisionRecall = require("../PrecisionRecall");
 var train_and_test = require('../train_and_test').train_and_test;
 var associative = require('../associative');
 
-var WordsFromText = require('../FeatureExtractor/WordExtractor').WordsFromText;
-var LettersFromText = require('../FeatureExtractor/LetterExtractor').LettersFromText;
-var CollectionOfExtractors = require('../FeatureExtractor/CollectionOfExtractors').CollectionOfExtractors;
-var FeatureLookupTable = require('../FeatureExtractor/FeatureLookupTable');
-
 console.log("text categorization demo start");
 
 var dataset = datasets.read("../datasets/Dataset1Woz.txt");
@@ -25,31 +20,36 @@ var microAverage = new PrecisionRecall();
 var macroAverage = new PrecisionRecall();
 var verbosity = 1;
 
-datasets.partitions(dataset, numOfFolds, function(partition) {
-	//partition.train = partition.train.slice(0,3);
-	//partition.test = partition.train;
-	train_and_test(
-		{
-			binaryClassifierType: 
-				require('../ClassifierWithFeatureExtractor'),
-			binaryClassifierOptions: {
+function createNewClassifier() {
+	var FeatureExtractor = require('../FeatureExtractor');
+	var BinaryClassifierSet = require('../BinaryClassifierSet');
+	
+	return new BinaryClassifierSet({
+		binaryClassifierType: require('../ClassifierWithFeatureExtractor'),
+		binaryClassifierOptions: {
 				//classifierType:   require('../brain/lib/brain').NeuralNetwork,
-				//classifierType:   require('../classifier/lib/bayesian').Bayesian,
-				classifierType:   require('../svmjs/lib/svm').SVM,
+				classifierType:   require('../classifier/lib/bayesian').Bayesian,
+				//classifierType:   require('../svmjs/lib/svm').SVM,
 				classifierOptions: {
 					C: 1.0,
 					//iterations: 10,
 					//log: true
 				},
-				featureExtractor: CollectionOfExtractors([
-				    WordsFromText(1),
-				    //WordsFromText(2),
-				    //LettersFromText(2), 
-				    //LettersFromText(4),
+				featureExtractor: FeatureExtractor.CollectionOfExtractors([
+					FeatureExtractor.WordsFromText(1),
+					//FeatureExtractor.WordsFromText(2),
+					//FeatureExtractor.LettersFromText(2), 
+					//FeatureExtractor.LettersFromText(4),
 				]),
-				featureLookupTable: new FeatureLookupTable(),
-			}
+				//featureLookupTable: new FeatureExtractor.FeatureLookupTable(),
 		},
+	});
+}
+
+datasets.partitions(dataset, numOfFolds, function(partition) {
+	//partition.train = partition.train.slice(0,3);
+	//partition.test = partition.train;
+	train_and_test(createNewClassifier,
 		partition.train, partition.test, verbosity,
 		microAverage, macroAverage
 	);

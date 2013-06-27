@@ -6,23 +6,21 @@
  */
 
 var associative = require('./associative');
-var BinaryClassifierSet = require('./BinaryClassifierSet');
 var PrecisionRecall = require("./PrecisionRecall");
 
 /**
  * Test the given classifier on the given train-set and test-set.
- * @param binaryClassifierType identifies the type of classifier to test.
- * @param binaryClassifierOptions set of options for initializing that classifier.
+ * @param functionToCreateNewClassifier a function that creates a new, empty, untrained classifier (of type BinaryClassifierSet).
  * @param trainSet, testSet arrays with objects of the format: {input: "sample1", output: "class1"}
  * @param verbosity [int] level of details in log (0 = no log)
  * @param microAverage, macroSum [output] - objects of type PrecisionRecall, used to return the results. 
  */
 exports.train_and_test = function(
-		classifierOptions, 
+		functionToCreateNewClassifier, 
 		trainSet, testSet, 
 		verbosity, microAverage, macroSum) {
 	// TRAIN:
-	var bcs = new BinaryClassifierSet(classifierOptions);
+	var bcs = functionToCreateNewClassifier();
 	bcs.addClasses(trainSet.allClasses);
 	if (verbosity>0) console.log("\nstart training on "+trainSet.length+" samples, "+(trainSet.allClasses? trainSet.allClasses.length+' classes': ''));
 	var startTime = new Date()

@@ -9,7 +9,7 @@
  * @param features an initial hash of features (optional).
  * @return a hash with all the different letter n-grams contained in the given sentence.
  */
-exports.WordsFromText = function(numOfWords) {
+module.exports = function(numOfWords) {
 	return function(sample, features) {
 		var words = sample.split(/\W+/);
 		if (!features) features = {};

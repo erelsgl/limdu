@@ -8,7 +8,7 @@
  * @param features an initial hash of features (optional).
  * @return a hash with all features generated from the sample by the different extractors
  */
-exports.CollectionOfExtractors = function(extractors) {
+module.exports = function(extractors) {
 	return function(sample, features) {
 		if (!features) features = {};
 		for (var i=0; i<extractors.length; ++i)

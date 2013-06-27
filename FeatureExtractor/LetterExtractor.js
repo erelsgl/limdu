@@ -10,7 +10,7 @@ var PAD_CHAR = '#';
  * @param features an initial hash of features (optional).
  * @return a hash with all the different letter n-grams contained in the given sentence.
  */
-exports.LettersFromText = function(numOfLetters) {
+module.exports = function(numOfLetters) {
 	return function(sample, features) {
 		for (var i=0; i<numOfLetters-1; ++i)
 			sample = PAD_CHAR+sample+PAD_CHAR;

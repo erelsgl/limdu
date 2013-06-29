@@ -75,7 +75,7 @@ if (test_mode) {
 	
 } else {  // save mode
 	var classifier = createNewClassifier();
-	dataset = dataset.slice(0,20);
+	//dataset = dataset.slice(0,20);
 
 	console.log("\nstart training on "+dataset.length+" samples");
 	var startTime = new Date();

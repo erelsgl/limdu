@@ -9,7 +9,6 @@ var util = require('util');
 var serialize = require('../serialize');
 
 console.log("serialization demo start");
-
 var createNewClassifier = function() {
 	var FeatureExtractor = require('../FeatureExtractor');
 	var BinaryClassifierSet = require('../BinaryClassifierSet');

@@ -14,7 +14,7 @@ var cwfe = new ClassifierWithFeatureExtractor({
 	classifierType:   require('../brain').NeuralNetwork,
 	featureExtractor: require('../FeatureExtractor/WordExtractor').WordsFromText(1)
 });
-cwfe.trainAll([
+cwfe.trainBatch([
 	{input: "cheap replica watch es", output: [1]},
 	{input: "your watch is ready", output: [0]},
 	{input: "I don't know if this works on windows", output: [0]},

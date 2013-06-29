@@ -85,6 +85,19 @@ FeatureLookupTable.prototype = {
 			hashes[i] = this.arrayToHash(arrays[i]);
 		return hashes;
 	},
+	
+	
+	toJSON: function() {
+		return {
+			featureIndexToFeatureName: this.featureIndexToFeatureName,
+			featureNameToFeatureIndex: this.featureNameToFeatureIndex,
+		}
+	},
+	
+	fromJSON: function(json) {
+		this.featureIndexToFeatureName = json.featureIndexToFeatureName;
+		this.featureNameToFeatureIndex = json.featureNameToFeatureIndex;
+	},
 }
 
 module.exports = FeatureLookupTable;

@@ -13,7 +13,7 @@ console.log("BinaryClassifierSet batch-learning demo start");
 var bcs = new BinaryClassifierSet({
 	'binaryClassifierType': require('../classifier').Bayesian
 });
-bcs.trainAll([
+bcs.trainBatch([
 	{input: "cheap replica watch es", output: ['spam', 'clocks']},
 	{input: "your watch is ready", output: ['clocks', 'important']},
 	{input: "I don't know if this works on windows", output: ['windows', 'important']},

@@ -10,22 +10,22 @@ var PrecisionRecall = require("./PrecisionRecall");
 
 /**
  * Test the given classifier on the given train-set and test-set.
- * @param functionToCreateNewClassifier a function that creates a new, empty, untrained classifier (of type BinaryClassifierSet).
+ * @param createNewClassifierFunction a function that creates a new, empty, untrained classifier (of type BinaryClassifierSet).
  * @param trainSet, testSet arrays with objects of the format: {input: "sample1", output: "class1"}
  * @param verbosity [int] level of details in log (0 = no log)
  * @param microAverage, macroSum [output] - objects of type PrecisionRecall, used to return the results. 
  */
 exports.train_and_test = function(
-		functionToCreateNewClassifier, 
+		createNewClassifierFunction, 
 		trainSet, testSet, 
 		verbosity, microAverage, macroSum) {
 	// TRAIN:
-	var bcs = functionToCreateNewClassifier();
-	bcs.addClasses(trainSet.allClasses);
+	var bcs = createNewClassifierFunction();
+	//bcs.addClasses(trainSet.allClasses); // not needed - handled by trainBatch
 	if (verbosity>0) console.log("\nstart training on "+trainSet.length+" samples, "+(trainSet.allClasses? trainSet.allClasses.length+' classes': ''));
 	var startTime = new Date()
 	if (verbosity>2) console.dir(trainSet);
-	bcs.trainAll(trainSet);
+	bcs.trainBatch(trainSet);
 	var elapsedTime = new Date()-startTime;
 	if (verbosity>0) console.log("end training on "+trainSet.length+" samples, "+(trainSet.allClasses? trainSet.allClasses.length+' classes, ': '')+elapsedTime+" [ms]");
 

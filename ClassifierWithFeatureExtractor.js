@@ -42,8 +42,8 @@ ClassifierWithFeatureExtractor.prototype = {
 	 * @param sample a document.
 	 * @param classes an object whose KEYS are classes, or an array whose VALUES are classes.
 	 */
-	train: function(sample, classes) {
-		this.classifier.train(
+	trainOnline: function(sample, classes) {
+		this.classifier.trainOnline(
 			this.sampleToFeatures(sample), classes);
 	},
 
@@ -52,21 +52,24 @@ ClassifierWithFeatureExtractor.prototype = {
 	 * Train the classifier with all the given documents.
 	 * @param dataset an array with objects of the format: {input: sample1, output: [class11, class12...]}
 	 */
-	trainAll: function(dataset) {
+	trainBatch: function(dataset) {
 		var featureLookupTable = this.featureLookupTable;
 		var featureExtractor = this.featureExtractor;
 		//console.log("BEFORE: "); console.dir(dataset);
-		dataset.forEach(function(datum) {
+
+		dataset = dataset.map(function(datum) {
+			datum = _(datum).clone();
 			datum.input = featureExtractor(datum.input);
 			if (featureLookupTable)
 				featureLookupTable.addFeatures(datum.input);
+			return datum;
         });
 		dataset.forEach(function(datum) {
 			if (featureLookupTable)
 				datum.input = featureLookupTable.hashToArray(datum.input);
 		});
 		//console.log("AFTER: "); console.dir(dataset);
-		this.classifier.trainAll(dataset, this.classifierOptions);
+		this.classifier.trainBatch(dataset, this.classifierOptions);
 	},
 
 	/**
@@ -78,6 +81,21 @@ ClassifierWithFeatureExtractor.prototype = {
 		return this.classifier.classify(
 			this.sampleToFeatures(sample));
 	},
+	
+	toJSON : function(callback) {
+		return {
+			classifier: this.classifier.toJSON(callback),
+			featureLookupTable: this.featureLookupTable.toJSON(),
+		};
+	},
+
+	fromJSON : function(json, callback) {
+		this.classifier.fromJSON(json.classifier, callback);
+		this.featureLookupTable.fromJSON(json.featureLookupTable);
+		return this;
+	},
+	
+	
 }
 
 module.exports = ClassifierWithFeatureExtractor;

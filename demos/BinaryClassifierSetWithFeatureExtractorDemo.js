@@ -18,7 +18,7 @@ var bcs = new BinaryClassifierSet({
 		featureExtractor: require('../FeatureExtractor').WordsFromText(1)
 	}
 });
-bcs.trainAll([
+bcs.trainBatch([
 	{input: "cheap replica watch es", output: ['spam', 'clocks']},
 	{input: "your watch is ready", output: ['clocks', 'important']},
 	{input: "I don't know if this works on windows", output: ['windows', 'important']},

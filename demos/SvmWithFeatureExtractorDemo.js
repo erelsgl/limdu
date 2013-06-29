@@ -5,10 +5,7 @@
  * @since 2013-06
  */
 
-var WordsFromText = require('../FeatureExtractor/WordExtractor').WordsFromText;
-var LettersFromText = require('../FeatureExtractor/LetterExtractor').LettersFromText;
-var CollectionOfExtractors = require('../FeatureExtractor/CollectionOfExtractors').CollectionOfExtractors;
-var FeatureLookupTable = require('../FeatureExtractor/FeatureLookupTable');
+var FeatureExtractor = require('../FeatureExtractor');
 var ClassifierWithFeatureExtractor = require('../ClassifierWithFeatureExtractor');
 var SVM = require('../svmjs').SVM;
 
@@ -21,17 +18,16 @@ var classifier = new ClassifierWithFeatureExtractor({
 	classifierOptions: {
 		C: 1.0,
 	},
-	featureExtractor: CollectionOfExtractors([
-	    WordsFromText(1),
-	    WordsFromText(2),
-	    //LettersFromText(2), 
-	    LettersFromText(3),
+	featureExtractor: FeatureExtractor.CollectionOfExtractors([
+	    FeatureExtractor.WordsFromText(1),
+	    FeatureExtractor.WordsFromText(2),
+	    //FeatureExtractor.LettersFromText(2), 
+	    FeatureExtractor.LettersFromText(3),
 	]),
-	featureLookupTable: new FeatureLookupTable(),
+	featureLookupTable: new FeatureExtractor.FeatureLookupTable(),
 });
-console.dir(classifier.featureExtractor.toString());
 
-classifier.trainAll([
+classifier.trainBatch([
 	{input: "cheap replica watches", output: 1},
 	{input: "cheap store", output: 0},
 ]);
@@ -40,17 +36,6 @@ classifier.trainAll([
 console.dir(classifier.classify("watches in replica"));
 console.dir(classifier.classify("store for replica watches"));
 console.dir(classifier.classify("store for everything you need"));
-
-//console.dir(classifier);
-
-serialize.saveSync(classifier, "serializations/SvmWithFeatureExtractorDemo.json");
-var classifier2 = serialize.loadSync("serializations/SvmWithFeatureExtractorDemo.json");
-console.log(typeof classifier2);
-classifier2.__proto__ = ClassifierWithFeatureExtractor.prototype;
-console.log(typeof classifier2);
-console.dir(classifier2.classify("watches in replica"));
-console.dir(classifier2.classify("store for replica watches"));
-console.dir(classifier2.classify("store for everything you need"));
 
 
 console.log("SVM with feature extractor demo end");

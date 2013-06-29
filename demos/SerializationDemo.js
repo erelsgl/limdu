@@ -20,11 +20,11 @@ var createNewClassifier = function() {
 
 var classifier = createNewClassifier();
 classifier.addClasses(['spam', 'clocks', 'windows', 'important', 'pills'])
-classifier.train("cheap replica watch es", ['spam', 'clocks']);
-classifier.train("your watch is ready", ['clocks', 'important']);
-classifier.train("I don't know if this works on windows", ['windows', 'important']);
-classifier.train("cheap windows !!!", ['windows', 'spam']);
-classifier.train("get this for cheap !!!", ['spam']);
+classifier.trainOnline("cheap replica watch es", ['spam', 'clocks']);
+classifier.trainOnline("your watch is ready", ['clocks', 'important']);
+classifier.trainOnline("I don't know if this works on windows", ['windows', 'important']);
+classifier.trainOnline("cheap windows !!!", ['windows', 'spam']);
+classifier.trainOnline("get this for cheap !!!", ['spam']);
 
 console.log("\nORIGINAL TRAINED CLASSIFIER: ");
 //console.dir(classifier);

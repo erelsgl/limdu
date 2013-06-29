@@ -4,9 +4,9 @@
 [submodule "perceptron"]
 	path = perceptron
 	url = https://github.com/erelsgl/perceptron.git
-[submodule "brain"]
-	path = brain
-	url = https://github.com/erelsgl/brain.git
 [submodule "svmjs"]
 	path = svmjs
 	url = https://github.com/erelsgl/svmjs.git
+[submodule "brain"]
+	path = brain
+	url = https://github.com/erelsgl/brain.git

@@ -1,0 +1,57 @@
+body { text-align: center }
+
+h1 {  font-size: 2em;  font-weight: bold; }
+
+.sendButton {  display: block;  font-size: 16pt; }
+
+
+.serverResponseLabelError { color: red;   font-weight: bold;}
+#errorLabelContainer {color: red}
+
+
+#credits { 
+	margin-top: 5em;
+	border-top: dashed 1px #888; 
+	font-size: 10px;
+}
+	#credits:before {
+		content: "Credits:";
+	}
+
+
+#resource_selector_container {float: left; width: 200px; text-align:left; border: solid 1px black}
+
+#main #menu a {display:block; width: 600px; background:#eef; border:#88f solid 3px; margin:6px auto 6px auto; padding:5px; font-size:24px; text-decoration:none; font-weight:bold}
+
+.left {text-align:left}
+.right {text-align:right}
+
+button.smaller {
+	font-size: 10px;
+	padding: 0px;
+}
+
+a img {border: none}
+.Example
+{
+    float: left;
+    width:auto;
+    margin-left:20px;
+    border: solid 2px #8c3836;
+    color: #ffffff;
+    background-color:#c0504c;
+    text-align: center;
+    }
+  
+/* style for deep log */
+.log {text-align:left; }
+.level0 {background: #ccc}
+.level1 {background: #fcc}
+.level2 {background: #cfc}
+.level3 {background: #ccf}
+.level4 {background: #ffc}
+.level5 {background: #cff}
+.level6 {background: #fcf}
+.level7 {background: #eee}
+.log .content .show {font-weight:bold}
+

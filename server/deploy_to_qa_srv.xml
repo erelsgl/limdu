@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project default="deploy" name="Project negochat - Deploy all code except node_modules and logs">
+	<property name="target" value="/media/qa-srv/D/Apps/negochat" />
+
+	<target name="deploy">
+		  <copy overwrite="true" todir="${target}">
+		    <fileset dir=".">
+		    	  <include name="**"/>		    	
+		    	  <exclude name="**/logs/**"/>		    	
+		  	</fileset>
+		  </copy>
+	</target>
+</project>

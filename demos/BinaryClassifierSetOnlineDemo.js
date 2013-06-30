@@ -15,11 +15,11 @@ var bcs = new BinaryClassifierSet({
 });
 
 bcs.addClasses(['spam', 'clocks', 'windows', 'important', 'pills'])
-bcs.train("cheap replica watch es", ['spam', 'clocks']);
-bcs.train("your watch is ready", ['clocks', 'important']);
-bcs.train("I don't know if this works on windows", ['windows', 'important']);
-bcs.train("cheap windows !!!", ['windows', 'spam']);
-bcs.train("get this for cheap !!!", ['spam']);
+bcs.trainOnline("cheap replica watch es", ['spam', 'clocks']);
+bcs.trainOnline("your watch is ready", ['clocks', 'important']);
+bcs.trainOnline("I don't know if this works on windows", ['windows', 'important']);
+bcs.trainOnline("cheap windows !!!", ['windows', 'spam']);
+bcs.trainOnline("get this for cheap !!!", ['spam']);
 
 //console.log(JSON.stringify(bcs.toJSON()));
 

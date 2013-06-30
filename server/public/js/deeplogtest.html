@@ -1,0 +1,87 @@
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+
+<script src='deeplog.js'></script>
+<script src='jquery-1.7.2.min.js'></script>
+<script>
+// Wait for the DOM to load before taking action:
+$(function() {
+  var mylog = new DeepLog($("#deeplog"));
+
+  $(".add").click(function() { 
+    var depth = parseInt($(this).html(),10);
+    mylog.add(depth, "line#"+depth);
+  });
+
+  $(".replace").click(function() { 
+    var depth = parseInt($(this).html(),10);
+    mylog.replace(depth, "newline#"+depth);
+  });
+
+  $(".seal").click(function() { 
+    var depth = parseInt($(this).html(),10);
+    mylog.seal(depth);
+  });
+
+  mylog.add(1, "welcome!");
+  mylog.add(2, "This is log message #1!");
+});
+</script>
+
+<style>
+
+/* style for deep log */
+.log {padding-left:1em; border: dashed black 1px;}
+.level0 {background: #ccc}
+.level1 {background: #fcc}
+.level2 {background: #cfc}
+.level3 {background: #ccf}
+.level4 {background: #ffc}
+.level5 {background: #cff}
+.level6 {background: #fcf}
+.level7 {background: #eee}
+
+</style>
+</head>
+<body>
+<ul id='deeplog'></ul>
+<p>add:
+<button class='add'>11</button>
+<button class='add'>23</button>
+<button class='add'>31</button>
+<button class='add'>41</button>
+<button class='add'>51</button>
+<button class='add'>61</button>
+<button class='add'>71</button>
+<button class='add'>81</button>
+<button class='add'>91</button>
+<button class='add'>111</button>
+</p>
+<p>replace:
+<button class='replace'>11</button>
+<button class='replace'>23</button>
+<button class='replace'>31</button>
+<button class='replace'>41</button>
+<button class='replace'>51</button>
+<button class='replace'>61</button>
+<button class='replace'>71</button>
+<button class='replace'>81</button>
+<button class='replace'>91</button>
+<button class='replace'>111</button>
+</p>
+<p>seal:
+<button class='seal'>11</button>
+<button class='seal'>23</button>
+<button class='seal'>31</button>
+<button class='seal'>41</button>
+<button class='seal'>51</button>
+<button class='seal'>61</button>
+<button class='seal'>71</button>
+<button class='seal'>81</button>
+<button class='seal'>91</button>
+<button class='seal'>111</button>
+</p>
+
+</body>
+</html>

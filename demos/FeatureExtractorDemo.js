@@ -8,21 +8,20 @@
 
 console.log("FeatureExtractor demo start");
 
-var WordsFromText = require('../FeatureExtractor/WordExtractor').WordsFromText;
-var LettersFromText = require('../FeatureExtractor/LetterExtractor').LettersFromText;
-var CollectionOfExtractors = require('../FeatureExtractor/CollectionOfExtractors').CollectionOfExtractors;
+var FeatureExtractor = require('../FeatureExtractor');
 
 var string = "This is a demo, you know?";
 console.log("\nOriginal sentence:")
 console.dir(string);
 console.log("\nword 1-grams:")
-console.dir(WordsFromText(1)(string));
+console.dir(FeatureExtractor.WordsFromText(1)(string));
 console.log("\nletter 1-grams:")
-console.dir(LettersFromText(1)(string));
+console.dir(FeatureExtractor.LettersFromText(1)(string));
 console.log("\nletter 2-grams:")
-console.dir(LettersFromText(2)(string));
+console.dir(FeatureExtractor.LettersFromText(2)(string));
 
 console.log("\nall features together:")
-console.dir(CollectionOfExtractors([WordsFromText(1), LettersFromText(1), LettersFromText(2)]) (string));
+console.dir(FeatureExtractor.CollectionOfExtractors(
+	[FeatureExtractor.WordsFromText(1), FeatureExtractor.LettersFromText(1), FeatureExtractor.LettersFromText(2)]) (string));
 
 console.log("FeatureExtractor demo end");

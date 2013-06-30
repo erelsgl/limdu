@@ -1,0 +1,129 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<link type="text/css" rel="stylesheet" href="main.css" />
+<meta charset='utf-8' />
+
+<title>Translate Text to Semantic Representation</title>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
+<script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.0/jquery-ui.min.js"></script>
+<script src="js/jquery.deserialize.js"></script>
+
+<script src="js/deeplog.js"></script>
+<script src="js/utils.js"></script>
+
+<script src="translate.port.js"></script>
+
+</head>
+
+<body>
+<script language="javascript" type="text/javascript">
+
+
+/* examples: */
+	jQuery(document).ready(function(){
+		createClickEventOnTestCases();
+		$('.Example').click(function() {
+			$('#text').val(this.title);
+		});
+	});
+	
+	function createClickEventOnTestCases() {
+		$('.testcase').click(function() {
+			$('#text').val($(this).text());
+		});
+	}
+
+
+
+
+/* translations */
+
+var DEPTH_OF_CLIENT_LOG_MESSAGES=2;
+var startTime;
+
+function translate() {
+  var request = formToObject(form);
+  $("#semantic_representation").html("<img src='images/ajax_loader.gif' />");
+  startTime = new Date();
+  socket.emit('translate', request);
+  
+  deeplog.add(DEPTH_OF_CLIENT_LOG_MESSAGES, 
+		formatLogMessageForDeepLog(
+			{sender:"Client", message: "translate "+(request.testCorpus? request.testCorpus: "'"+request.text+"'")}));
+  console.log("CLIENT: sent a request to translate: "+JSON.stringify(request));
+}
+
+/* initialization */
+
+var socket=null, form=null, deeplog=null;
+$(document).ready(function() {
+  deeplog = new DeepLog($("#deeplog"));
+  form = $('#form'); form.deserialize(location.search.substr(1));
+  socket = commonConnect(serverport, deeplog);
+
+  socket.on('translation', function(translation) {
+    console.log("CLIENT: got a translation for "+translation.text);
+    $("#semantic_representation").html(translationsToHtml(translation.translations));
+    var elapsedTime = new Date() - startTime;
+    var endMessage = formatLogMessageWithTimeAndResult("Client", ""+elapsedTime+" ms", 
+"translate '"+translation.text+"'", translation.translations);
+    console.log(endMessage);
+    deeplog.replace(DEPTH_OF_CLIENT_LOG_MESSAGES, endMessage);
+  });
+
+  socket.on('connect', function() {
+    if ($("#text").val().length) 
+      translate();
+  });
+
+	socket.on('exception', function(throwableObject) {
+			replaceSandclockWithError($("#semantic_representation"));
+	});
+
+});
+
+
+</script>
+
+<form name='form' id='form' method='get' action=''>
+   <h1>Translate Text to Semantic Representation</h1>
+      
+      <table id='main_table' style="width:100%;">
+
+            <tr>
+                <td class='label'>Human Utterance</td>
+                <td><input class='sentence' name="text" id="text" type="text" size="80"/></td>
+                <td><button type='submit' onClick='translate(); return false;'>translate</button></td>
+                <td><input type='hidden' name='forward' value='true' /></td>
+            </tr>
+
+            <tr>
+             <td class='label'>
+               <span>Semantic Representation</span> 
+                </td>
+                <td>
+                <span id='semantic_representation'> </span>
+                </td>
+            </tr>
+       
+        </table><!-- main_table -->
+       </form>
+       
+  
+
+
+	<ul id='deeplog'></ul>
+
+	<p><button onClick='abort(socket); return false;'>Abort</button></p>
+
+	<div style='display:none;' id='credits'>
+		<div>Erel Segal the Levite (erelsgl@gmail.com)</div>
+	</div>
+
+</body>
+</html>
+

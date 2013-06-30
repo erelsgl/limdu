@@ -1,5 +1,5 @@
 {
-	"createNewClassifierString": "function () {\n\tvar FeatureExtractor = require('/home/erelsgl/Dropbox/machine-learning/demos/../FeatureExtractor');\n\tvar BinaryClassifierSet = require('/home/erelsgl/Dropbox/machine-learning/demos/../BinaryClassifierSet');\n\t\n\treturn new BinaryClassifierSet({\n\t\tbinaryClassifierType: require('/home/erelsgl/Dropbox/machine-learning/demos/../classifier/lib/bayesian').Bayesian,\n\t});\n}",
+	"createNewClassifierString": "function () {\n\tvar FeatureExtractor = require('/home/erelsgl/git/machine-learning/demos/../FeatureExtractor');\n\tvar BinaryClassifierSet = require('/home/erelsgl/git/machine-learning/demos/../BinaryClassifierSet');\n\t\n\treturn new BinaryClassifierSet({\n\t\tbinaryClassifierType: require('/home/erelsgl/git/machine-learning/demos/../classifier/lib/bayesian').Bayesian,\n\t});\n}",
 	"trainedClassifier": {
 		"spam": {
 			"cats": {

@@ -19,6 +19,7 @@ var express = require('express')
 //
 
 var app = express();
+var staticMiddleware = express.static(path.join(__dirname, 'public'));
 app.configure(function(){
 	// Settings:
 	app.set('port', process.env.PORT || 9995);
@@ -35,7 +36,7 @@ app.configure(function(){
 	});
 
 	app.use(app.router);
-	app.use(express.static(path.join(__dirname, 'public')));
+	app.use(staticMiddleware);
 
 	// Application local variables are provided to all templates rendered within the application:
 	app.locals.pretty = true;
@@ -44,7 +45,6 @@ app.configure(function(){
 app.configure('development', function(){
 	app.use(express.errorHandler());
 });
-
 
 //
 // Step 2: Load the classifier

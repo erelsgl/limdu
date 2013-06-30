@@ -1,4 +1,7 @@
-negonlp
-=======
+translation server
+==================
 
-Negotiation in NLP - experimental
+This folder (server/**) contains a standalone application - 
+a server for text categorization.
+
+ 

@@ -5,6 +5,8 @@ var fs     = require('fs')
   , path = require('path')
   ;
 
+if (!fs.existsSync("logs")) fs.mkdir("logs");
+
 exports.MAX_LENGTH_OF_CONSOLE_MESSAGE = 75;
 
 if (!fs.appendFile) {

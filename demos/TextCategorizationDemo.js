@@ -90,11 +90,11 @@ if (test_mode) {
 		console.log(dataset[i].input+": "+actualClasses);
 	}
 	
-	serialize.saveSync(createNewClassifier, __dirname, classifier, 
+	serialize.saveSync(createNewClassifier, classifier, 
 		"serializations/TextCategorizationDemo.json");
 
 	var classifier2 = serialize.loadSync(
-		"serializations/TextCategorizationDemo.json");
+		"serializations/TextCategorizationDemo.json", __dirname);
 
 	console.log("\ntest on training data after reload:")
 	for (var i=0; i<dataset.length; ++i) {

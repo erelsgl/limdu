@@ -51,7 +51,7 @@ app.configure('development', function(){
 //
 
 var serialize = require('../serialize');
-var classifier = serialize.loadSync("trainedClassifiers/NegotiationSvm.json");
+var classifier = serialize.loadSync("trainedClassifiers/NegotiationSvm.json", __dirname);
 
 
 

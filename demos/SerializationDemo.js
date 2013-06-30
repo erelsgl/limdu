@@ -33,12 +33,12 @@ console.log("'"+newDocument+"' is "+classifier.classify(newDocument));
 newDocument = "I don't know if this is a replica of windows";
 console.log("'"+newDocument+"' is "+classifier.classify(newDocument));  
 
-serialize.saveSync(createNewClassifier, __dirname, classifier, 
+serialize.saveSync(createNewClassifier, classifier, 
 	"serializations/SerializationDemo.json");
 
 console.log("\nDESERIALIZED CLASSIFIER: ");
 var classifier2 = serialize.loadSync(
-	"serializations/SerializationDemo.json");
+	"serializations/SerializationDemo.json", __dirname);
 //console.dir(classifier2);
 var newDocument = "cheap clocks !!!";
 console.log("'"+newDocument+"' is "+classifier2.classify(newDocument));  

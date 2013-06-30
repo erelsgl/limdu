@@ -7,19 +7,16 @@
 
 var fs = require('fs');
 
+
 /**
  * Save a trained classifier to a file. Synchronous version.
  * @param createNewClassifierFunction a function for creating a new (untrained) classifier. This function will be saved verbatim in the file, in order to reproduce the exact type of the classifier.
- * @param contextFolderForFunction the folder from where the function is called (usually this will be "__dirname"). This folder will be added to the "require" statements, so that they work no matter where you do the deserialization. 
  * @param trainedClassifier This is the trained classifier itself. It should have "toJSON" and "fromJSON" functions (but if "toJSON" is not present, then the object itself will be saved).
  * @param filename path to the file where the classifier will be saved.   
  */
-exports.saveSync = function(createNewClassifierFunction, contextFolderForFunction, trainedClassifier, filename) {
+exports.saveSync = function(createNewClassifierFunction, trainedClassifier, filename) {
 	// convert the function to a string that can be evaluated later, at load time, to create a new classifier:
 	var createNewClassifierString = createNewClassifierFunction.toString();
-	
-	// add context to the 'require' statements:
-	createNewClassifierString = createNewClassifierString.replace(/(require\s*\(\s*['"])[.]/g, "$1"+contextFolderForFunction+"/.");
 	
 	if (!trainedClassifier.fromJSON) {
 		throw new Error("trainedClassifier does not have a fromJSON method - you will not be able to restore it");
@@ -41,31 +38,35 @@ exports.saveSync = function(createNewClassifierFunction, contextFolderForFunctio
 	fs.writeFileSync(filename, text, 'utf8');
 	
 	// load the classifier, to make sure there are no exceptions:
-	var reloadedClassifier = exports.loadSync(filename);
-	if (!reloadedClassifier) {
-		throw new Error("Cannot reload the classifier that was saved in '"+filename+"'"); 
-	}
+	//var reloadedClassifier = exports.loadSync(filename);
+	//if (!reloadedClassifier) {
+	//	throw new Error("Cannot reload the classifier that was saved in '"+filename+"'"); 
+	//}
 }
 
 /**
  * Load a trained classifier from a file. Synchronous version.
- * @param filename path to the file where the classifier was saved. 
- * @note the 
+ * @param filename path to the file where the classifier was saved.
+ * @param contextFolderForFunction  the base folder for the "require" statements in the create-new-classifier function.
  */
-exports.loadSync = function(filename) {
+exports.loadSync = function(filename, contextFolderForFunction) {
 	var text = fs.readFileSync(filename);
 	var json = JSON.parse(text);
 	if (!json.createNewClassifierString) {
 		console.dir(json);
 		throw new Error("Cannot find createNewClassifierString in file '"+ filename+"'");
 	}
-
-	var createNewClassifierString = "("+json.createNewClassifierString+")";
+	
+	// add context to the 'require' statements:
+	contextFolderForFunction = contextFolderForFunction.replace(/\\/g, "\\\\");   // for Windows
+	var createNewClassifierString = json.createNewClassifierString.replace(/(require\s*\(\s*['"])[.]/g, "$1"+contextFolderForFunction+"/.");
+	createNewClassifierString = "("+createNewClassifierString+")";
 	var createNewClassifierFunction = eval(createNewClassifierString);
 	try {
 		var newClassifier = createNewClassifierFunction();
 	} catch (error) {
-		console.log(json.createNewClassifierString);
+		console.log("createNewClassifierString: "+createNewClassifierString);
+		console.log("contextFolderForFunction: "+contextFolderForFunction);
 		throw new Error("Error in creating new classifier from function in file '"+ filename+"': "+error);
 	}
 	

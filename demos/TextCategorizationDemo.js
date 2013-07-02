@@ -5,11 +5,6 @@
  * @since 2013-06
  */
 
-var util = require('util');
-var datasets = require('../datasets');
-var PrecisionRecall = require("../PrecisionRecall");
-var trainAndTest = require('../trainAndTest');
-var hash = require('../hash');
 var serialize = require('../serialize');
 var _ = require('underscore')._;
 var fs = require('fs');
@@ -111,6 +106,10 @@ var do_serialization = true;
 var verbosity = 0;
 
 if (do_cross_validation) {
+	var datasets = require('../datasets');
+	var PrecisionRecall = require("../PrecisionRecall");
+	var trainAndTest = require('../trainAndTest');
+
 	var numOfFolds = 5; // for k-fold cross-validation
 	var microAverage = new PrecisionRecall();
 	var macroAverage = new PrecisionRecall();
@@ -122,7 +121,7 @@ if (do_cross_validation) {
 			microAverage, macroAverage
 		);
 	});
-	hash.multiply_scalar(macroAverage, 1/numOfFolds);
+	_(macroAverage).each(function(value,key) { macroAverage[key]=value/numOfFolds; });
 
 	if (verbosity>0) {console.log("\n\nMACRO AVERAGE FULL STATS:"); console.dir(macroAverage.fullStats());}
 	console.log("\nMACRO AVERAGE SUMMARY: "+macroAverage.shortStats());

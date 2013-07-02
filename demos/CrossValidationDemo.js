@@ -5,11 +5,11 @@
  * @since 2013-06
  */
 
-var util = require('util');
+var fs = require('fs');
 var datasets = require('../datasets');
 var PrecisionRecall = require("../PrecisionRecall");
 var trainAndTest = require('../trainAndTest');
-var hash = require('../hash');
+var _ = require('underscore')._;
 
 console.log("cross-validation demo start");
 
@@ -37,7 +37,7 @@ datasets.partitions(dataset, numOfFolds, function(partition) {
 	);
 });
 
-hash.multiply_scalar(macroAverage, 1/numOfFolds);
+_(macroAverage).each(function(key,value) {macroAverage[key]=value/numOfFolds});
 
 console.log("\n\nMACRO AVERAGE FULL STATS:"); console.dir(macroAverage.fullStats());
 console.log("\nMACRO AVERAGE SUMMARY: "+macroAverage.shortStats());

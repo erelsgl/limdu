@@ -6,15 +6,15 @@
  */
 
 var util = require('util');
-var ClassifierWithFeatureExtractor = require('../ClassifierWithFeatureExtractor');
+var EnhancedClassifier = require('../EnhancedClassifier');
 
 console.log("ClassifierWithFeatureExtractor demo start");
 
-var cwfe = new ClassifierWithFeatureExtractor({
+var enhancedClassifier = new EnhancedClassifier({
 	classifierType:   require('../brain').NeuralNetwork,
 	featureExtractor: require('../FeatureExtractor').WordsFromText(1)
 });
-cwfe.trainBatch([
+enhancedClassifier.trainBatch([
 	{input: "cheap replica watch es", output: [1]},
 	{input: "your watch is ready", output: [0]},
 	{input: "I don't know if this works on windows", output: [0]},
@@ -25,14 +25,14 @@ cwfe.trainBatch([
 //console.log(JSON.stringify(bcs.toJSON()));
 
 var newDocument = "cheap clocks !!!";
-console.log("'"+newDocument+"' is "+cwfe.classify(newDocument));  // very high number (spam)
+console.log("'"+newDocument+"' is "+enhancedClassifier.classify(newDocument));  // very high number (spam)
 newDocument = "I don't know if this is a replica of windows";
-console.log("'"+newDocument+"' is "+cwfe.classify(newDocument));  // low number (not spam)
+console.log("'"+newDocument+"' is "+enhancedClassifier.classify(newDocument));  // low number (not spam)
 newDocument = "replica";
-console.log("'"+newDocument+"' is "+cwfe.classify(newDocument));  // high number (probably spam)
+console.log("'"+newDocument+"' is "+enhancedClassifier.classify(newDocument));  // high number (probably spam)
 newDocument = "your";
-console.log("'"+newDocument+"' is "+cwfe.classify(newDocument));  // low number (not spam)
+console.log("'"+newDocument+"' is "+enhancedClassifier.classify(newDocument));  // low number (not spam)
 newDocument = "watch";
-console.log("'"+newDocument+"' is "+cwfe.classify(newDocument));  // medium number (not sure if spam)
+console.log("'"+newDocument+"' is "+enhancedClassifier.classify(newDocument));  // medium number (not sure if spam)
 
 console.log("ClassifierWithFeatureExtractor demo end");

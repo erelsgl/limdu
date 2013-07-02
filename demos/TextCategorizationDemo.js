@@ -27,11 +27,11 @@ var createBayesianClassifier = function() {
 
 var createPerceptronClassifier = function() {
 	var BinaryClassifierSet = require('../BinaryClassifierSet');
-	var ClassifierWithFeatureExtractor = require('../ClassifierWithFeatureExtractor');
+	var EnhancedClassifier = require('../EnhancedClassifier');
 	var FeatureExtractor = require('../FeatureExtractor');
 	var baseBinaryClassifierType = require('../perceptron/perceptron_hash');
 	
-	return new ClassifierWithFeatureExtractor({
+	return new EnhancedClassifier({
 		classifierType: BinaryClassifierSet,
 		classifierOptions: {
 				binaryClassifierType: baseBinaryClassifierType,
@@ -52,12 +52,12 @@ var createPerceptronClassifier = function() {
 }
 
 var createSvmClassifier = function() {
-	var ClassifierWithFeatureExtractor = require('../ClassifierWithFeatureExtractor');
+	var EnhancedClassifier = require('../EnhancedClassifier');
 	var FeatureExtractor = require('../FeatureExtractor');
 	var BinaryClassifierSet = require('../BinaryClassifierSet');
 	var baseBinaryClassifierType = require('../svmjs').SVM;
 	
-	return new ClassifierWithFeatureExtractor({
+	return new EnhancedClassifier({
 		classifierType: BinaryClassifierSet,
 		classifierOptions: {
 				binaryClassifierType: baseBinaryClassifierType,

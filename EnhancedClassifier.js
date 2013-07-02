@@ -1,21 +1,18 @@
 var _ = require("underscore")._;
 
 /**
- * ClassifierWithFeatureExtractor - A wrapper for a classifier and a feature-extractor.
+ * EnhancedClassifier - wraps any classifier with feature-extractors and feature-lookup-tables.
  * 
  * @param opts
- * Must contain the option: 'classifierType' and 'featureExtractor'.
+ * Must contain the option: 'classifierType', which is the base type of the classifier.
  * May also contain the option 'classifierOptions' - options that will be sent to the base classifier.
+ * May also contain the option 'featureExtractor'.
  * May also contain the option 'featureLookupTable' - an instance of FeatureLookupTable for converting features to numeric indices and back.
  */
-var ClassifierWithFeatureExtractor = function(opts) {
+var EnhancedClassifier = function(opts) {
 	if (!opts.classifierType) {
 		console.dir(opts);
 		throw new Error("opts must contain classifierType");
-	}
-	if (!opts.featureExtractor) {
-		console.dir(opts);
-		throw new Error("opts must contain featureExtractor");
 	}
 	this.classifierType = opts.classifierType;
 	this.featureExtractor = opts.featureExtractor;
@@ -25,10 +22,10 @@ var ClassifierWithFeatureExtractor = function(opts) {
 	this.classifier = new this.classifierType(this.classifierOptions);
 }
 
-ClassifierWithFeatureExtractor.prototype = {
+EnhancedClassifier.prototype = {
 		
 	sampleToFeatures: function(sample) {
-		var features = this.featureExtractor(sample);
+		var features = this.featureExtractor? this.featureExtractor(sample): sample
 		var array = features;
 		if (this.featureLookupTable)
 			array = this.featureLookupTable.hashToArray(features);
@@ -59,7 +56,8 @@ ClassifierWithFeatureExtractor.prototype = {
 
 		dataset = dataset.map(function(datum) {
 			datum = _(datum).clone();
-			datum.input = featureExtractor(datum.input);
+			if (featureExtractor)
+				datum.input = featureExtractor(datum.input);
 			if (featureLookupTable)
 				featureLookupTable.addFeatures(datum.input);
 			return datum;
@@ -98,4 +96,4 @@ ClassifierWithFeatureExtractor.prototype = {
 	
 }
 
-module.exports = ClassifierWithFeatureExtractor;
+module.exports = EnhancedClassifier;

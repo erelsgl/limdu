@@ -8,12 +8,12 @@
 
 var util = require('util');
 var BinaryClassifierSet = require('../BinaryClassifierSet');
-var ClassifierWithFeatureExtractor = require('../ClassifierWithFeatureExtractor');
+var EnhancedClassifier = require('../EnhancedClassifier');
 
 console.log("BinaryClassifierSet with feature extractor demo start");
 
 var bcs = new BinaryClassifierSet({
-	binaryClassifierType: require('../ClassifierWithFeatureExtractor'),
+	binaryClassifierType: require('../EnhancedClassifier'),
 	binaryClassifierOptions: {
 		classifierType:   require('../brain').NeuralNetwork,
 		//classifierType:   require('../perceptron/perceptron_hash'),

@@ -6,14 +6,14 @@
  */
 
 var FeatureExtractor = require('../FeatureExtractor');
-var ClassifierWithFeatureExtractor = require('../ClassifierWithFeatureExtractor');
+var EnhancedClassifier = require('../EnhancedClassifier');
 var SVM = require('../svmjs').SVM;
 
 var serialize = require('../serialize');
 
 console.log("SVM with feature extractor demo start");
 
-var classifier = new ClassifierWithFeatureExtractor({
+var classifier = new EnhancedClassifier({
 	classifierType:   SVM,
 	classifierOptions: {
 		C: 1.0,

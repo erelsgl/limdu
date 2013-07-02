@@ -8,7 +8,7 @@
 var util = require('util');
 var datasets = require('../datasets');
 var PrecisionRecall = require("../PrecisionRecall");
-var train_and_test = require('../train_and_test').train_and_test;
+var trainAndTest = require('../trainAndTest');
 var hash = require('../hash');
 var serialize = require('../serialize');
 var _ = require('underscore')._;
@@ -90,7 +90,7 @@ if (do_cross_validation) {
 
 	datasets.partitions(dataset, numOfFolds, function(partition) {
 		//partition.train = partition.train.slice(0,3); partition.test = partition.train;
-		train_and_test(createNewClassifier,
+		trainAndTest(createNewClassifier,
 			partition.train, partition.test, verbosity,
 			microAverage, macroAverage
 		);

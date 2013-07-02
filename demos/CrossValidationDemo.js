@@ -1,14 +1,14 @@
 /**
  * Demonstrates cross-validation testing of a classifier.
  * 
- * @author Erel Segal-Halevi
+ * @author Erel Segal-haLevi
  * @since 2013-06
  */
 
 var util = require('util');
 var datasets = require('../datasets');
 var PrecisionRecall = require("../PrecisionRecall");
-var train_and_test = require('../train_and_test').train_and_test;
+var trainAndTest = require('../trainAndTest');
 var hash = require('../hash');
 
 console.log("cross-validation demo start");
@@ -30,7 +30,7 @@ function createNewClassifier() {
 }
 
 datasets.partitions(dataset, numOfFolds, function(partition) {
-	train_and_test(
+	trainAndTest(
 		createNewClassifier,
 		partition.train, partition.test, verbosity,
 		microAverage, macroAverage

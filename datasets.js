@@ -6,6 +6,9 @@
  * - read(pathToFile) 
  * - shuffle(dataset)
  * - partitions(dataset, numOfPartitions, callback)
+ * 
+ * @author Erel Segal-haLevi
+ * @since 2013-06
  */
 
 var fs = require('fs');

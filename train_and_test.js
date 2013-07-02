@@ -1,5 +1,5 @@
 /**
- * Static Utilities for training and testing classifiers.
+ * Static utility function for training and testing classifiers.
  * 
  * @author Erel Segal-Halevi
  * @since 2013-06
@@ -15,7 +15,7 @@ var PrecisionRecall = require("./PrecisionRecall");
  * @param verbosity [int] level of details in log (0 = no log)
  * @param microAverage, macroSum [output] - objects of type PrecisionRecall, used to return the results. 
  */
-exports.train_and_test = function(
+module.exports = function(
 		createNewClassifierFunction, 
 		trainSet, testSet, 
 		verbosity, microAverage, macroSum) {

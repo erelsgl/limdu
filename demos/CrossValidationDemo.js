@@ -29,15 +29,15 @@ function createNewClassifier() {
 	});
 }
 
-datasets.partitions(dataset, numOfFolds, function(partition) {
+datasets.partitions(dataset, numOfFolds, function(train, test) {
 	trainAndTest(
 		createNewClassifier,
-		partition.train, partition.test, verbosity,
+		train, test, verbosity,
 		microAverage, macroAverage
 	);
 });
 
-_(macroAverage).each(function(key,value) {macroAverage[key]=value/numOfFolds});
+_(macroAverage).each(function(value,key) {macroAverage[key]=value/numOfFolds});
 
 console.log("\n\nMACRO AVERAGE FULL STATS:"); console.dir(macroAverage.fullStats());
 console.log("\nMACRO AVERAGE SUMMARY: "+macroAverage.shortStats());

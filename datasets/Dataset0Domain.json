@@ -1,0 +1,76 @@
+[
+  {"input":"Salary 7,000 NIS","output":"{\"Offer\": {\"Salary\": \"7,000 NIS\"}}"}
+, {"input":"for Salary I offer 7,000 NIS","output":"{\"Offer\": {\"Salary\": \"7,000 NIS\"}}"}
+, {"input":"7,000 NIS","output":"{\"Offer\": {\"Salary\": \"7,000 NIS\"}}"}
+, {"input":"I offer 7,000 NIS","output":"{\"Offer\": {\"Salary\": \"7,000 NIS\"}}"}
+, {"input":"Salary 12,000 NIS","output":"{\"Offer\": {\"Salary\": \"12,000 NIS\"}}"}
+, {"input":"for Salary I offer 12,000 NIS","output":"{\"Offer\": {\"Salary\": \"12,000 NIS\"}}"}
+, {"input":"12,000 NIS","output":"{\"Offer\": {\"Salary\": \"12,000 NIS\"}}"}
+, {"input":"I offer 12,000 NIS","output":"{\"Offer\": {\"Salary\": \"12,000 NIS\"}}"}
+, {"input":"Salary 20,000 NIS","output":"{\"Offer\": {\"Salary\": \"20,000 NIS\"}}"}
+, {"input":"for Salary I offer 20,000 NIS","output":"{\"Offer\": {\"Salary\": \"20,000 NIS\"}}"}
+, {"input":"20,000 NIS","output":"{\"Offer\": {\"Salary\": \"20,000 NIS\"}}"}
+, {"input":"I offer 20,000 NIS","output":"{\"Offer\": {\"Salary\": \"20,000 NIS\"}}"}
+, {"input":"Job Description QA","output":"{\"Offer\": {\"Job Description\": \"QA\"}}"}
+, {"input":"for Job Description I offer QA","output":"{\"Offer\": {\"Job Description\": \"QA\"}}"}
+, {"input":"QA","output":"{\"Offer\": {\"Job Description\": \"QA\"}}"}
+, {"input":"I offer QA","output":"{\"Offer\": {\"Job Description\": \"QA\"}}"}
+, {"input":"Job Description Programmer","output":"{\"Offer\": {\"Job Description\": \"Programmer\"}}"}
+, {"input":"for Job Description I offer Programmer","output":"{\"Offer\": {\"Job Description\": \"Programmer\"}}"}
+, {"input":"Programmer","output":"{\"Offer\": {\"Job Description\": \"Programmer\"}}"}
+, {"input":"I offer Programmer","output":"{\"Offer\": {\"Job Description\": \"Programmer\"}}"}
+, {"input":"Job Description Team Manager","output":"{\"Offer\": {\"Job Description\": \"Team Manager\"}}"}
+, {"input":"for Job Description I offer Team Manager","output":"{\"Offer\": {\"Job Description\": \"Team Manager\"}}"}
+, {"input":"Team Manager","output":"{\"Offer\": {\"Job Description\": \"Team Manager\"}}"}
+, {"input":"I offer Team Manager","output":"{\"Offer\": {\"Job Description\": \"Team Manager\"}}"}
+, {"input":"Job Description Project Manager","output":"{\"Offer\": {\"Job Description\": \"Project Manager\"}}"}
+, {"input":"for Job Description I offer Project Manager","output":"{\"Offer\": {\"Job Description\": \"Project Manager\"}}"}
+, {"input":"Project Manager","output":"{\"Offer\": {\"Job Description\": \"Project Manager\"}}"}
+, {"input":"I offer Project Manager","output":"{\"Offer\": {\"Job Description\": \"Project Manager\"}}"}
+, {"input":"Leased Car Without leased car","output":"{\"Offer\": {\"Leased Car\": \"Without leased car\"}}"}
+, {"input":"for Leased Car I offer Without leased car","output":"{\"Offer\": {\"Leased Car\": \"Without leased car\"}}"}
+, {"input":"Without leased car","output":"{\"Offer\": {\"Leased Car\": \"Without leased car\"}}"}
+, {"input":"I offer Without leased car","output":"{\"Offer\": {\"Leased Car\": \"Without leased car\"}}"}
+, {"input":"Leased Car With leased car","output":"{\"Offer\": {\"Leased Car\": \"With leased car\"}}"}
+, {"input":"for Leased Car I offer With leased car","output":"{\"Offer\": {\"Leased Car\": \"With leased car\"}}"}
+, {"input":"With leased car","output":"{\"Offer\": {\"Leased Car\": \"With leased car\"}}"}
+, {"input":"I offer With leased car","output":"{\"Offer\": {\"Leased Car\": \"With leased car\"}}"}
+, {"input":"Leased Car No agreement","output":"{\"Offer\": {\"Leased Car\": \"No agreement\"}}"}
+, {"input":"for Leased Car I offer No agreement","output":"{\"Offer\": {\"Leased Car\": \"No agreement\"}}"}
+, {"input":"Pension Fund 0%","output":"{\"Offer\": {\"Pension Fund\": \"0%\"}}"}
+, {"input":"for Pension Fund I offer 0%","output":"{\"Offer\": {\"Pension Fund\": \"0%\"}}"}
+, {"input":"0%","output":"{\"Offer\": {\"Pension Fund\": \"0%\"}}"}
+, {"input":"I offer 0%","output":"{\"Offer\": {\"Pension Fund\": \"0%\"}}"}
+, {"input":"Pension Fund 10%","output":"{\"Offer\": {\"Pension Fund\": \"10%\"}}"}
+, {"input":"for Pension Fund I offer 10%","output":"{\"Offer\": {\"Pension Fund\": \"10%\"}}"}
+, {"input":"10%","output":"{\"Offer\": {\"Pension Fund\": \"10%\"}}"}
+, {"input":"I offer 10%","output":"{\"Offer\": {\"Pension Fund\": \"10%\"}}"}
+, {"input":"Pension Fund 20%","output":"{\"Offer\": {\"Pension Fund\": \"20%\"}}"}
+, {"input":"for Pension Fund I offer 20%","output":"{\"Offer\": {\"Pension Fund\": \"20%\"}}"}
+, {"input":"20%","output":"{\"Offer\": {\"Pension Fund\": \"20%\"}}"}
+, {"input":"I offer 20%","output":"{\"Offer\": {\"Pension Fund\": \"20%\"}}"}
+, {"input":"Pension Fund No agreement","output":"{\"Offer\": {\"Pension Fund\": \"No agreement\"}}"}
+, {"input":"for Pension Fund I offer No agreement","output":"{\"Offer\": {\"Pension Fund\": \"No agreement\"}}"}
+, {"input":"Promotion Possibilities Slow promotion track","output":"{\"Offer\": {\"Promotion Possibilities\": \"Slow promotion track\"}}"}
+, {"input":"for Promotion Possibilities I offer Slow promotion track","output":"{\"Offer\": {\"Promotion Possibilities\": \"Slow promotion track\"}}"}
+, {"input":"Slow promotion track","output":"{\"Offer\": {\"Promotion Possibilities\": \"Slow promotion track\"}}"}
+, {"input":"I offer Slow promotion track","output":"{\"Offer\": {\"Promotion Possibilities\": \"Slow promotion track\"}}"}
+, {"input":"Promotion Possibilities Fast promotion track","output":"{\"Offer\": {\"Promotion Possibilities\": \"Fast promotion track\"}}"}
+, {"input":"for Promotion Possibilities I offer Fast promotion track","output":"{\"Offer\": {\"Promotion Possibilities\": \"Fast promotion track\"}}"}
+, {"input":"Fast promotion track","output":"{\"Offer\": {\"Promotion Possibilities\": \"Fast promotion track\"}}"}
+, {"input":"I offer Fast promotion track","output":"{\"Offer\": {\"Promotion Possibilities\": \"Fast promotion track\"}}"}
+, {"input":"Promotion Possibilities No agreement","output":"{\"Offer\": {\"Promotion Possibilities\": \"No agreement\"}}"}
+, {"input":"for Promotion Possibilities I offer No agreement","output":"{\"Offer\": {\"Promotion Possibilities\": \"No agreement\"}}"}
+, {"input":"Working Hours 10 hours","output":"{\"Offer\": {\"Working Hours\": \"10 hours\"}}"}
+, {"input":"for Working Hours I offer 10 hours","output":"{\"Offer\": {\"Working Hours\": \"10 hours\"}}"}
+, {"input":"10 hours","output":"{\"Offer\": {\"Working Hours\": \"10 hours\"}}"}
+, {"input":"I offer 10 hours","output":"{\"Offer\": {\"Working Hours\": \"10 hours\"}}"}
+, {"input":"Working Hours 9 hours","output":"{\"Offer\": {\"Working Hours\": \"9 hours\"}}"}
+, {"input":"for Working Hours I offer 9 hours","output":"{\"Offer\": {\"Working Hours\": \"9 hours\"}}"}
+, {"input":"9 hours","output":"{\"Offer\": {\"Working Hours\": \"9 hours\"}}"}
+, {"input":"I offer 9 hours","output":"{\"Offer\": {\"Working Hours\": \"9 hours\"}}"}
+, {"input":"Working Hours 8 hours","output":"{\"Offer\": {\"Working Hours\": \"8 hours\"}}"}
+, {"input":"for Working Hours I offer 8 hours","output":"{\"Offer\": {\"Working Hours\": \"8 hours\"}}"}
+, {"input":"8 hours","output":"{\"Offer\": {\"Working Hours\": \"8 hours\"}}"}
+, {"input":"I offer 8 hours","output":"{\"Offer\": {\"Working Hours\": \"8 hours\"}}"}
+]

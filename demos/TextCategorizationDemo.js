@@ -11,7 +11,9 @@ var fs = require('fs');
 
 console.log("text categorization demo start");
 
-var dataset = JSON.parse(fs.readFileSync("../datasets/Dataset1Woz.json"));
+var domainDataset = JSON.parse(fs.readFileSync("../datasets/Dataset0Domain.json"));
+var collectedDataset = JSON.parse(fs.readFileSync("../datasets/Dataset1Woz.json"));
+var combinedDataset = domainDataset.concat(collectedDataset);
 
 var createBayesianClassifier = function() {
 	var BinaryClassifierSet = require('../BinaryClassifierSet');
@@ -114,14 +116,17 @@ if (do_cross_validation) {
 	var microAverage = new PrecisionRecall();
 	var macroAverage = new PrecisionRecall();
 
-	datasets.partitions(dataset, numOfFolds, function(partition) {
-		//partition.train = partition.train.slice(0,3); partition.test = partition.train;
+	var dataset = collectedDataset;
+	console.log("\nstart "+numOfFolds+"-fold cross-validation on "+dataset.length+" samples");
+	datasets.partitions(dataset, numOfFolds, function(train, test, index) {
+		console.log("partition #"+index);
 		trainAndTest(createNewClassifier,
-			partition.train, partition.test, verbosity,
+			train, test, verbosity,
 			microAverage, macroAverage
 		);
 	});
 	_(macroAverage).each(function(value,key) { macroAverage[key]=value/numOfFolds; });
+	console.log("\nend "+numOfFolds+"-fold cross-validation on "+dataset.length+" samples");
 
 	if (verbosity>0) {console.log("\n\nMACRO AVERAGE FULL STATS:"); console.dir(macroAverage.fullStats());}
 	console.log("\nMACRO AVERAGE SUMMARY: "+macroAverage.shortStats());

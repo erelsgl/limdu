@@ -42,8 +42,11 @@ PrecisionRecall.prototype = {
 	 * @param verbosity - if positive, also log the results. 
 	 */
 	addCases: function (expectedClasses, actualClasses, verbosity) {
-		if (Array.isArray(actualClasses))   actualClasses  =_.invert(actualClasses);
-		if (Array.isArray(expectedClasses)) expectedClasses=_.invert(expectedClasses);
+		if (_.isArray(actualClasses))       actualClasses  =_.invert(actualClasses);
+		else if (_.isString(actualClasses)) actualClasses  = {actualClasses: true};
+		if (_.isArray(expectedClasses))       expectedClasses =_.invert(expectedClasses);
+		else if (_.isString(expectedClasses)) expectedClasses = {expectedClasses: true};
+
 		var allTrue = true;
 		for (var actualClass in actualClasses) {
 			if (actualClass in expectedClasses) { 

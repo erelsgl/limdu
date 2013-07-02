@@ -2,9 +2,11 @@ var _ = require("underscore")._;
 var sprintf = require('sprintf').sprintf;
 
 /**
- * PrecisionRecall - an object for tracking results of experiments.
+ * PrecisionRecall - an object for tracking results of experiments: precision, recall, f1, and execution time.
+ * 
+ * @author Erel Segal-haLevi
+ * @since 2013-06
  */
-
 var PrecisionRecall = function() {
 	this.count = 0;
 	this.TP = 0;
@@ -18,7 +20,10 @@ var PrecisionRecall = function() {
 PrecisionRecall.prototype = {
 		
 	/**
-	 * Record the result of a new binary experiment 
+	 * Record the result of a new binary experiment.
+	 * 
+	 * @param expected - the expected result (true/false).
+	 * @param actual   - the actual   result (true/false).
 	 */
 	addCase: function(expected, actual) {
 		this.count++;
@@ -31,6 +36,9 @@ PrecisionRecall.prototype = {
 
 	/**
 	 * Record the result of a new classes experiment.
+	 *
+	 * @param expectedClasses - the expected set of classes (as an array or a hash).
+	 * @param actualClasses   - the actual   set of classes (as an array or a hash).
 	 * @param verbosity - if positive, also log the results. 
 	 */
 	addCases: function (expectedClasses, actualClasses, verbosity) {
@@ -61,21 +69,31 @@ PrecisionRecall.prototype = {
 		this.count++;
 	},
 	
+	/**
+	 * After the experiment is done, call this method to calculate the performance statistics.
+	 */
 	calculateStats: function() {
-		this.Accuracy = (this.TRUE)/(this.count);
-		this.Precision = this.TP/(this.TP+this.FP);
-		this.Recall = this.TP/(this.TP+this.FN);
-		this.F1 = 2/(1/this.Recall+1/this.Precision);
+		this.Accuracy = (this.TRUE) / (this.count);
+		this.Precision = this.TP / (this.TP+this.FP);
+		this.Recall = this.TP / (this.TP+this.FN);
+		this.F1 = 2 / (1/this.Recall + 1/this.Precision);
 		this.endTime = new Date();
 		this.timeMillis = this.endTime-this.startTime;
-		this.timePerSampleMillis = this.timeMillis/this.count;
+		this.timePerSampleMillis = this.timeMillis / this.count;
 		return this;
 	},
 	
+	
+	/**
+	 * @return the full set of statistics for the most recent experiment.
+	 */
 	fullStats: function() { 
 		return this; 
 	},
 	
+	/**
+	 * @return a one-line summary of the main results of the most recent experiment.
+	 */
 	shortStats: function() {
 		return sprintf("count=%d Accuracy=%1.0f%% F1=%1.0f%% timePerSample=%1.0f[ms]",
 				this.count, this.Accuracy*100, this.F1*100, this.timePerSampleMillis);

@@ -11,36 +11,58 @@ var PrecisionRecall = require("../PrecisionRecall");
 var train_and_test = require('../train_and_test').train_and_test;
 var hash = require('../hash');
 var serialize = require('../serialize');
+var _ = require('underscore')._;
 
 console.log("text categorization demo start");
 
 var dataset = datasets.read("../datasets/Dataset1Woz.txt");
-var numOfFolds = 5; // for k-fold cross-validation
 
-var microAverage = new PrecisionRecall();
-var macroAverage = new PrecisionRecall();
-var verbosity = 1;
+var createBayesianClassifier = function() {
+	var BinaryClassifierSet = require('../BinaryClassifierSet');
+	var baseBinaryClassifierType = require('../classifier/lib/bayesian').Bayesian;
+	return new BinaryClassifierSet({
+		binaryClassifierType: baseBinaryClassifierType,
+	});
+}
 
-var createNewClassifier = function() {
-	var FeatureExtractor = require('../FeatureExtractor');
+var createPerceptronClassifier = function() {
 	var BinaryClassifierSet = require('../BinaryClassifierSet');
 	var ClassifierWithFeatureExtractor = require('../ClassifierWithFeatureExtractor');
-	
-	var baseBinaryClassifierType = require('../svmjs').SVM;
-	//var baseBinaryClassifierType = require('../brain').NeuralNetwork;
-	//var baseBinaryClassifierType = require('../classifier/lib/bayesian').Bayesian;
+	var FeatureExtractor = require('../FeatureExtractor');
+	var baseBinaryClassifierType = require('../perceptron/perceptron_hash');
 	
 	return new ClassifierWithFeatureExtractor({
 		classifierType: BinaryClassifierSet,
 		classifierOptions: {
 				binaryClassifierType: baseBinaryClassifierType,
-		//binaryClassifierType: ClassifierWithFeatureExtractor,
-		//binaryClassifierOptions: {
-				//classifierType:   baseBinaryClassifierType,
+				binaryClassifierOptions: {
+					learning_rate: 1,
+					retrain_count: 10,
+					do_averaging: true,
+					do_normalization: false,
+				},
+		},
+		featureExtractor: FeatureExtractor.CollectionOfExtractors([
+					FeatureExtractor.WordsFromText(1),
+					//FeatureExtractor.WordsFromText(2),
+					//FeatureExtractor.LettersFromText(3), 
+					//FeatureExtractor.LettersFromText(4),
+		]),
+	});
+}
+
+var createSvmClassifier = function() {
+	var ClassifierWithFeatureExtractor = require('../ClassifierWithFeatureExtractor');
+	var FeatureExtractor = require('../FeatureExtractor');
+	var BinaryClassifierSet = require('../BinaryClassifierSet');
+	var baseBinaryClassifierType = require('../svmjs').SVM;
+	
+	return new ClassifierWithFeatureExtractor({
+		classifierType: BinaryClassifierSet,
+		classifierOptions: {
+				binaryClassifierType: baseBinaryClassifierType,
 				binaryClassifierOptions: {
 					C: 1.0,
-					//iterations: 10,
-					//log: true
 				},
 		},
 		featureExtractor: FeatureExtractor.CollectionOfExtractors([
@@ -53,12 +75,21 @@ var createNewClassifier = function() {
 	});
 }
 
-var test_mode = false;
+//var createNewClassifier = createSvmClassifier;
+var createNewClassifier = createPerceptronClassifier;
 
-if (test_mode) {
+var do_cross_validation = true;
+var do_serialization = true;
+
+var verbosity = 0;
+
+if (do_cross_validation) {
+	var numOfFolds = 5; // for k-fold cross-validation
+	var microAverage = new PrecisionRecall();
+	var macroAverage = new PrecisionRecall();
+
 	datasets.partitions(dataset, numOfFolds, function(partition) {
-		//partition.train = partition.train.slice(0,3);
-		//partition.test = partition.train;
+		//partition.train = partition.train.slice(0,3); partition.test = partition.train;
 		train_and_test(createNewClassifier,
 			partition.train, partition.test, verbosity,
 			microAverage, macroAverage
@@ -66,14 +97,15 @@ if (test_mode) {
 	});
 	hash.multiply_scalar(macroAverage, 1/numOfFolds);
 
-	console.log("\n\nMACRO AVERAGE FULL STATS:"); console.dir(macroAverage.fullStats());
+	if (verbosity>0) {console.log("\n\nMACRO AVERAGE FULL STATS:"); console.dir(macroAverage.fullStats());}
 	console.log("\nMACRO AVERAGE SUMMARY: "+macroAverage.shortStats());
 
 	microAverage.calculateStats();
-	console.log("\n\nMICRO AVERAGE FULL STATS:"); console.dir(microAverage.fullStats());
+	if (verbosity>0) {console.log("\n\nMICRO AVERAGE FULL STATS:"); console.dir(microAverage.fullStats());}
 	console.log("\nMICRO AVERAGE SUMMARY: "+microAverage.shortStats());
-	
-} else {  // save mode
+} // do_cross_validation
+
+if (do_serialization) {
 	var classifier = createNewClassifier();
 	//dataset = dataset.slice(0,20);
 
@@ -84,10 +116,12 @@ if (test_mode) {
 	console.log("end training on "+dataset.length+" samples, "+elapsedTime+" [ms]");
 
 	console.log("\ntest on training data:")
+	resultsBeforeReload = [];
 	for (var i=0; i<dataset.length; ++i) {
 		var expectedClasses = dataset[i].output;
 		var actualClasses = classifier.classify(dataset[i].input);
-		console.log(dataset[i].input+": "+actualClasses);
+		resultsBeforeReload[i] = actualClasses;
+		if (verbosity>0) console.log(dataset[i].input+": "+actualClasses);
 	}
 	
 	serialize.saveSync(createNewClassifier, classifier, 
@@ -100,8 +134,11 @@ if (test_mode) {
 	for (var i=0; i<dataset.length; ++i) {
 		var expectedClasses = dataset[i].output;
 		var actualClasses = classifier2.classify(dataset[i].input);
-		console.log(dataset[i].input+": "+actualClasses);
+		if (!_(resultsBeforeReload[i]).isEqual(actualClasses)) {
+			throw new Error("Reload does not reproduce the original classifier! before reload="+resultsBeforeReload[i]+", after reload="+actualClasses);
+		}
+		if (verbosity>0) console.log(dataset[i].input+": "+actualClasses);
 	}
-}
+} // do_serialization
 
 console.log("text categorization demo end");

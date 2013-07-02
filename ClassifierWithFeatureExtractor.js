@@ -85,13 +85,13 @@ ClassifierWithFeatureExtractor.prototype = {
 	toJSON : function(callback) {
 		return {
 			classifier: this.classifier.toJSON(callback),
-			featureLookupTable: this.featureLookupTable.toJSON(),
+			featureLookupTable: (this.featureLookupTable? this.featureLookupTable.toJSON(): undefined),
 		};
 	},
 
 	fromJSON : function(json, callback) {
 		this.classifier.fromJSON(json.classifier, callback);
-		this.featureLookupTable.fromJSON(json.featureLookupTable);
+		if (this.featureLookupTable) this.featureLookupTable.fromJSON(json.featureLookupTable);
 		return this;
 	},
 	

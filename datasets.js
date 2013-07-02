@@ -3,7 +3,6 @@
  * 
  * Utilities include:
  * 
- * - read(pathToFile) 
  * - shuffle(dataset)
  * - partitions(dataset, numOfPartitions, callback)
  * 
@@ -11,44 +10,7 @@
  * @since 2013-06
  */
 
-var fs = require('fs');
 var _ = require("underscore")._;
-
-/**
- * Read a dataset from a text file.
- *  
- * The file should contain lines, each line is a single classified sample:
- * 
- * sample1 / class11 AND class12 AND ...
- * sample2 / class21 AND ...
- * ...
- * 
- * Empty lines, and lines preceded with '#', are ignored.
- * 
- * @return an array where each item looks like:
- *   {input: "sample1", output: [class11, class12...]}
- * Additionally, the array has a field "allClasses", which is a 
- * sorted array of all different classes.
- */
-exports.read = function(pathToFile) {
-	var dataset=[];
-	var lines = fs.readFileSync(pathToFile, 'utf8').split(/[\n\r]/g);
-	var allClasses = {};
-	for (var i=0; i<lines.length; ++i) {
-		var line = lines[i].trim();
-		if (/^#/.test(line) || line.length<1) 
-			continue;
-		var sampleAndClasses = line.split(/\s*\/\s*/);
-		var sample = sampleAndClasses[0];
-		var classes = sampleAndClasses[1].split(" AND ");
-		dataset.push({input: sample, output: classes});
-		for (var c=0; c<classes.length; ++c)
-			allClasses[classes[c]]=true;
-	}
-	dataset.allClasses = Object.keys(allClasses);
-	dataset.allClasses.sort();
-	return dataset;
-}
 
 
 /**
@@ -101,5 +63,3 @@ exports.partitions = function(dataset, numOfPartitions, callback) {
 		callback(partition);
 	}
 }
-
-

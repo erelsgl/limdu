@@ -12,10 +12,11 @@ var trainAndTest = require('../trainAndTest');
 var hash = require('../hash');
 var serialize = require('../serialize');
 var _ = require('underscore')._;
+var fs = require('fs');
 
 console.log("text categorization demo start");
 
-var dataset = datasets.read("../datasets/Dataset1Woz.txt");
+var dataset = JSON.parse(fs.readFileSync("../datasets/Dataset1Woz.json"));
 
 var createBayesianClassifier = function() {
 	var BinaryClassifierSet = require('../BinaryClassifierSet');
@@ -37,7 +38,7 @@ var createPerceptronClassifier = function() {
 				binaryClassifierType: baseBinaryClassifierType,
 				binaryClassifierOptions: {
 					learning_rate: 1,
-					retrain_count: 10,
+					retrain_count: 0,
 					do_averaging: true,
 					do_normalization: false,
 				},

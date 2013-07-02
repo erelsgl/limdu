@@ -13,7 +13,7 @@ var hash = require('../hash');
 
 console.log("cross-validation demo start");
 
-var dataset = datasets.read("../datasets/Dataset1Woz.txt");
+var dataset = JSON.parse(fs.readFileSync("../datasets/Dataset1Woz.json"));
 var numOfFolds = 5; // for k-fold cross-validation
 
 var microAverage = new PrecisionRecall();

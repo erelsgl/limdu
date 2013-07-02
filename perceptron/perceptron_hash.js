@@ -28,7 +28,7 @@ var PerceptronHash = function(opts) {
 	this.do_averaging = opts.do_averaging||false;
 	this.do_normalization = opts.do_normalization||false;
 	this.learning_rate = opts.learning_rate||0.1;
-	this.retrain_count = opts.retrain_count||1;
+	this.retrain_count = 'retrain_count' in opts? opts.retrain_count: 1;
 	
 	this.weights = {};
 	if (this.do_averaging) this.weights_sum = {};   // for averaging; see http://ciml.info/dl/v0_8/ciml-v0_8-ch03.pdf . But count only weight vectors with successful predictions (Carvalho and Cohen, 2006).

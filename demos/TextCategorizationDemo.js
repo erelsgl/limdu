@@ -38,9 +38,34 @@ var createPerceptronClassifier = function() {
 				binaryClassifierType: baseBinaryClassifierType,
 				binaryClassifierOptions: {
 					learning_rate: 1,
-					retrain_count: 0,
-					do_averaging: true,
-					do_normalization: false,
+					retrain_count: 5,
+					do_averaging: true,      // common practice in perceptrons
+					do_normalization: false, 
+				},
+		},
+		featureExtractor: FeatureExtractor.CollectionOfExtractors([
+					FeatureExtractor.WordsFromText(1),
+					//FeatureExtractor.WordsFromText(2),
+					//FeatureExtractor.LettersFromText(3), 
+					//FeatureExtractor.LettersFromText(4),
+		]),
+	});
+}
+
+var createWinnowClassifier = function() {
+	var BinaryClassifierSet = require('../BinaryClassifierSet');
+	var EnhancedClassifier = require('../EnhancedClassifier');
+	var FeatureExtractor = require('../FeatureExtractor');
+	var baseBinaryClassifierType = require('../winnow/winnow_hash');
+	
+	return new EnhancedClassifier({
+		classifierType: BinaryClassifierSet,
+		classifierOptions: {
+				binaryClassifierType: baseBinaryClassifierType,
+				binaryClassifierOptions: {
+					retrain_count: 10,
+					do_averaging: false,
+					margin: 1,
 				},
 		},
 		featureExtractor: FeatureExtractor.CollectionOfExtractors([
@@ -76,8 +101,9 @@ var createSvmClassifier = function() {
 	});
 }
 
+var createNewClassifier = createWinnowClassifier;
 //var createNewClassifier = createSvmClassifier;
-var createNewClassifier = createPerceptronClassifier;
+//var createNewClassifier = createPerceptronClassifier;
 
 var do_cross_validation = true;
 var do_serialization = true;

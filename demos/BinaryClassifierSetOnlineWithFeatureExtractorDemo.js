@@ -1,6 +1,6 @@
 /**
  * Demonstrates a binary classifier set with a feature extractor.
- * A perceptron, online training.
+ * perceptron or winnow, online training.
  * 
  * @author Erel Segal-Halevi
  * @since 2013-06
@@ -15,7 +15,8 @@ console.log("BinaryClassifierSet with feature extractor demo start");
 var bcs = new BinaryClassifierSet({
 	binaryClassifierType: require('../EnhancedClassifier'),
 	binaryClassifierOptions: {
-		classifierType:   require('../perceptron/perceptron_hash'),
+		//classifierType:   require('../perceptron/perceptron_hash'),
+		classifierType:   require('../winnow/winnow_hash'),
 		featureExtractor: require('../FeatureExtractor').WordsFromText(1)
 	}
 });

@@ -10,12 +10,13 @@ var util = require('util');
 var BinaryClassifierSet = require('../BinaryClassifierSet');
 var EnhancedClassifier = require('../EnhancedClassifier');
 
-console.log("BinaryClassifierSet with feature extractor demo start");
+console.log("BinaryClassifierSet with feature extractor batch demo start");
 
 var bcs = new BinaryClassifierSet({
 	binaryClassifierType: require('../EnhancedClassifier'),
 	binaryClassifierOptions: {
 		classifierType:   require('../brain').NeuralNetwork,
+		//classifierType:   require('../winnow/winnow_hash'),
 		//classifierType:   require('../perceptron/perceptron_hash'),
 		featureExtractor: require('../FeatureExtractor').WordsFromText(1)
 	}
@@ -36,4 +37,4 @@ console.log("'"+newDocument+"' is "+bcs.classify(newDocument));
 newDocument = "I don't know if this is a replica of windows";
 console.log("'"+newDocument+"' is "+bcs.classify(newDocument));  
 
-console.log("BinaryClassifierSet with feature extractor demo end");
+console.log("BinaryClassifierSet with feature extractor batch demo end");

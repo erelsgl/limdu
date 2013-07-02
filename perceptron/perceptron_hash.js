@@ -15,7 +15,8 @@ var hash = require("../hash");
  *  <li>default_weight: default weight for a newly discovered feature (default = 0).
  *  <li>do_averaging: boolean, see http://ciml.info/dl/v0_8/ciml-v0_8-ch03.pdf . But count only weight vectors with successful predictions (Carvalho and Cohen, 2006).
  *  <li>do_normalization: boolean, normalize sum of features to 1.
- *	<li>learningrate: defaults to 0.1.
+ *	<li>learning_rate: defaults to 0.1.
+ *  <li>retrain_count: in batch training mode, how many times to retrain. 0=no retrain. Default=1.
  * 
  */
  
@@ -26,7 +27,8 @@ var PerceptronHash = function(opts) {
 	this.default_weight = opts.default_weight||0;
 	this.do_averaging = opts.do_averaging||false;
 	this.do_normalization = opts.do_normalization||false;
-	this.learningrate = opts.learningrate||0.1;
+	this.learning_rate = opts.learning_rate||0.1;
+	this.retrain_count = opts.retrain_count||1;
 	
 	this.weights = {};
 	if (this.do_averaging) this.weights_sum = {};   // for averaging; see http://ciml.info/dl/v0_8/ciml-v0_8-ch03.pdf . But count only weight vectors with successful predictions (Carvalho and Cohen, 2006).
@@ -46,7 +48,7 @@ PerceptronHash.prototype = {
 		this.weights = json.weights;
 		this.weights_sum = json.weights_sum;
 	},
-		
+
 	normalized_features: function (features, remove_unknown_features) {
 		features['bias'] = 1;
 		if (remove_unknown_features) {
@@ -60,16 +62,16 @@ PerceptronHash.prototype = {
 	},
 
 	/**
-	 * @param inputs a SINGLE training sample; a hash (feature => value).
+	 * @param features a SINGLE training sample; a hash (feature => value).
 	 * @param expected the classification value for that sample (0 or 1)
 	 * @return true if the input sample got its correct classification (i.e. no change made).
 	 */
 	train_features: function(features, expected) {
 		for (feature in features) 
 			if (!(feature in this.weights)) 
-				weights[feature] = this.default_weight;
+				this.weights[feature] = this.default_weight;
 
-		var result = api.perceive_features(features, /*net=*/false, this.weights); // always use the running 'weights' vector for training, and NOT the weights_sum!
+		var result = this.perceive_features(features, /*net=*/false, this.weights); // always use the running 'weights' vector for training, and NOT the weights_sum!
 
 		if (this.debug) console.log('> training ',features,', expecting: ',expected, ' got: ', result);
 
@@ -87,20 +89,39 @@ PerceptronHash.prototype = {
 	},
 
 	/**
-	 * @param inputs a SINGLE training sample; converted to a feature array with feature_extractor (if available).
+	 * Online training (a single sample).
+	 *
+	 * @param features a SINGLE training sample; a hash (feature => value).
 	 * @param expected the classification value for that sample (0 or 1)
 	 * @return true if the input sample got its correct classification (i.e. no change made).
 	 */
-	train: function(features, expected) {
-		return this.train_features(api.normalized_features(features, /*remove_unknown_features=*/false), expected);
+	trainOnline: function(features, expected) {
+		return this.train_features(
+			this.normalized_features(features, /*remove_unknown_features=*/false), expected);
+	},
+	
+
+	/**
+	 * Batch training (a set of samples). Uses the option this.retrain_count.
+	 *
+	 * @param dataset an array of samples of the form {input: {feature1: value1...} , output: 0/1} 
+	 */
+	trainBatch: function(dataset) {
+		var normalized_inputs = [];
+		for (var i=0; i<dataset.length; ++i)
+			normalized_inputs[i] = this.normalized_features(dataset[i].input, /*remove_unknown_features=*/false);
+
+		for (var r=0; r<=this.retrain_count; ++r)
+			for (var i=0; i<normalized_inputs.length; ++i) 
+				this.train_features(normalized_inputs[i], dataset[i].output);
 	},
 
 
 	adjust: function(result, expected, input, feature) {
-		var delta = (expected - result) * this.learningrate * input;
+		var delta = (expected - result) * this.learning_rate * input;
 		if (isNaN(delta)) throw new Error('delta is NaN!! result='+result+" expected="+expected+" input="+input+" feature="+feature);
 		this.weights[feature] += delta;
-		if (isNaN(weights[feature])) throw new Error('weights['+feature+'] went to NaN!! delta='+d);
+		if (isNaN(this.weights[feature])) throw new Error('weights['+feature+'] went to NaN!! delta='+d);
 	},
 		
 
@@ -124,10 +145,18 @@ PerceptronHash.prototype = {
 	 * @return the classification of the sample.
 	 */
 	perceive: function(inputs, net) {
-		return api.perceive_features(
-			api.normalized_features(inputs, /*remove_unknown_features=*/true), 
+		return this.perceive_features(
+			this.normalized_features(inputs, /*remove_unknown_features=*/true), 
 			net,
 			(this.do_averaging? this.weights_sum: this.weights) );
+	},
+
+	/**
+	 * @param inputs a SINGLE sample.
+	 * @return the binary classification - 0 or 1.
+	 */
+	classify: function(inputs) {
+		return this.perceive(inputs, false);
 	},
 }
 

@@ -14,6 +14,7 @@ var PrecisionRecall = require("./PrecisionRecall");
  * @param trainSet, testSet arrays with objects of the format: {input: "sample1", output: "class1"}
  * @param verbosity [int] level of details in log (0 = no log)
  * @param microAverage, macroSum [output] - objects of type PrecisionRecall, used to return the results. 
+ * @return the currentStats.
  */
 module.exports = function(
 		createNewClassifierFunction, 
@@ -36,10 +37,10 @@ module.exports = function(
 		var actualClasses = bcs.classify(testSet[i].input);
 		if (verbosity>1) console.log("\n"+testSet[i].input+": ");
 		currentStats.addCases(expectedClasses, actualClasses, verbosity-1);
-		microAverage.addCases(expectedClasses, actualClasses, 0);
+		if (microAverage) microAverage.addCases(expectedClasses, actualClasses, 0);
 	}
 	currentStats.calculateStats();
-	hash.add(macroSum, currentStats.fullStats());
+	if (macroSum) hash.add(macroSum, currentStats.fullStats());
 	
 	if (verbosity>0) {
 		if (verbosity>1) {
@@ -48,4 +49,6 @@ module.exports = function(
 		}
 		console.log("SUMMARY: "+currentStats.shortStats()+"\n");
 	}
+	
+	return currentStats;
 }

@@ -102,10 +102,22 @@ var createNewClassifier = createWinnowClassifier;
 //var createNewClassifier = createSvmClassifier;
 //var createNewClassifier = createPerceptronClassifier;
 
+var do_domain_testing = true;
 var do_cross_validation = true;
 var do_serialization = true;
 
 var verbosity = 0;
+
+if (do_domain_testing) {
+	var trainAndTest = require('../trainAndTest');
+
+	var train = domainDataset;
+	var test = collectedDataset;
+	var stats = trainAndTest(createNewClassifier,
+		train, test, verbosity);
+	if (verbosity>0) {console.log("\n\nFULL STATS:"); console.dir(stats.fullStats());}
+	console.log("\nSUMMARY: "+stats.shortStats());
+}
 
 if (do_cross_validation) {
 	var datasets = require('../datasets');
@@ -138,13 +150,12 @@ if (do_cross_validation) {
 
 if (do_serialization) {
 	var classifier = createNewClassifier();
+	var dataset = combinedDataset;
 	//dataset = dataset.slice(0,20);
-
 	console.log("\nstart training on "+dataset.length+" samples");
 	var startTime = new Date();
 	classifier.trainBatch(dataset);
-	var elapsedTime = new Date()-startTime;
-	console.log("end training on "+dataset.length+" samples, "+elapsedTime+" [ms]");
+	console.log("end training on "+dataset.length+" samples, "+(new Date()-startTime)+" [ms]");
 
 	console.log("\ntest on training data:")
 	resultsBeforeReload = [];

@@ -1,12 +1,12 @@
 /**
- * Static utilities for associative arrays (= hashes = Javascript objects).
+ * Static utilities for hashes (= associative arrays = Javascript objects).
  * 
  * @author Erel Segal-Halevi
  * @since 2013-06
  */
  
 /**
- * add one associative array to another.
+ * add one hash to another.
  * @param target [input and output]
  * @param source [input]: will be added to target.
  */

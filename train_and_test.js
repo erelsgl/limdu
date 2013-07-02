@@ -5,7 +5,7 @@
  * @since 2013-06
  */
 
-var associative = require('./associative');
+var hash = require('./hash');
 var PrecisionRecall = require("./PrecisionRecall");
 
 /**
@@ -39,7 +39,7 @@ exports.train_and_test = function(
 		microAverage.addCases(expectedClasses, actualClasses, 0);
 	}
 	currentStats.calculateStats();
-	associative.add(macroSum, currentStats.fullStats());
+	hash.add(macroSum, currentStats.fullStats());
 	
 	if (verbosity>0) {
 		if (verbosity>1) {

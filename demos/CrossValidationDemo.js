@@ -9,7 +9,7 @@ var util = require('util');
 var datasets = require('../datasets');
 var PrecisionRecall = require("../PrecisionRecall");
 var train_and_test = require('../train_and_test').train_and_test;
-var associative = require('../associative');
+var hash = require('../hash');
 
 console.log("cross-validation demo start");
 
@@ -37,7 +37,7 @@ datasets.partitions(dataset, numOfFolds, function(partition) {
 	);
 });
 
-associative.multiply_scalar(macroAverage, 1/numOfFolds);
+hash.multiply_scalar(macroAverage, 1/numOfFolds);
 
 console.log("\n\nMACRO AVERAGE FULL STATS:"); console.dir(macroAverage.fullStats());
 console.log("\nMACRO AVERAGE SUMMARY: "+macroAverage.shortStats());

@@ -21,7 +21,7 @@ exports.add  = function(target, source) {
 }
 
 /**
- * multiply one associative array by another.
+ * multiply one hash by another.
  * @param target [input and output]
  * @param source [input]: target will be multiplied by it.
  */
@@ -36,7 +36,7 @@ exports.multiply  = function(target, source) {
 }
 
 /**
- * multiply an associative array by a scalar.
+ * multiply a hash by a scalar.
  * @param target [input and output]
  * @param source [input]: target will be multiplied by it.
  */
@@ -88,7 +88,7 @@ exports.sum_of_square_values = function(weights) {
 }
 
 /**
- * Normalize the given associative array, such that the sum of values is 1.
+ * Normalize the given hash, such that the sum of values is 1.
  * Unless, of course, the current sum is 0, in which case, nothing is done. 
  */
 exports.normalize_sum_of_values_to_1 = function(features) {
@@ -98,7 +98,7 @@ exports.normalize_sum_of_values_to_1 = function(features) {
 }
 
 /**
- * Normalize the given associative array, such that the sum of squares of the values is 1.
+ * Normalize the given hash, such that the sum of squares of the values is 1.
  * Unless, of course, the current sum is 0, in which case, nothing is done. 
  */
 exports.normalize_sum_of_squares_to_1 = function(features) {
@@ -110,7 +110,7 @@ exports.normalize_sum_of_squares_to_1 = function(features) {
 
 /**
  * @param array [input]
- * @return a string of the given associative array, sorted by keys.
+ * @return a string of the given hash, sorted by keys.
  */
 exports.stringify_sorted = function(weights, separator) {
 	var result = "{" + separator;

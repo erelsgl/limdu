@@ -14,7 +14,9 @@ var express = require('express')
 	, _ = require('underscore')._
 	;
 
-var pathToClassifier = "trainedClassifiers/NegotiationWinnowSingleclass.json";
+//var pathToClassifier = "trainedClassifiers/NegotiationWinnowSingleclass.json";
+var pathToClassifier = "trainedClassifiers/NegotiationWinnowSingleAndMulticlass.json";
+
 
 //
 // Step 1: Configure an application with EXPRESS
@@ -89,16 +91,22 @@ io.sockets.on('connection', function (socket) {
 	
 	socket.on('translate', function (request) {
 		console.log("SOCKETIO: New client request: "+JSON.stringify(request));
+		
 		var classification = classifier.classify(request.text, parseInt(request.explain));
 		if (request.explain) {
 			classification.text = request.text;
 			classification.translations = classification.classes;
 			delete classification.classes;
+			logger.writeEventLog("requests", "TRANSLATE", {
+				text: request.text,
+				translations: classification.translations,
+			});
 		} else {
 			classification = {
 				text: request.text,
 				translations: classification,
 			}
+			logger.writeEventLog("requests", "TRANSLATE", classification);
 		}
 		socket.emit('translation', classification);
 	});

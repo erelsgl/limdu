@@ -1,4 +1,4 @@
-var _ = require("underscore")._;
+var hash = require("./hash");
 
 /**
  * BinaryClassifierSet - combines several binary classifiers to produce a
@@ -36,8 +36,7 @@ BinaryClassifierSet.prototype = {
 	 *            classes.
 	 */
 	addClasses : function(classes) {
-		if (Array.isArray(classes))
-			classes = _.invert(classes);
+		classes = hash.normalized(classes);
 		for ( var aClass in classes)
 			if (!this.mapClassnameToClassifier[aClass]) {
 				this.mapClassnameToClassifier[aClass] = new this.binaryClassifierType(
@@ -63,8 +62,7 @@ BinaryClassifierSet.prototype = {
 	 *            classes.
 	 */
 	trainOnline: function(sample, classes) {
-		if (Array.isArray(classes))
-			classes = _.invert(classes);
+		classes = hash.normalized(classes);
 		for ( var positiveClass in classes) {
 			this.makeSureClassifierExists(positiveClass);
 			this.mapClassnameToClassifier[positiveClass].trainOnline(sample, 1);
@@ -88,8 +86,8 @@ BinaryClassifierSet.prototype = {
 		// create positive samples for each class:
 		for ( var i = 0; i < dataset.length; ++i) {
 			var sample = dataset[i].input;
-			if (Array.isArray(dataset[i].output)) // convert output to hash
-				dataset[i].output = _.invert(dataset[i].output);
+			dataset[i].output = hash.normalized(dataset[i].output);
+
 			var classes = dataset[i].output;
 			for ( var positiveClass in classes) {
 				this.makeSureClassifierExists(positiveClass);
@@ -128,13 +126,15 @@ BinaryClassifierSet.prototype = {
 	 * Use the model trained so far to classify a new sample.
 	 * 
 	 * @param sample a document.
+	 * @param explain - int - if positive, an "explanation" field, with the given length, will be added to the result.
+	 *  
 	 * @return an array whose VALUES are classes.
 	 */
-	classify : function(sample) {
+	classify : function(sample, explain) {
 		var classes = {};
 		for ( var aClass in this.mapClassnameToClassifier) {
 			var classifier = this.mapClassnameToClassifier[aClass];
-			var classification = classifier.classify(sample);
+			var classification = classifier.classify(sample, explain);
 			if (classification > 0.5)
 				classes[aClass] = true;
 		}

@@ -75,9 +75,9 @@ EnhancedClassifier.prototype = {
 	 * @param sample a document.
 	 * @return an array whose VALUES are classes.
 	 */
-	classify: function(sample) {
+	classify: function(sample, explain) {
 		return this.classifier.classify(
-			this.sampleToFeatures(sample));
+			this.sampleToFeatures(sample), explain);
 	},
 	
 	toJSON : function(callback) {

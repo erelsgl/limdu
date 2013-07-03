@@ -4,6 +4,30 @@
  * @author Erel Segal-Halevi
  * @since 2013-06
  */
+
+
+/**
+ * Convert anything to a hash (representing a set):
+ *
+ * - an array ['a', 'b', 'c'..] to a hash {'a': true, 'b': true, 'c': true};
+ * - a string 'a' to a hash {'a': true}.
+ */
+exports.normalized = function(object) {
+	if (Array.isArray(object)) {
+		var result = {}; 
+		for (var i=0; i<object.length; ++i) 
+			result[object[i]]=true;
+		return result;
+	} else if (object instanceof Object) {
+		return object;
+	} else {
+		var result = {};
+		result[object]=true; 
+		return result;
+	}
+}
+
+ 
  
 /**
  * add one hash to another.
@@ -127,16 +151,3 @@ exports.stringify_sorted = function(weights, separator) {
 	result += "}";
 	return result;	
 }
-
-/**
- * Convert an array ['a', 'b', 'c'..] to an object {'a': true, 'b': true, 'c': true}
- *
- * NOT NEEDED: Use underscore: _.invert(array)
-exports.fromArray = function(array) {
-	var result = {}; 
-	for (var i=0; i<array.length; ++i) {
-		result[array[i]]=true;
-	}
-	return result;
-}
-*/

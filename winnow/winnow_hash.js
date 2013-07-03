@@ -15,6 +15,7 @@
  */
  
 var hash = require("../hash");
+var sprintf = require("sprintf").sprintf;
 
 function WinnowHash(opts) {
 	if (!opts) opts = {}
@@ -147,40 +148,75 @@ WinnowHash.prototype = {
 		/**
 		 * @param inputs a SINGLE sample; a hash (feature => value).
 		 * @param net if true, return the net classification score. If false [default], return 0 or 1.
-		 * @param weights_for_classification the weights vector to use (either the running 'weights' or 'weights_sum').  
+		 * @param explain - int - if positive, an "explanation" field, with the given length, will be added to the result.  
+		 * @param positive_weights_for_classification, negative_weights_for_classification, explain) {
+		  the weights vector to use (either the running 'weights' or 'weights_sum').  
 		 * @return the classification of the sample.
 		 */
-		perceive_features: function(features, net, positive_weights_for_classification, negative_weights_for_classification) {
-			var positive_score = hash.inner_product(features, positive_weights_for_classification); 
-			if (isNaN(positive_score)) throw new Error("positive_score is NaN! features="+JSON.stringify(features)+" positive weights="+JSON.stringify(positive_weights_for_classification));
-			var negative_score = hash.inner_product(features, negative_weights_for_classification); 
-			if (isNaN(negative_score)) throw new Error("negative_score is NaN! features="+JSON.stringify(features)+" negative weights="+JSON.stringify(negative_weights_for_classification));
-			var score = positive_score - negative_score - this.threshold;
+		perceive_features: function(features, net, positive_weights_for_classification, negative_weights_for_classification, explain) {
+			//var positive_score = hash.inner_product(features, positive_weights_for_classification); 
+			//if (isNaN(positive_score)) throw new Error("positive_score is NaN! features="+JSON.stringify(features)+" positive weights="+JSON.stringify(positive_weights_for_classification));
+			//var negative_score = hash.inner_product(features, negative_weights_for_classification); 
+			//if (isNaN(negative_score)) throw new Error("negative_score is NaN! features="+JSON.stringify(features)+" negative weights="+JSON.stringify(negative_weights_for_classification));
+			//var score = positive_score - negative_score - this.threshold;
+			
+			var score = 0;
+			if (explain) var explanations = [];
+			for (var feature in features) {
+				if (feature in positive_weights_for_classification) {
+					var positive_weight = positive_weights_for_classification[feature];
+					var negative_weight = negative_weights_for_classification[feature];
+					var net_weight = positive_weight-negative_weight;
+					var add_to_score = features[feature] * net_weight;
+					score += add_to_score;
+					if (explain) explanations.push({
+						feature: feature,
+						value: features[feature],
+						weight: sprintf("+%1.3f-%1.3f=%1.3f",positive_weight,negative_weight,net_weight),
+						relevance: add_to_score
+					});
+				}
+			}
+			score -= this.threshold;
 			if (isNaN(score)) throw new Error("score is NaN! positive_score="+positive_score+" negative_score="+negative_score+" this.threshold="+this.threshold);
+
 			if (this.debug) console.log("> perceive_features ",features," = ",score);
-			return net
-				? score
-				: score > 0 ? 1 : 0
+			var result = (net? score: (score > 0 ? 1 : 0));
+			if (explain) {
+				explanations.sort(function(a,b){return Math.abs(b.relevance)-Math.abs(a.relevance)});
+				explanations.splice(explain, explanations.length-explain);  // "explain" is the max length of explanation.
+				
+				result = {
+					classification: result,
+					explanations: explanations,
+					threshold: -this.threshold,
+					net_score: score, 
+				}
+			}
+			return result;
 		},
 
 		/**
 		 * @param inputs a SINGLE sample (a hash of feature-value pairs).
 		 * @param net if true, return the net classification value. If false [default], return 0 or 1.
+		 * @param explain - int - if positive, an "explanation" field, with the given length, will be added to the result.  
 		 * @return the classification of the sample.
 		 */
-		perceive: function(features, net) {
+		perceive: function(features, net, explain) {
 			return this.perceive_features(this.normalized_features(features, /*remove_unknown_features=*/true), net,
 				(this.do_averaging? this.positive_weights_sum: this.positive_weights),
-				(this.do_averaging? this.negative_weights_sum: this.negative_weights) );
+				(this.do_averaging? this.negative_weights_sum: this.negative_weights),
+				explain );
 		},
 		
 
 		/**
-		 * @param inputs a SINGLE sample.
+		 * @param inputs - a feature-value hash.
+		 * @param explain - int - if positive, an "explanation" field, with the given length, will be added to the result.  
 		 * @return the binary classification - 0 or 1.
 		 */
-		classify: function(features) {
-			return this.perceive(features, false);
+		classify: function(features, explain) {
+			return this.perceive(features, false, explain);
 		},
 }
 

@@ -60,7 +60,7 @@ var createWinnowClassifier = function() {
 		classifierOptions: {
 				binaryClassifierType: baseBinaryClassifierType,
 				binaryClassifierOptions: {
-					retrain_count: 10,
+					retrain_count: 25,
 					do_averaging: false,
 					margin: 1,
 				},
@@ -113,11 +113,16 @@ if (do_domain_testing) {
 
 	var train = domainDataset;
 	var test = collectedDataset;
+	
+	//var classifier = createNewClassifier();
+	//classifier.trainBatch(train);
+	//console.log(classifier.classify("Salary 7,000 NIS"));
+	
 	var stats = trainAndTest(createNewClassifier,
 		train, test, verbosity);
 	if (verbosity>0) {console.log("\n\nFULL STATS:"); console.dir(stats.fullStats());}
-	console.log("\nSUMMARY: "+stats.shortStats());
-}
+	console.log("\nTrain on domain data summary: "+stats.shortStats());
+} // do_domain_testing
 
 if (do_cross_validation) {
 	var datasets = require('../datasets');
@@ -128,17 +133,16 @@ if (do_cross_validation) {
 	var microAverage = new PrecisionRecall();
 	var macroAverage = new PrecisionRecall();
 
-	var dataset = collectedDataset;
-	console.log("\nstart "+numOfFolds+"-fold cross-validation on "+dataset.length+" samples");
-	datasets.partitions(dataset, numOfFolds, function(train, test, index) {
+	console.log("\nstart "+numOfFolds+"-fold cross-validation on "+domainDataset.length+" domain samples and "+collectedDataset.length+" collected samples");
+	datasets.partitions(collectedDataset, numOfFolds, function(trainSet, testSet, index) {
 		console.log("partition #"+index);
 		trainAndTest(createNewClassifier,
-			train, test, verbosity,
+			trainSet.concat(domainDataset), testSet, verbosity,
 			microAverage, macroAverage
 		);
 	});
 	_(macroAverage).each(function(value,key) { macroAverage[key]=value/numOfFolds; });
-	console.log("\nend "+numOfFolds+"-fold cross-validation on "+dataset.length+" samples");
+	console.log("\nend "+numOfFolds+"-fold cross-validation");
 
 	if (verbosity>0) {console.log("\n\nMACRO AVERAGE FULL STATS:"); console.dir(macroAverage.fullStats());}
 	console.log("\nMACRO AVERAGE SUMMARY: "+macroAverage.shortStats());

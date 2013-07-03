@@ -1,4 +1,4 @@
-var _ = require("underscore")._;
+var hash = require("./hash");
 var sprintf = require('sprintf').sprintf;
 
 /**
@@ -42,10 +42,8 @@ PrecisionRecall.prototype = {
 	 * @param verbosity - if positive, also log the results. 
 	 */
 	addCases: function (expectedClasses, actualClasses, verbosity) {
-		if (_.isArray(actualClasses))       actualClasses  =_.invert(actualClasses);
-		else if (_.isString(actualClasses)) actualClasses  = {actualClasses: true};
-		if (_.isArray(expectedClasses))       expectedClasses =_.invert(expectedClasses);
-		else if (_.isString(expectedClasses)) expectedClasses = {expectedClasses: true};
+		actualClasses = hash.normalized(actualClasses);
+		expectedClasses = hash.normalized(expectedClasses);
 
 		var allTrue = true;
 		for (var actualClass in actualClasses) {
@@ -98,8 +96,8 @@ PrecisionRecall.prototype = {
 	 * @return a one-line summary of the main results of the most recent experiment.
 	 */
 	shortStats: function() {
-		return sprintf("count=%d Accuracy=%1.0f%% F1=%1.0f%% timePerSample=%1.0f[ms]",
-				this.count, this.Accuracy*100, this.F1*100, this.timePerSampleMillis);
+		return sprintf("count=%d Accuracy=%1.0f%% Precision=%1.0f%% Recall=%1.0f%% F1=%1.0f%% timePerSample=%1.0f[ms]",
+				this.count, this.Accuracy*100, this.Precision*100, this.Recall*100, this.F1*100, this.timePerSampleMillis);
 	}
 }
 

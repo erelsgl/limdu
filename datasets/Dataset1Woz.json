@@ -1,5 +1,5 @@
 [
-  {"input":"hi","output":[]}
+  {"input":"hi","output":["{\"Greet\": true}"]}
 , {"input":"Then go home","output":["{\"Quit\": true}"]}
 , {"input":"I reject your offer","output":["{\"Reject\": \"previous\"}"]}
 , {"input":"Start as a programmer with fast promotion track","output":["{\"Offer\": {\"Promotion Possibilities\": \"Fast promotion track\"}}","{\"Offer\": {\"Job Description\": \"Programmer\"}}"]}

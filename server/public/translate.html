@@ -23,23 +23,6 @@
 <script language="javascript" type="text/javascript">
 
 
-/* examples: */
-	jQuery(document).ready(function(){
-		createClickEventOnTestCases();
-		$('.Example').click(function() {
-			$('#text').val(this.title);
-		});
-	});
-	
-	function createClickEventOnTestCases() {
-		$('.testcase').click(function() {
-			$('#text').val($(this).text());
-		});
-	}
-
-
-
-
 /* translations */
 
 var DEPTH_OF_CLIENT_LOG_MESSAGES=2;
@@ -47,7 +30,7 @@ var startTime;
 
 function translate() {
   var request = formToObject(form);
-  $("#semantic_representation").html("<img src='images/ajax_loader.gif' />");
+  $("#translations").html("<img src='images/ajax_loader.gif' />");
   startTime = new Date();
   socket.emit('translate', request);
   
@@ -67,12 +50,16 @@ $(document).ready(function() {
 
   socket.on('translation', function(translation) {
     console.log("CLIENT: got a translation for "+translation.text);
-    $("#semantic_representation").html(translationsToHtml(translation.translations));
+    
+    $("#translations").html(translationsToHtml(translation.translations));
+    $("#explanations").html(explanationsToHtml(translation));
+    
     var elapsedTime = new Date() - startTime;
     var endMessage = formatLogMessageWithTimeAndResult("Client", ""+elapsedTime+" ms", 
 "translate '"+translation.text+"'", translation.translations);
     console.log(endMessage);
     deeplog.replace(DEPTH_OF_CLIENT_LOG_MESSAGES, endMessage);
+
   });
 
   socket.on('connect', function() {
@@ -81,7 +68,7 @@ $(document).ready(function() {
   });
 
 	socket.on('exception', function(throwableObject) {
-			replaceSandclockWithError($("#semantic_representation"));
+			replaceSandclockWithError($("#translations"));
 	});
 
 });
@@ -99,15 +86,17 @@ $(document).ready(function() {
                 <td><input class='sentence' name="text" id="text" type="text" size="80" value="I agree to offer a wage of 20000 NIS and 10% pension without a car"/></td>
                 <td><button type='submit' onClick='translate(); return false;'>translate</button></td>
                 <td><input type='hidden' name='forward' value='true' /></td>
+                <td><input type='hidden' name='explain' value='4' /></td>
             </tr>
 
             <tr>
-             <td class='label'>
-               <span>Semantic Representation</span> 
-                </td>
-                <td>
-                <span id='semantic_representation'> </span>
-                </td>
+             <td class='label'>Translations</td>
+             <td id='translations'>-</td>
+            </tr>
+ 
+            <tr>
+             <td class='label'>Explanations</td>
+             <td id='explanations'>-</td>
             </tr>
        
         </table><!-- main_table -->

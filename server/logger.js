@@ -5,7 +5,6 @@ var fs     = require('fs')
   , path = require('path')
   ;
 
-if (!fs.existsSync("logs")) fs.mkdir("logs");
 
 exports.MAX_LENGTH_OF_CONSOLE_MESSAGE = 75;
 
@@ -24,6 +23,8 @@ if (!fs.appendFile) {
 } else {
   console.log("Congratulations! you have Node "+process.version+", that supports appendFile.");
 }
+
+if (!fs.existsSync("logs")) fs.mkdir("logs");
 
 /**
  * reads a log file that contains a single JSON object.

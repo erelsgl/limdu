@@ -12,8 +12,8 @@ var fs = require('fs');
 console.log("text categorization demo start");
 
 var domainDataset = JSON.parse(fs.readFileSync("../datasets/Dataset0Domain.json"));
-var collectedDataset = JSON.parse(fs.readFileSync("../datasets/Dataset1Woz.json"));
-var combinedDataset = domainDataset.concat(collectedDataset);
+var collectedDatasetMulti = JSON.parse(fs.readFileSync("../datasets/Dataset1Woz.json"));
+var collectedDatasetSingle = JSON.parse(fs.readFileSync("../datasets/Dataset1Woz1class.json"));
 
 var createBayesianClassifier = function() {
 	var BinaryClassifierSet = require('../BinaryClassifierSet');
@@ -54,7 +54,7 @@ var createWinnowClassifier = function() {
 	var EnhancedClassifier = require('../EnhancedClassifier');
 	var FeatureExtractor = require('../FeatureExtractor');
 	var baseBinaryClassifierType = require('../winnow/winnow_hash');
-	
+
 	return new EnhancedClassifier({
 		classifierType: BinaryClassifierSet,
 		classifierOptions: {
@@ -102,24 +102,45 @@ var createNewClassifier = createWinnowClassifier;
 //var createNewClassifier = createSvmClassifier;
 //var createNewClassifier = createPerceptronClassifier;
 
-var do_domain_testing = true;
-var do_cross_validation = false;
+var do_cross_dataset_testing = true;
+var do_cross_validation = true;
 var do_serialization = true;
 
 var verbosity = 0;
-var explain = 4;
+var explain = 0;
 
 var datasets = require('../datasets');
 var PrecisionRecall = require("../PrecisionRecall");
 var trainAndTest = require('../trainAndTest');
 
-if (do_domain_testing) {
+if (do_cross_dataset_testing) {
+	console.log("\nTrain on domain data, test on woz single class: "+
+		trainAndTest(createNewClassifier, domainDataset, collectedDatasetSingle, verbosity).shortStats());
+	console.log("\nTrain on domain data, test on woz multi class: "+
+		trainAndTest(createNewClassifier, domainDataset, collectedDatasetMulti, verbosity).shortStats());
+	console.log("\nTrain on woz single class, test on woz multi class: "+
+		trainAndTest(createNewClassifier, collectedDatasetSingle, collectedDatasetMulti, verbosity).shortStats());
+	console.log("\nTrain on woz multi class, test on woz single class: "+
+		trainAndTest(createNewClassifier, collectedDatasetMulti, collectedDatasetSingle, verbosity).shortStats());
+	
+	collectedDatasetMultiPartition = datasets.partition(collectedDatasetMulti, 0, collectedDatasetMulti.length/2);
+	collectedDatasetSinglePartition = datasets.partition(collectedDatasetSingle, 0, collectedDatasetSingle.length/2);
+	console.log("\nTrain on mixed, test on mixed: "+
+		trainAndTest(createNewClassifier, 
+			collectedDatasetMultiPartition.train.concat(collectedDatasetSinglePartition.train), 
+			collectedDatasetMultiPartition.test.concat(collectedDatasetSinglePartition.test), 
+			verbosity).shortStats());
+	console.log("\nTrain on mixed, test on mixed (2): "+
+		trainAndTest(createNewClassifier, 
+			collectedDatasetMultiPartition.test.concat(collectedDatasetSinglePartition.test), 
+			collectedDatasetMultiPartition.train.concat(collectedDatasetSinglePartition.train), 
+			verbosity).shortStats());
+
 	var trainSet = domainDataset;
-	var testSet = collectedDataset;
+	var testSet = collectedDatasetMulti;
 	
 	var stats = trainAndTest(createNewClassifier,
 		trainSet, testSet, verbosity);
-	console.log("\nTrain on domain data summary: "+stats.shortStats());
 
 	var classifier = createNewClassifier();
 	classifier.trainBatch(trainSet);
@@ -137,16 +158,18 @@ if (do_domain_testing) {
 		}
 	}
 	
-} // do_domain_testing
+} // do_cross_dataset_testing
 
 if (do_cross_validation) {
 
 	var numOfFolds = 5; // for k-fold cross-validation
 	var microAverage = new PrecisionRecall();
 	var macroAverage = new PrecisionRecall();
+	
+	var devSet = collectedDatasetMulti.concat(collectedDatasetSingle);
 
-	console.log("\nstart "+numOfFolds+"-fold cross-validation on "+domainDataset.length+" domain samples and "+collectedDataset.length+" collected samples");
-	datasets.partitions(collectedDataset, numOfFolds, function(trainSet, testSet, index) {
+	console.log("\nstart "+numOfFolds+"-fold cross-validation on "+domainDataset.length+" domain samples and "+devSet.length+" collected samples");
+	datasets.partitions(devSet, numOfFolds, function(trainSet, testSet, index) {
 		console.log("partition #"+index);
 		trainAndTest(createNewClassifier,
 			trainSet.concat(domainDataset), testSet, verbosity,
@@ -166,7 +189,8 @@ if (do_cross_validation) {
 
 if (do_serialization) {
 	var classifier = createNewClassifier();
-	var dataset = combinedDataset;
+	var dataset = domainDataset.concat(collectedDatasetMulti).concat(collectedDatasetSingle);
+
 	//dataset = dataset.slice(0,20);
 	console.log("\nstart training on "+dataset.length+" samples");
 	var startTime = new Date();

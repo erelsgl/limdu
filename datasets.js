@@ -11,6 +11,22 @@
 
 var _ = require("underscore")._;
 
+
+/**
+ * Create a single partition of the given dataset.
+ *
+ * @param dataset an array.
+ * @param testSetStart an index into the array.
+ * @param testSetCount int - the num of samples in the test set, starting from testSetStart.
+ * @return an object {train: trainSet, test: testSet}s
+ */
+exports.partition = function(dataset, testSetStart, testSetCount) {
+		var datasetclone = _(dataset).clone();
+		var testSet = datasetclone.splice(testSetStart, testSetCount);
+		var trainSet = datasetclone; // without the test-set
+		return {train: trainSet, test: testSet};
+}
+
 /**
  * Create several different partitions of the given dataset to train and test.
  * Useful for cross-validation. 
@@ -27,10 +43,8 @@ exports.partitions = function(dataset, numOfPartitions, callback) {
 	var testSetCount = dataset.length / numOfPartitions;
 	
 	for (var iPartition=0; iPartition<numOfPartitions; ++iPartition) {
-		var datasetclone = _(shuffledDataset).clone();
 		var testSetStart = iPartition*testSetCount;
-		var testSet = datasetclone.splice(testSetStart, testSetCount);
-		var trainSet = datasetclone; // without the test-set
-		callback(trainSet, testSet, iPartition);
+		var partition = exports.partition(shuffledDataset, testSetStart, testSetCount);
+		callback(partition.train, partition.test, iPartition);
 	}
 }

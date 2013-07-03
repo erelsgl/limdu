@@ -276,6 +276,15 @@ function translationsToHtml(translations) {
 	return "<ul>"+html+"</ul>";
 }
 
+/* Explanations to HTML */
+function explanationsToHtml(translations) {
+	//delete translations.text;
+	//delete translations.translations;
+	return "<pre>"+
+		JSON.stringify(translations,null,"\t").replace(/\\/g,"")+
+	"</pre>";
+}
+
 
 
 

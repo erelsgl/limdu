@@ -153,7 +153,11 @@ BinaryClassifierSet.prototype = {
 			}
 		}
 		if (explain)
-			return {classes: Object.keys(classes), positive_explanations: positive_explanations, negative_explanations: negative_explanations};
+			return {
+				classes: Object.keys(classes), 
+				positive_explanations: positive_explanations, 
+				negative_explanations: negative_explanations
+			};
 		else
 			return Object.keys(classes);
 	},

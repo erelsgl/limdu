@@ -84,12 +84,14 @@ EnhancedClassifier.prototype = {
 		return {
 			classifier: this.classifier.toJSON(callback),
 			featureLookupTable: (this.featureLookupTable? this.featureLookupTable.toJSON(): undefined),
+			/* Note: the feature extractors are functions - they should be created at initialization - they cannot be serialized! */ 
 		};
 	},
 
-	fromJSON : function(json, callback) {
-		this.classifier.fromJSON(json.classifier, callback);
+	fromJSON : function(json) {
+		this.classifier.fromJSON(json.classifier);
 		if (this.featureLookupTable) this.featureLookupTable.fromJSON(json.featureLookupTable);
+		/* Note: the feature extractors are functions - they should be created at initialization - they cannot be deserialized! */ 
 		return this;
 	},
 	

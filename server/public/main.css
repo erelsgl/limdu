@@ -1,6 +1,6 @@
 body { text-align: center }
 
-h1 {  font-size: 2em;  font-weight: bold; }
+h1 {  font-size: 2em;  font-weight: bold;  color: blue; }
 
 .sendButton {  display: block;  font-size: 16pt; }
 
@@ -55,3 +55,8 @@ a img {border: none}
 .level7 {background: #eee}
 .log .content .show {font-weight:bold}
 
+#translations, #explanations {
+	text-align: left;	
+}
+
+td.label { vertical-align:top;  color: green; }

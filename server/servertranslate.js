@@ -14,6 +14,8 @@ var express = require('express')
 	, _ = require('underscore')._
 	;
 
+var pathToClassifier = "trainedClassifiers/NegotiationWinnowSingleclass.json";
+
 //
 // Step 1: Configure an application with EXPRESS
 //
@@ -50,8 +52,7 @@ app.configure('development', function(){
 // Step 2: Load the classifier
 //
 
-var serialize = require('../serialize');
-var classifier = serialize.loadSync("trainedClassifiers/NegotiationSvm.json", __dirname);
+var classifier = require('../serialize').loadSync(pathToClassifier, __dirname);
 
 
 
@@ -81,7 +82,6 @@ io.configure(function () {
 	io.set("polling duration", 10); 
 });
 
-
 io.sockets.on('connection', function (socket) {
 	console.log("SOCKETIO: New client connects");
 	
@@ -89,11 +89,18 @@ io.sockets.on('connection', function (socket) {
 	
 	socket.on('translate', function (request) {
 		console.log("SOCKETIO: New client request: "+JSON.stringify(request));
-		var classification = classifier.classify(request.text);
-		socket.emit('translation', {
-			text: request.text,
-			translations: classification
-		});
+		var classification = classifier.classify(request.text, parseInt(request.explain));
+		if (request.explain) {
+			classification.text = request.text;
+			classification.translations = classification.classes;
+			delete classification.classes;
+		} else {
+			classification = {
+				text: request.text,
+				translations: classification,
+			}
+		}
+		socket.emit('translation', classification);
 	});
 });
 

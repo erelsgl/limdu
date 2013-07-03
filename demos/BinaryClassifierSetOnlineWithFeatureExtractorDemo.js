@@ -30,9 +30,17 @@ bcs.trainOnline("an opportunity !!!", ['spam']);
 
 //console.dir(bcs);
 
+var explain=4;
+
+var stringify = function(a) {
+	return JSON.stringify(a, function(key, val) {
+		return val&&val.toPrecision? Number(val.toPrecision(3)) : val;
+	})
+}
+
 var newDocument = "cheap clocks !!!";
-console.log("'"+newDocument+"' is "+bcs.classify(newDocument));  
+console.log("'"+newDocument+"' is "+stringify(bcs.classify(newDocument, explain)));  
 newDocument = "I don't know if this is a replica of windows";
-console.log("'"+newDocument+"' is "+bcs.classify(newDocument));  
+console.log("'"+newDocument+"' is "+stringify(bcs.classify(newDocument, explain)));  
 
 console.log("BinaryClassifierSet with feature extractor demo end");

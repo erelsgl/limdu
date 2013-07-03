@@ -1,5 +1,6 @@
 [
-  {"input":"Then go home","output":["{\"Quit\": true}"]}
+  {"input":"hi","output":[]}
+, {"input":"Then go home","output":["{\"Quit\": true}"]}
 , {"input":"I reject your offer","output":["{\"Reject\": \"previous\"}"]}
 , {"input":"Start as a programmer with fast promotion track","output":["{\"Offer\": {\"Promotion Possibilities\": \"Fast promotion track\"}}","{\"Offer\": {\"Job Description\": \"Programmer\"}}"]}
 , {"input":"I would like to suggest you to work as a programmer for 12000","output":["{\"Offer\": {\"Job Description\": \"Programmer\"}}","{\"Offer\": {\"Salary\": \"12,000 NIS\"}}"]}

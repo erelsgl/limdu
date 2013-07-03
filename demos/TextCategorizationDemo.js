@@ -103,31 +103,43 @@ var createNewClassifier = createWinnowClassifier;
 //var createNewClassifier = createPerceptronClassifier;
 
 var do_domain_testing = true;
-var do_cross_validation = true;
+var do_cross_validation = false;
 var do_serialization = true;
 
 var verbosity = 0;
+var explain = 4;
+
+var datasets = require('../datasets');
+var PrecisionRecall = require("../PrecisionRecall");
+var trainAndTest = require('../trainAndTest');
 
 if (do_domain_testing) {
-	var trainAndTest = require('../trainAndTest');
-
-	var train = domainDataset;
-	var test = collectedDataset;
-	
-	//var classifier = createNewClassifier();
-	//classifier.trainBatch(train);
-	//console.log(classifier.classify("Salary 7,000 NIS"));
+	var trainSet = domainDataset;
+	var testSet = collectedDataset;
 	
 	var stats = trainAndTest(createNewClassifier,
-		train, test, verbosity);
-	if (verbosity>0) {console.log("\n\nFULL STATS:"); console.dir(stats.fullStats());}
+		trainSet, testSet, verbosity);
 	console.log("\nTrain on domain data summary: "+stats.shortStats());
+
+	var classifier = createNewClassifier();
+	classifier.trainBatch(trainSet);
+	
+	if (explain) {
+		for (var i=0; i<testSet.length; ++i) {
+			var expectedClasses = testSet[i].output;
+			var actualClasses = classifier.classify(testSet[i].input, explain);
+			if (_(expectedClasses).isEqual(actualClasses.classes)) {
+				console.log(testSet[i].input+": CORRECT");
+			} else {
+				console.log(testSet[i].input+": INCORRECT: ");
+				console.dir(actualClasses);
+			}
+		}
+	}
+	
 } // do_domain_testing
 
 if (do_cross_validation) {
-	var datasets = require('../datasets');
-	var PrecisionRecall = require("../PrecisionRecall");
-	var trainAndTest = require('../trainAndTest');
 
 	var numOfFolds = 5; // for k-fold cross-validation
 	var microAverage = new PrecisionRecall();
@@ -163,12 +175,16 @@ if (do_serialization) {
 
 	console.log("\ntest on training data:")
 	resultsBeforeReload = [];
+	var currentStats = new PrecisionRecall();
 	for (var i=0; i<dataset.length; ++i) {
 		var expectedClasses = dataset[i].output;
 		var actualClasses = classifier.classify(dataset[i].input);
-		resultsBeforeReload[i] = actualClasses;
 		if (verbosity>0) console.log(dataset[i].input+": "+actualClasses);
+		currentStats.addCases(expectedClasses, actualClasses, verbosity-1);
+		resultsBeforeReload[i] = actualClasses;
 	}
+	currentStats.calculateStats();
+	console.log(currentStats.shortStats());
 	
 	serialize.saveSync(createNewClassifier, classifier, 
 		"serializations/TextCategorizationDemo.json");

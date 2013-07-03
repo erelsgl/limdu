@@ -1,4 +1,5 @@
 var hash = require("./hash");
+var sprintf = require("sprintf").sprintf;
 
 /**
  * BinaryClassifierSet - combines several binary classifiers to produce a
@@ -132,13 +133,29 @@ BinaryClassifierSet.prototype = {
 	 */
 	classify : function(sample, explain) {
 		var classes = {};
+		if (explain) var positive_explanations = {}, negative_explanations = {};
 		for ( var aClass in this.mapClassnameToClassifier) {
 			var classifier = this.mapClassnameToClassifier[aClass];
 			var classification = classifier.classify(sample, explain);
-			if (classification > 0.5)
-				classes[aClass] = true;
+			if (explain) {
+				var explanations_string = classification.explanations.reduce(function(a,b) {
+					return a + " " + sprintf("%s%+1.2f",b.feature,b.relevance);
+				}, "");
+				if (classification.classification > 0.5) {
+					classes[aClass] = true;
+					positive_explanations[aClass]=explanations_string;
+				} else {
+					negative_explanations[aClass]=explanations_string;
+				}
+			} else {
+				if (classification > 0.5)
+					classes[aClass] = true;
+			}
 		}
-		return Object.keys(classes);
+		if (explain)
+			return {classes: Object.keys(classes), positive_explanations: positive_explanations, negative_explanations: negative_explanations};
+		else
+			return Object.keys(classes);
 	},
 
 	toJSON : function(callback) {

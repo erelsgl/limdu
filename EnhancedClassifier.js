@@ -32,6 +32,10 @@ EnhancedClassifier.prototype = {
 		//console.log(JSON.stringify(sample)+" => "+JSON.stringify(features)+" => "+JSON.stringify(array));
 		return array;
 	},
+	
+	getAllClasses: function() {  // relevant for BinaryClassifierSet
+		return this.classifier.getAllClasses();
+	},
 
 	/**
 	 * Online training: 
@@ -61,7 +65,7 @@ EnhancedClassifier.prototype = {
 			if (featureLookupTable)
 				featureLookupTable.addFeatures(datum.input);
 			return datum;
-        });
+		});
 		dataset.forEach(function(datum) {
 			if (featureLookupTable)
 				datum.input = featureLookupTable.hashToArray(datum.input);
@@ -94,8 +98,6 @@ EnhancedClassifier.prototype = {
 		/* Note: the feature extractors are functions - they should be created at initialization - they cannot be deserialized! */ 
 		return this;
 	},
-	
-	
 }
 
 module.exports = EnhancedClassifier;

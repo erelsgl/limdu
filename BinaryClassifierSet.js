@@ -36,7 +36,7 @@ BinaryClassifierSet.prototype = {
 	 *            an object whose KEYS are classes, or an array whose VALUES are
 	 *            classes.
 	 */
-	addClasses : function(classes) {
+	addClasses: function(classes) {
 		classes = hash.normalized(classes);
 		for ( var aClass in classes)
 			if (!this.mapClassnameToClassifier[aClass]) {
@@ -44,10 +44,13 @@ BinaryClassifierSet.prototype = {
 						this.binaryClassifierOptions);
 			}
 	},
+	
+	getAllClasses: function() {
+		return Object.keys(this.mapClassnameToClassifier);
+	},
 
-	makeSureClassifierExists : function(aClass) {
-		if (!this.mapClassnameToClassifier[aClass]) { // make sure classifier
-														// exists
+	makeSureClassifierExists: function(aClass) {
+		if (!this.mapClassnameToClassifier[aClass]) { // make sure classifier exists
 			this.mapClassnameToClassifier[aClass] = new this.binaryClassifierType(
 					this.binaryClassifierOptions);
 		}

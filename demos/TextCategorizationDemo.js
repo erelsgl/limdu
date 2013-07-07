@@ -67,7 +67,7 @@ var createWinnowClassifier = function() {
 		},
 		featureExtractor: FeatureExtractor.CollectionOfExtractors([
 					FeatureExtractor.WordsFromText(1),
-					//FeatureExtractor.WordsFromText(2),
+					FeatureExtractor.WordsFromText(2),
 					//FeatureExtractor.LettersFromText(3), 
 					//FeatureExtractor.LettersFromText(4),
 		]),

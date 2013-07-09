@@ -15,6 +15,12 @@ console.log("\nOriginal sentence:")
 console.dir(string);
 console.log("\nword 1-grams:")
 console.dir(FeatureExtractor.WordsFromText(1)(string));
+console.log("\nword 2-grams:")
+console.dir(FeatureExtractor.WordsFromText(2)(string));
+console.log("\nhypernyms:")
+console.dir(FeatureExtractor.Hypernyms([
+	{regexp: /demo/, feature: "demonstration", confidence: 0.9}
+])(string));
 console.log("\nletter 1-grams:")
 console.dir(FeatureExtractor.LettersFromText(1)(string));
 console.log("\nletter 2-grams:")

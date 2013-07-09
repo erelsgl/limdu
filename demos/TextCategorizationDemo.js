@@ -91,7 +91,7 @@ var createSvmClassifier = function() {
 		},
 		featureExtractor: FeatureExtractor.CollectionOfExtractors([
 					FeatureExtractor.WordsFromText(1),
-					//FeatureExtractor.WordsFromText(2),
+					FeatureExtractor.WordsFromText(2),
 					//FeatureExtractor.LettersFromText(2), 
 					//FeatureExtractor.LettersFromText(4),
 		]),
@@ -99,8 +99,8 @@ var createSvmClassifier = function() {
 	});
 }
 
-var createNewClassifier = createWinnowClassifier;
-//var createNewClassifier = createSvmClassifier;
+//var createNewClassifier = createWinnowClassifier;
+var createNewClassifier = createSvmClassifier;
 //var createNewClassifier = createPerceptronClassifier;
 
 var do_cross_dataset_testing = true;

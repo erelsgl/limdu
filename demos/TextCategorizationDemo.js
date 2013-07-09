@@ -12,6 +12,7 @@ var fs = require('fs');
 console.log("text categorization demo start");
 
 var domainDataset = JSON.parse(fs.readFileSync("../datasets/Dataset0Domain.json"));
+var grammarDataset = JSON.parse(fs.readFileSync("../datasets/Dataset0Grammar.json"));
 var collectedDatasetMulti = JSON.parse(fs.readFileSync("../datasets/Dataset1Woz.json"));
 var collectedDatasetSingle = JSON.parse(fs.readFileSync("../datasets/Dataset1Woz1class.json"));
 
@@ -118,6 +119,10 @@ if (do_cross_dataset_testing) {
 		trainAndTest(createNewClassifier, domainDataset, collectedDatasetSingle, verbosity).shortStats());
 	console.log("\nTrain on domain data, test on woz multi class: "+
 		trainAndTest(createNewClassifier, domainDataset, collectedDatasetMulti, verbosity).shortStats());
+	console.log("\nTrain on grammar data, test on woz single class: "+
+		trainAndTest(createNewClassifier, grammarDataset, collectedDatasetSingle, verbosity).shortStats());
+	console.log("\nTrain on grammar data, test on woz multi class: "+
+		trainAndTest(createNewClassifier, grammarDataset, collectedDatasetMulti, verbosity).shortStats());
 	console.log("\nTrain on woz single class, test on woz multi class: "+
 		trainAndTest(createNewClassifier, collectedDatasetSingle, collectedDatasetMulti, verbosity).shortStats());
 	console.log("\nTrain on woz multi class, test on woz single class: "+
@@ -135,29 +140,6 @@ if (do_cross_dataset_testing) {
 			collectedDatasetMultiPartition.test.concat(collectedDatasetSinglePartition.test), 
 			collectedDatasetMultiPartition.train.concat(collectedDatasetSinglePartition.train), 
 			verbosity).shortStats());
-
-	var trainSet = domainDataset;
-	var testSet = collectedDatasetMulti;
-	
-	var stats = trainAndTest(createNewClassifier,
-		trainSet, testSet, verbosity);
-
-	var classifier = createNewClassifier();
-	classifier.trainBatch(trainSet);
-	
-	if (explain) {
-		for (var i=0; i<testSet.length; ++i) {
-			var expectedClasses = testSet[i].output;
-			var actualClasses = classifier.classify(testSet[i].input, explain);
-			if (_(expectedClasses).isEqual(actualClasses.classes)) {
-				console.log(testSet[i].input+": CORRECT");
-			} else {
-				console.log(testSet[i].input+": INCORRECT: ");
-				console.dir(actualClasses);
-			}
-		}
-	}
-	
 } // do_cross_dataset_testing
 
 if (do_cross_validation) {
@@ -168,11 +150,11 @@ if (do_cross_validation) {
 	
 	var devSet = collectedDatasetMulti.concat(collectedDatasetSingle);
 
-	console.log("\nstart "+numOfFolds+"-fold cross-validation on "+domainDataset.length+" domain samples and "+devSet.length+" collected samples");
+	console.log("\nstart "+numOfFolds+"-fold cross-validation on "+grammarDataset.length+" grammar samples and "+devSet.length+" collected samples");
 	datasets.partitions(devSet, numOfFolds, function(trainSet, testSet, index) {
 		console.log("partition #"+index);
 		trainAndTest(createNewClassifier,
-			trainSet.concat(domainDataset), testSet, verbosity,
+			trainSet.concat(grammarDataset), testSet, verbosity,
 			microAverage, macroAverage
 		);
 	});
@@ -189,7 +171,7 @@ if (do_cross_validation) {
 
 if (do_serialization) {
 	var classifier = createNewClassifier();
-	var dataset = domainDataset.concat(collectedDatasetMulti).concat(collectedDatasetSingle);
+	var dataset = grammarDataset.concat(collectedDatasetMulti).concat(collectedDatasetSingle);
 
 	//dataset = dataset.slice(0,20);
 	console.log("\nstart training on "+dataset.length+" samples");

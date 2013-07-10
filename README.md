@@ -1,6 +1,8 @@
 machine-learning
 ================
 
+- UNDER CONSTRUCTION -
+
 A collection of machine learning and text categorization modules for Node.js, from various sources.
 
 Supports the following classifiers:
@@ -28,4 +30,3 @@ There are several classes and methods that work for all classifiers:
 * EnhancedClassifier - can add custom feature extractors and feature lookup-tables to any supported classifie.
 * 
 
-UNDER CONSTRUCTION

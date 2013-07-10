@@ -38,12 +38,12 @@ var createPerceptronClassifier = function() {
 					do_normalization: false, 
 				},
 		},
-		featureExtractor: FeatureExtractor.CollectionOfExtractors([
+		featureExtractor: [
 					FeatureExtractor.WordsFromText(1),
 					//FeatureExtractor.WordsFromText(2),
 					//FeatureExtractor.LettersFromText(3), 
 					//FeatureExtractor.LettersFromText(4),
-		]),
+		],
 	});
 }
 
@@ -61,12 +61,12 @@ var createWinnowClassifier = function() {
 					margin: 1,
 				},
 		},
-		featureExtractor: FeatureExtractor.CollectionOfExtractors([
+		featureExtractor: [
 					FeatureExtractor.WordsFromText(1),
 					FeatureExtractor.WordsFromText(2),
 					//FeatureExtractor.LettersFromText(3), 
 					//FeatureExtractor.LettersFromText(4),
-		]),
+		],
 	});
 }
 
@@ -82,12 +82,12 @@ var createSvmClassifier = function() {
 					C: 1.0,
 				},
 		},
-		featureExtractor: FeatureExtractor.CollectionOfExtractors([
+		featureExtractor: FeatureExtractor.[
 					FeatureExtractor.WordsFromText(1),
 					FeatureExtractor.WordsFromText(2),
 					//FeatureExtractor.LettersFromText(2), 
 					//FeatureExtractor.LettersFromText(4),
-		]),
+		],
 		featureLookupTable: new FeatureExtractor.FeatureLookupTable(),
 	});
 }

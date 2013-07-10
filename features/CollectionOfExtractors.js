@@ -3,7 +3,7 @@
  */
 
 /**
- * @param extractors - an array of feature extractors. 
+ * @param extractors - an array of other feature extractors. 
  * @param sample - a string.
  * @param features an initial hash of features (optional).
  * @return a hash with all features generated from the sample by the different extractors

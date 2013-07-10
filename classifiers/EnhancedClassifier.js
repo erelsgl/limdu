@@ -15,7 +15,10 @@ var EnhancedClassifier = function(opts) {
 		throw new Error("opts must contain classifierType");
 	}
 	this.classifierType = opts.classifierType;
-	this.featureExtractor = opts.featureExtractor;
+	this.featureExtractor = (
+		_(opts.featureExtractor).isArray()? 
+			new require('../features/CollectionOfExtractors')(opts.featureExtractor):
+			opts.featureExtractor);
 	this.classifierOptions = opts.classifierOptions;
 	this.featureLookupTable = opts.featureLookupTable;
 	
@@ -25,11 +28,12 @@ var EnhancedClassifier = function(opts) {
 EnhancedClassifier.prototype = {
 		
 	sampleToFeatures: function(sample) {
-		var features = this.featureExtractor? this.featureExtractor(sample): sample
+		var features = sample;
+		if (this.featureExtractor)
+			features = this.featureExtractor(sample);
 		var array = features;
 		if (this.featureLookupTable)
 			array = this.featureLookupTable.hashToArray(features);
-		//console.log(JSON.stringify(sample)+" => "+JSON.stringify(features)+" => "+JSON.stringify(array));
 		return array;
 	},
 	

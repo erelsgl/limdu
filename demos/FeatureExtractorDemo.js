@@ -29,6 +29,9 @@ console.dir(FeatureExtractor.LettersFromText(2)(string));
 
 console.log("\nall features together:")
 console.dir(FeatureExtractor.CollectionOfExtractors(
-	[FeatureExtractor.WordsFromText(1), FeatureExtractor.LettersFromText(1), FeatureExtractor.LettersFromText(2), FeatureExtractor.Hypernyms(hypernyms)]) (string));
+	[FeatureExtractor.WordsFromText(1), 
+	 FeatureExtractor.LettersFromText(1), 
+	 FeatureExtractor.LettersFromText(2), 
+	 FeatureExtractor.Hypernyms(hypernyms)]) (string));
 
 console.log("FeatureExtractor demo end");

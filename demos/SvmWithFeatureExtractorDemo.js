@@ -17,11 +17,11 @@ var classifier = new classifiers.EnhancedClassifier({
 	classifierOptions: {
 		C: 1.0,
 	},
-	featureExtractor: FeatureExtractor.CollectionOfExtractors([
+	featureExtractor: [
 	    FeatureExtractor.WordsFromText(1),
 	    FeatureExtractor.WordsFromText(2),
 	    FeatureExtractor.LettersFromText(3),
-	]),
+	],
 	featureLookupTable: new FeatureExtractor.FeatureLookupTable(),
 });
 

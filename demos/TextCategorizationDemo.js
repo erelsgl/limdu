@@ -5,7 +5,7 @@
  * @since 2013-06
  */
 
-var serialize = require('../serialize');
+var serialize = require('../utils/serialize');
 var _ = require('underscore')._;
 var fs = require('fs');
 
@@ -17,23 +17,20 @@ var collectedDatasetMulti = JSON.parse(fs.readFileSync("../datasets/Dataset1Woz.
 var collectedDatasetSingle = JSON.parse(fs.readFileSync("../datasets/Dataset1Woz1class.json"));
 
 var createBayesianClassifier = function() {
-	var BinaryClassifierSet = require('../BinaryClassifierSet');
-	var baseBinaryClassifierType = require('../classifier/lib/bayesian').Bayesian;
-	return new BinaryClassifierSet({
-		binaryClassifierType: baseBinaryClassifierType,
+	var classifiers = require('../classifiers');
+	return new classifiers.BinaryClassifierSet({
+		binaryClassifierType: classifiers.Bayesian,
 	});
 }
 
 var createPerceptronClassifier = function() {
-	var BinaryClassifierSet = require('../BinaryClassifierSet');
-	var EnhancedClassifier = require('../EnhancedClassifier');
-	var FeatureExtractor = require('../FeatureExtractor');
-	var baseBinaryClassifierType = require('../perceptron/perceptron_hash');
+	var classifiers = require('../classifiers');
+	var FeatureExtractor = require('../features');
 	
-	return new EnhancedClassifier({
-		classifierType: BinaryClassifierSet,
+	return new classifiers.EnhancedClassifier({
+		classifierType: classifiers.BinaryClassifierSet,
 		classifierOptions: {
-				binaryClassifierType: baseBinaryClassifierType,
+				binaryClassifierType: classifiers.Perceptron,
 				binaryClassifierOptions: {
 					learning_rate: 1,
 					retrain_count: 5,
@@ -51,15 +48,13 @@ var createPerceptronClassifier = function() {
 }
 
 var createWinnowClassifier = function() {
-	var BinaryClassifierSet = require('../BinaryClassifierSet');
-	var EnhancedClassifier = require('../EnhancedClassifier');
-	var FeatureExtractor = require('../FeatureExtractor');
-	var baseBinaryClassifierType = require('../winnow/winnow_hash');
+	var classifiers = require('../classifiers');
+	var FeatureExtractor = require('../features');
 
-	return new EnhancedClassifier({
-		classifierType: BinaryClassifierSet,
+	return new classifiers.EnhancedClassifier({
+		classifierType: classifiers.BinaryClassifierSet,
 		classifierOptions: {
-				binaryClassifierType: baseBinaryClassifierType,
+				binaryClassifierType: classifiers.Winnow,
 				binaryClassifierOptions: {
 					retrain_count: 25,
 					do_averaging: false,
@@ -76,15 +71,13 @@ var createWinnowClassifier = function() {
 }
 
 var createSvmClassifier = function() {
-	var EnhancedClassifier = require('../EnhancedClassifier');
-	var FeatureExtractor = require('../FeatureExtractor');
-	var BinaryClassifierSet = require('../BinaryClassifierSet');
-	var baseBinaryClassifierType = require('../svmjs').SVM;
+	var classifiers = require('../classifiers');
+	var FeatureExtractor = require('../features');
 	
-	return new EnhancedClassifier({
-		classifierType: BinaryClassifierSet,
+	return new classifiers.EnhancedClassifier({
+		classifierType: classifiers.BinaryClassifierSet,
 		classifierOptions: {
-				binaryClassifierType: baseBinaryClassifierType,
+				binaryClassifierType: classifiers.SVM,
 				binaryClassifierOptions: {
 					C: 1.0,
 				},
@@ -110,9 +103,9 @@ var do_serialization = true;
 var verbosity = 0;
 var explain = 0;
 
-var datasets = require('../datasets');
-var PrecisionRecall = require("../PrecisionRecall");
-var trainAndTest = require('../trainAndTest');
+var partitions = require('../utils/partitions');
+var PrecisionRecall = require("../utils/PrecisionRecall");
+var trainAndTest = require('../utils/trainAndTest');
 
 if (do_cross_dataset_testing) {
 	console.log("\nTrain on domain data, test on woz single class: "+
@@ -128,8 +121,8 @@ if (do_cross_dataset_testing) {
 	console.log("\nTrain on woz multi class, test on woz single class: "+
 		trainAndTest(createNewClassifier, collectedDatasetMulti, collectedDatasetSingle, verbosity).shortStats());
 	
-	collectedDatasetMultiPartition = datasets.partition(collectedDatasetMulti, 0, collectedDatasetMulti.length/2);
-	collectedDatasetSinglePartition = datasets.partition(collectedDatasetSingle, 0, collectedDatasetSingle.length/2);
+	collectedDatasetMultiPartition = partitions.partition(collectedDatasetMulti, 0, collectedDatasetMulti.length/2);
+	collectedDatasetSinglePartition = partitions.partition(collectedDatasetSingle, 0, collectedDatasetSingle.length/2);
 	console.log("\nTrain on mixed, test on mixed: "+
 		trainAndTest(createNewClassifier, 
 			collectedDatasetMultiPartition.train.concat(collectedDatasetSinglePartition.train), 
@@ -151,7 +144,7 @@ if (do_cross_validation) {
 	var devSet = collectedDatasetMulti.concat(collectedDatasetSingle);
 
 	console.log("\nstart "+numOfFolds+"-fold cross-validation on "+grammarDataset.length+" grammar samples and "+devSet.length+" collected samples");
-	datasets.partitions(devSet, numOfFolds, function(trainSet, testSet, index) {
+	partitions.partitions(devSet, numOfFolds, function(trainSet, testSet, index) {
 		console.log("partition #"+index);
 		trainAndTest(createNewClassifier,
 			trainSet.concat(grammarDataset), testSet, verbosity,

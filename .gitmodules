@@ -4,8 +4,8 @@
 [submodule "svmjs"]
 	path = svmjs
 	url = https://github.com/erelsgl/svmjs.git
-[submodule "brain"]
-	path = brain
+[submodule "classifiers/brain"]
+	path = classifiers/brain
 	url = https://github.com/erelsgl/brain.git
 [submodule "apparatus"]
 	path = apparatus

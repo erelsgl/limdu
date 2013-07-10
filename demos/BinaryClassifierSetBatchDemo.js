@@ -1,5 +1,5 @@
 /**
- * Demonstrates batch training of a binary classifier set - combining several binary classifiers to produce a multi-class classifier.cross-validation testing of a classifier.
+ * Demonstrates batch training of a binary classifier set - combining several binary classifiers to produce a multi-class classifier.
  * 
  * @author Erel Segal-Halevi
  * @since 2013-06

@@ -3,6 +3,7 @@
  */
 
 var fs = require('fs');
+var hash = require('./hash');
 
 /**
  * Read a dataset from a text file.
@@ -22,19 +23,10 @@ var fs = require('fs');
  */
 var read = function(pathToFile) {
 	var dataset=[];
-	var lines = fs.readFileSync(pathToFile, 'utf8').split(/[\n\r]/g);
 	var allClasses = {};
-	for (var i=0; i<lines.length; ++i) {
-		var line = lines[i].trim();
-		if (/^#/.test(line) || line.length<1) 
-			continue; // skip comments and empty lines
-		var sampleAndClasses = line.split(/\s*\/\s*/);
-		var sample = sampleAndClasses[0];
-		if (!sampleAndClasses[1]) {
-			console.dir(sampleAndClasses);
-			throw new Error("empty classes");
-		}
-		var classes = sampleAndClasses[1].split(" AND ");
+	var datasetHash = hash.fromString(fs.readFileSync(pathToFile, 'utf8'));
+	for (var sample in datasetHash) {
+		var classes = datasetHash[sample].split(" AND ");
 		dataset.push({input: sample, output: classes});
 		for (var c=0; c<classes.length; ++c)
 			allClasses[classes[c]]=true;

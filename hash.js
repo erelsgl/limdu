@@ -3,11 +3,12 @@
  * 
  * @author Erel Segal-Halevi
  * @since 2013-06
+ * @note see performance tests of adding hashes versus arrays here: http://jsperf.com/adding-sparse-feature-vectors
  */
 
 
 /**
- * Convert anything to a hash (representing a set):
+ * Convert any object to a hash (representing a set):
  *
  * - an array ['a', 'b', 'c'..] to a hash {'a': true, 'b': true, 'c': true};
  * - a string 'a' to a hash {'a': true}.
@@ -27,7 +28,37 @@ exports.normalized = function(object) {
 	}
 }
 
+/**
+ * create a hash from a string in the format:
  
+ * key1 / value1
+ * key2 / value2
+ * ...
+ *
+ * Comments start with '#' and end with end-of-line.
+ */
+exports.fromString = function(string) {
+	var lines = string.split(/[\n\r]/g);
+	var hash = {};
+	for (var i=0; i<lines.length; ++i) {
+		var line = lines[i].trim();
+		line = line.replace(/\s*#.*?$/, "");  // remove comments
+		if (line.length<1) continue; // skip empty lines
+
+		var parts = line.split(/\s*\/\s*/);
+		if (parts.length<2 || !parts[0] || !parts[1]) {
+			console.dir(parts);
+			throw new Error("empty key or value");
+		}
+		var key = parts[0];
+		var value = parts[1];
+		if (key in hash) {
+			console.warn("key "+key+" already exists. Old value="+hash[key]+", new value="+value);
+		}
+		hash[key]=value;
+	}
+	return hash;
+}
  
 /**
  * add one hash to another.

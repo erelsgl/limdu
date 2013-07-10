@@ -192,11 +192,11 @@ if (do_serialization) {
 	currentStats.calculateStats();
 	console.log(currentStats.shortStats());
 	
-	serialize.saveSync(createNewClassifier, classifier, 
-		"serializations/TextCategorizationDemo.json");
+	fs.writeFileSync("serializations/TextCategorizationDemo.json", 
+		serialize.toString(createNewClassifier, classifier), 'utf8');
 
-	var classifier2 = serialize.loadSync(
-		"serializations/TextCategorizationDemo.json", __dirname);
+	var classifier2 = serialize.fromString(
+		fs.readFileSync("serializations/TextCategorizationDemo.json"), __dirname);
 
 	console.log("\ntest on training data after reload:")
 	for (var i=0; i<dataset.length; ++i) {

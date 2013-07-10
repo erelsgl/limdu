@@ -4,10 +4,13 @@ var _ = require("underscore")._;
  * EnhancedClassifier - wraps any classifier with feature-extractors and feature-lookup-tables.
  * 
  * @param opts
- * Must contain the option: 'classifierType', which is the base type of the classifier.
- * May also contain the option 'classifierOptions' - options that will be sent to the base classifier.
- * May also contain the option 'featureExtractor'.
- * May also contain the option 'featureLookupTable' - an instance of FeatureLookupTable for converting features to numeric indices and back.
+ * Obligatory option: 'classifierType', which is the base type of the classifier.
+ * Optional:
+ * * 'classifierOptions' - options that will be sent to the base classifier.
+ * * 'featureExtractor' - a single feature-extractor (see the "features" folder), or an array of extractors, for extracting features from training and classification samples.
+ * * 'featureExtractorForClassification' - additional feature extractor[s], for extracting features from samples during classification. Used for domain adaptation.
+ * * 'featureLookupTable' - an instance of FeatureLookupTable for converting features to numeric indices and back.
+ * * 'pastTrainingSamples' - an array that keeps all past training samples, to enable retraining. 
  */
 var EnhancedClassifier = function(opts) {
 	if (!opts.classifierType) {
@@ -15,22 +18,34 @@ var EnhancedClassifier = function(opts) {
 		throw new Error("opts must contain classifierType");
 	}
 	this.classifierType = opts.classifierType;
-	this.featureExtractor = (
-		_(opts.featureExtractor).isArray()? 
-			new require('../features/CollectionOfExtractors')(opts.featureExtractor):
-			opts.featureExtractor);
+	var CollectionOfExtractors = new require('../features/CollectionOfExtractors');
+	if (opts.featureExtractor) {
+		this.featureExtractor = (
+			_(opts.featureExtractor).isArray()? 
+				new CollectionOfExtractors(opts.featureExtractor):
+				opts.featureExtractor);
+	}
+	if (opts.featureExtractorForClassification) {
+		if (_(opts.featureExtractorForClassification).isArray()) {
+			opts.featureExtractorForClassification.unshift(this.featureExtractor);
+		} else {
+			opts.featureExtractorForClassification = [this.featureExtractor, opts.featureExtractorForClassification];
+		}
+		this.featureExtractorForClassification = new CollectionOfExtractors(opts.featureExtractorForClassification);
+	}
 	this.classifierOptions = opts.classifierOptions;
 	this.featureLookupTable = opts.featureLookupTable;
+	this.pastTrainingSamples = opts.pastTrainingSamples;
 	
 	this.classifier = new this.classifierType(this.classifierOptions);
 }
 
 EnhancedClassifier.prototype = {
 		
-	sampleToFeatures: function(sample) {
+	sampleToFeatures: function(sample, featureExtractor) {
 		var features = sample;
-		if (this.featureExtractor)
-			features = this.featureExtractor(sample);
+		if (featureExtractor)
+			features = featureExtractor(sample);
 		var array = features;
 		if (this.featureLookupTable)
 			array = this.featureLookupTable.hashToArray(features);
@@ -49,7 +64,9 @@ EnhancedClassifier.prototype = {
 	 */
 	trainOnline: function(sample, classes) {
 		this.classifier.trainOnline(
-			this.sampleToFeatures(sample), classes);
+			this.sampleToFeatures(sample, this.featureExtractor), classes);
+		if (this.pastTrainingSamples)
+			this.pastTrainingSamples.push({input: sample, output: classes});
 	},
 
 	/**
@@ -60,9 +77,11 @@ EnhancedClassifier.prototype = {
 	trainBatch: function(dataset) {
 		var featureLookupTable = this.featureLookupTable;
 		var featureExtractor = this.featureExtractor;
-		//console.log("BEFORE: "); console.dir(dataset);
+		var pastTrainingSamples = this.pastTrainingSamples;
 
 		dataset = dataset.map(function(datum) {
+			if (pastTrainingSamples)
+				pastTrainingSamples.push(datum);
 			datum = _(datum).clone();
 			if (featureExtractor)
 				datum.input = featureExtractor(datum.input);
@@ -74,8 +93,15 @@ EnhancedClassifier.prototype = {
 			if (featureLookupTable)
 				datum.input = featureLookupTable.hashToArray(datum.input);
 		});
-		//console.log("AFTER: "); console.dir(dataset);
 		this.classifier.trainBatch(dataset, this.classifierOptions);
+	},
+
+	retrain: function() {
+		if (this.pastTrainingSamples) {
+			this.trainBatch(this.pastTrainingSamples);
+		} else {
+			throw new Error("No pastTrainingSamples array - can't retrain");
+		}
 	},
 
 	/**
@@ -85,7 +111,7 @@ EnhancedClassifier.prototype = {
 	 */
 	classify: function(sample, explain) {
 		return this.classifier.classify(
-			this.sampleToFeatures(sample), explain);
+			this.sampleToFeatures(sample, this.featureExtractor), explain);
 	},
 	
 	toJSON : function(callback) {

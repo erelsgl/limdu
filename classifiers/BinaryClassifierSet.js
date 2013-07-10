@@ -49,13 +49,6 @@ BinaryClassifierSet.prototype = {
 		return Object.keys(this.mapClassnameToClassifier);
 	},
 
-	makeSureClassifierExists: function(aClass) {
-		if (!this.mapClassnameToClassifier[aClass]) { // make sure classifier exists
-			this.mapClassnameToClassifier[aClass] = new this.binaryClassifierType(
-					this.binaryClassifierOptions);
-		}
-	},
-
 	/**
 	 * Tell the classifier that the given sample belongs to the given classes.
 	 * 
@@ -187,6 +180,14 @@ BinaryClassifierSet.prototype = {
 			this.mapClassnameToClassifier[aClass].fromJSON(json[aClass]);
 		}
 		return this;
+	},
+	
+	// private function: 
+	makeSureClassifierExists: function(aClass) {
+		if (!this.mapClassnameToClassifier[aClass]) { // make sure classifier exists
+			this.mapClassnameToClassifier[aClass] = new this.binaryClassifierType(
+					this.binaryClassifierOptions);
+		}
 	},
 }
 

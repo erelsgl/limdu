@@ -19,6 +19,10 @@ module.exports = function(hypernyms) {
 		if (!features) features = {};
 		hypernyms.forEach(function(hypernym) {
 			var matches = null;
+			if (!hypernym.regexp.global) {
+				console.warn("hypernym regexp, "+hypernym.regexp+", is not global - skipping");
+				hypernym.global = true;
+			}
 			while ((matches = hypernym.regexp.exec(sample)) !== null) {
 				var feature = matches[0].replace(hypernym.regexp, hypernym.feature);
 				features[feature]=hypernym.confidence;

@@ -1,11 +1,9 @@
 /**
- * Static Utilities for serializing classifiers (or other objects).
+ * Static Utilities for serializing classifiers (or other objects) to strings, and vice versa.
  * 
  * @author Erel Segal-Halevi
  * @since 2013-06
  */
-
-var fs = require('fs');
 
 
 /**

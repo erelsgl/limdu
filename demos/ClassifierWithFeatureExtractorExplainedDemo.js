@@ -7,21 +7,20 @@
  * @since 2013-07
  */
 
-var util = require('util');
-var EnhancedClassifier = require('../EnhancedClassifier');
-
 console.log("ClassifierWithFeatureExtractorExplained demo start");
 
-var spamClassifier = new EnhancedClassifier({
-	classifierType:   require('../winnow/winnow_hash'),
-	featureExtractor: require('../FeatureExtractor').WordsFromText(1)
+var classifiers = require('../classifiers');
+
+
+var spamClassifier = new classifiers.EnhancedClassifier({
+	classifierType:   classifiers.Winnow,
+	featureExtractor: require('../features').WordsFromText(1)
 });
 spamClassifier.trainBatch([
 	{input: "cheap replica watch es", output: 1},
 	{input: "your watch is ready", output: 0},
 	{input: "I don't know if this works on windows", output: 0},
 	{input: "cheap windows !!!", output: 1},
-	//{input: "get this for cheap !!!", output: 1},
 ]);
 
 var explain = 3;

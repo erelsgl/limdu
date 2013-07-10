@@ -99,8 +99,8 @@ var createSvmClassifier = function() {
 	});
 }
 
-//var createNewClassifier = createWinnowClassifier;
-var createNewClassifier = createSvmClassifier;
+var createNewClassifier = createWinnowClassifier;
+//var createNewClassifier = createSvmClassifier;
 //var createNewClassifier = createPerceptronClassifier;
 
 var do_cross_dataset_testing = true;

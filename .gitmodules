@@ -1,12 +1,12 @@
-[submodule "classifier"]
-	path = classifier
+[submodule "classifiers/bayesian"]
+	path = classifiers/bayesian
 	url = https://github.com/erelsgl/classifier.git
-[submodule "svmjs"]
-	path = svmjs
+[submodule "classifiers/svmjs"]
+	path = classifiers/svmjs
 	url = https://github.com/erelsgl/svmjs.git
 [submodule "classifiers/brain"]
 	path = classifiers/brain
 	url = https://github.com/erelsgl/brain.git
-[submodule "apparatus"]
-	path = apparatus
+[submodule "classifiers/apparatus"]
+	path = classifiers/apparatus
 	url = https://github.com/erelsgl/apparatus.git

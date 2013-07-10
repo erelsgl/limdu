@@ -7,7 +7,7 @@
 
 console.log("FeatureLookupTable demo start");
 
-var FeatureLookupTable = require('../FeatureExtractor/FeatureLookupTable');
+var FeatureLookupTable = require('../features/FeatureLookupTable');
 
 console.log("\n adding samples incrementally:");
 var table = new FeatureLookupTable();

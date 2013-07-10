@@ -1,24 +1,20 @@
 /**
  * Demonstrates a binary classifier set with a feature extractor.
- * A neural network, batch training.
+ * Neural network, batch training.
  * 
  * @author Erel Segal-Halevi
  * @since 2013-06
  */
-
-var util = require('util');
-var BinaryClassifierSet = require('../BinaryClassifierSet');
-var EnhancedClassifier = require('../EnhancedClassifier');
-
+ 
 console.log("BinaryClassifierSet with feature extractor batch demo start");
 
-var bcs = new BinaryClassifierSet({
-	binaryClassifierType: require('../EnhancedClassifier'),
+var classifiers = require('../classifiers');
+
+var bcs = new classifiers.BinaryClassifierSet({
+	binaryClassifierType: classifiers.EnhancedClassifier,
 	binaryClassifierOptions: {
-		classifierType:   require('../brain').NeuralNetwork,
-		//classifierType:   require('../winnow/winnow_hash'),
-		//classifierType:   require('../perceptron/perceptron_hash'),
-		featureExtractor: require('../FeatureExtractor').WordsFromText(1)
+		classifierType:   classifiers.NeuralNetwork,
+		featureExtractor: require('../features').WordsFromText(1)
 	}
 });
 bcs.trainBatch([

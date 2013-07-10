@@ -5,20 +5,20 @@
  * @since 2013-06
  */
 
-console.log("Datasets demo start");
+console.log("Partitions demo start");
 
-var datasets = require('../datasets');
+var partitions = require('../utils/partitions');
 
 // A dummy dataset with 10 documents:
 var dataset = [1,2,3,4,5,6,7,8,9,10];
 
 console.log("5 partitions, with a test-set of 2 in each:");
-datasets.partitions(dataset, 5, function(train, test, index) {
+partitions.partitions(dataset, 5, function(train, test, index) {
 	console.log("\t"+index+": "+train+" / "+test);	
 });
 console.log("3 partitions, with a test-set of 3 in each:");
-datasets.partitions(dataset, 3, function(train, test, index) {
+partitions.partitions(dataset, 3, function(train, test, index) {
 	console.log("\t"+index+": "+train+" / "+test);	
 });
 
-console.log("Datasets demo end");
+console.log("Partitions demo end");

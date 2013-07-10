@@ -1,4 +1,4 @@
-var hash = require("./hash");
+var hash = require("../utils/hash");
 var sprintf = require("sprintf").sprintf;
 
 /**
@@ -137,10 +137,10 @@ BinaryClassifierSet.prototype = {
 	classify : function(sample, explain) {
 		var classes = {};
 		if (explain) var positive_explanations = {}, negative_explanations = {};
-		for ( var aClass in this.mapClassnameToClassifier) {
+		for (var aClass in this.mapClassnameToClassifier) {
 			var classifier = this.mapClassnameToClassifier[aClass];
 			var classification = classifier.classify(sample, explain);
-			if (explain) {
+			if (classification.explanations) {
 				var explanations_string = classification.explanations.reduce(function(a,b) {
 					return a + " " + sprintf("%s%+1.2f",b.feature,b.relevance);
 				}, "");

@@ -1,5 +1,3 @@
-var hash = require("../hash");
-
 /**
  * A simple Perceptron implementation.
  *
@@ -19,7 +17,9 @@ var hash = require("../hash");
  *  <li>retrain_count: in batch training mode, how many times to retrain. 0=no retrain. Default=1.
  * 
  */
- 
+
+var hash = require("../../utils/hash");
+
 var PerceptronHash = function(opts) {
 	if (!opts) opts = {};
 	

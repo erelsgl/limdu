@@ -6,18 +6,16 @@
  * @since 2013-06
  */
 
-var util = require('util');
-var BinaryClassifierSet = require('../BinaryClassifierSet');
-var EnhancedClassifier = require('../EnhancedClassifier');
-
 console.log("BinaryClassifierSet with feature extractor demo start");
 
-var bcs = new BinaryClassifierSet({
-	binaryClassifierType: require('../EnhancedClassifier'),
+var classifiers = require('../classifiers');
+
+var bcs = new classifiers.BinaryClassifierSet({
+	binaryClassifierType: classifiers.EnhancedClassifier,
 	binaryClassifierOptions: {
-		//classifierType:   require('../perceptron/perceptron_hash'),
-		classifierType:   require('../winnow/winnow_hash'),
-		featureExtractor: require('../FeatureExtractor').WordsFromText(1)
+		classifierType:   classifiers.Perceptron,
+		//classifierType:   classifiers.Winnow,
+		featureExtractor: require('../features').WordsFromText(1)
 	}
 });
 
@@ -27,8 +25,6 @@ bcs.trainOnline("I don't know if this works on windows", ['windows', 'important'
 bcs.trainOnline("cheap windows !!!", ['windows', 'spam']);
 bcs.trainOnline("get this for cheap !!!", ['spam']);
 bcs.trainOnline("an opportunity !!!", ['spam']);
-
-//console.dir(bcs);
 
 var explain=4;
 

@@ -1,17 +1,17 @@
 /**
- * Demonstrates batch training of a binary classifier set - combining several binary classifiers to produce a multi-class classifier.
+ * Demonstrates binary classifier set - combining several binary classifiers to produce a multi-class classifier.
+ * Bayesian classifier, batch training.
  * 
  * @author Erel Segal-Halevi
  * @since 2013-06
  */
 
-var util = require('util');
-var BinaryClassifierSet = require('../BinaryClassifierSet');
-
 console.log("BinaryClassifierSet batch-learning demo start");
 
-var bcs = new BinaryClassifierSet({
-	'binaryClassifierType': require('../classifier').Bayesian
+var classifiers = require('../classifiers');
+
+var bcs = new classifiers.BinaryClassifierSet({
+	'binaryClassifierType': classifiers.Bayesian
 });
 bcs.trainBatch([
 	{input: "cheap replica watch es", output: ['spam', 'clocks']},
@@ -20,8 +20,6 @@ bcs.trainBatch([
 	{input: "cheap windows !!!", output: ['windows', 'spam']},
 	{input: "get this for cheap !!!", output: ['spam']},
 ]);
-
-//console.log(JSON.stringify(bcs.toJSON()));
 
 var newDocument = "cheap clocks !!!";
 console.log("'"+newDocument+"' is "+bcs.classify(newDocument));  

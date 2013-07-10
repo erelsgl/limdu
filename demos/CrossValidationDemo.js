@@ -5,13 +5,13 @@
  * @since 2013-06
  */
 
-var fs = require('fs');
-var datasets = require('../datasets');
-var PrecisionRecall = require("../PrecisionRecall");
-var trainAndTest = require('../trainAndTest');
-var _ = require('underscore')._;
-
 console.log("cross-validation demo start");
+
+var fs = require('fs');
+var datasets = require('../utils/partitions');
+var PrecisionRecall = require("../utils/PrecisionRecall");
+var trainAndTest = require('../utils/trainAndTest');
+var _ = require('underscore')._;
 
 var dataset = JSON.parse(fs.readFileSync("../datasets/Dataset1Woz.json"));
 var numOfFolds = 5; // for k-fold cross-validation
@@ -21,11 +21,10 @@ var macroAverage = new PrecisionRecall();
 var verbosity = 1;
 
 function createNewClassifier() {
-	var FeatureExtractor = require('../FeatureExtractor');
-	var BinaryClassifierSet = require('../BinaryClassifierSet');
-	
-	return new BinaryClassifierSet({
-		binaryClassifierType: require('../classifier/lib/bayesian').Bayesian,
+	var FeatureExtractor = require('../features');
+	var classifiers = require('../classifiers');
+	return new classifiers.BinaryClassifierSet({
+		binaryClassifierType: classifiers.Bayesian,
 	});
 }
 

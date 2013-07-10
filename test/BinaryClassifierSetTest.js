@@ -6,10 +6,15 @@
  */
 
 var util = require('util');
-var BinaryClassifierSet = require('../BinaryClassifierSet');
+
+var createNewClassifier = function() {
+	var classifiers = require('../classifiers');
+	return new classifiers.BinaryClassifierSet({
+		binaryClassifierType: classifiers.Bayesian
+	});
+}
 
 describe('Binary Classifier Set', function() {
-	var grammar;
 	it('should read from file', function() {
 		grammar = scfg.fromString(fs.readFileSync("../grammars/Grammar1Flat.txt", 'utf8'));
 	})

@@ -1,6 +1,4 @@
 /**
- * IN CONSTRUCTION - NOT OPERATIONAL YET!
- 
  * A version of Modified Balanced Winnow (Carvalho and Cohen, 2006)
  *    where the weights vector is a hash (not a numeric array), 
  *    so the features can be any objects (not just nubmers).
@@ -14,8 +12,8 @@
  *  <li>retrain_count - number of times to retrain in batch mode. Default = 0 (no retrain).
  */
  
-var hash = require("../hash");
-var sprintf = require("sprintf").sprintf;
+var hash = require("../../utils/hash");
+var sprintf = require("sprintf").sprintf;  // for explanations
 
 function WinnowHash(opts) {
 	if (!opts) opts = {}

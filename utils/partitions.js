@@ -1,9 +1,5 @@
 /**
- * Utilities for handling datasets of documents for training and testing.
- * 
- * Utilities include:
- * 
- * - partitions(dataset, numOfPartitions, callback)
+ * Utilities for partitioning datasets of documents for training and testing.
  * 
  * @author Erel Segal-haLevi
  * @since 2013-06

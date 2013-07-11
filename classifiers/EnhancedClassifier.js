@@ -1,4 +1,5 @@
 var _ = require("underscore")._;
+var CollectionOfExtractors = require('../features/CollectionOfExtractors');
 
 /**
  * EnhancedClassifier - wraps any classifier with feature-extractors and feature-lookup-tables.
@@ -18,21 +19,8 @@ var EnhancedClassifier = function(opts) {
 		throw new Error("opts must contain classifierType");
 	}
 	this.classifierType = opts.classifierType;
-	var CollectionOfExtractors = new require('../features/CollectionOfExtractors');
-	if (opts.featureExtractor) {
-		this.featureExtractor = (
-			_(opts.featureExtractor).isArray()? 
-				new CollectionOfExtractors(opts.featureExtractor):
-				opts.featureExtractor);
-	}
-	if (opts.featureExtractorForClassification) {
-		if (_(opts.featureExtractorForClassification).isArray()) {
-			opts.featureExtractorForClassification.unshift(this.featureExtractor);
-		} else {
-			opts.featureExtractorForClassification = [this.featureExtractor, opts.featureExtractorForClassification];
-		}
-		this.featureExtractorForClassification = new CollectionOfExtractors(opts.featureExtractorForClassification);
-	}
+	this.setFeatureExtractor(opts.featureExtractor);
+	this.setFeatureExtractorForClassification(opts.featureExtractorForClassification);
 	this.classifierOptions = opts.classifierOptions;
 	this.featureLookupTable = opts.featureLookupTable;
 	this.pastTrainingSamples = opts.pastTrainingSamples;
@@ -41,6 +29,28 @@ var EnhancedClassifier = function(opts) {
 }
 
 EnhancedClassifier.prototype = {
+
+	/** Set the main feature extactor, used for both training and classification. */
+	setFeatureExtractor: function (featureExtractor) {
+		if (featureExtractor) {
+			this.featureExtractor = (
+				_(featureExtractor).isArray()? 
+					new CollectionOfExtractors(featureExtractor):
+					featureExtractor);
+		}
+	},
+
+	/** Set an additional feature extractor, for classification only. */
+	setFeatureExtractorForClassification: function (featureExtractorForClassification) {
+		if (featureExtractorForClassification) {
+			if (_(featureExtractorForClassification).isArray()) {
+				featureExtractorForClassification.unshift(this.featureExtractor);
+			} else {
+				featureExtractorForClassification = [this.featureExtractor, featureExtractorForClassification];
+			}
+			this.featureExtractorForClassification = new CollectionOfExtractors(featureExtractorForClassification);
+		}
+	},
 		
 	sampleToFeatures: function(sample, featureExtractor) {
 		var features = sample;
@@ -111,7 +121,7 @@ EnhancedClassifier.prototype = {
 	 */
 	classify: function(sample, explain) {
 		return this.classifier.classify(
-			this.sampleToFeatures(sample, this.featureExtractor), explain);
+			this.sampleToFeatures(sample, this.featureExtractorForClassification? this.featureExtractorForClassification: this.featureExtractor), explain);
 	},
 	
 	toJSON : function(callback) {

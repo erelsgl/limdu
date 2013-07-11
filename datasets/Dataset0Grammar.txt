@@ -1,4 +1,4 @@
-# A dataset generated automatically from the grammar
+# A dataset generated automatically from a synchronous context-free grammar
 #
 I offer a pension of 0 percent / {"Offer": {"Pension Fund": "0%"}}
 I offer a pension of 10 percent / {"Offer": {"Pension Fund": "10%"}}

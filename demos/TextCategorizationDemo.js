@@ -66,7 +66,7 @@ var createWinnowClassifier = function() {
 					FeatureExtractor.WordsFromText(2),
 					//FeatureExtractor.LettersFromText(3), 
 					//FeatureExtractor.LettersFromText(4),
-		],
+		],		
 	});
 }
 
@@ -82,7 +82,7 @@ var createSvmClassifier = function() {
 					C: 1.0,
 				},
 		},
-		featureExtractor: FeatureExtractor.[
+		featureExtractor: [
 					FeatureExtractor.WordsFromText(1),
 					FeatureExtractor.WordsFromText(2),
 					//FeatureExtractor.LettersFromText(2), 

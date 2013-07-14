@@ -10,6 +10,7 @@
  *  <li>default_positive_weight, default_negative_weight: default weight for a newly discovered feature (default = 2, 1).
  *  <li>promotion, demotion, threshold, margin - explained in the paper.
  *  <li>retrain_count - number of times to retrain in batch mode. Default = 0 (no retrain).
+ *  <li>continuous_output (boolean) - if true, return a classification between 0 and 1. I false, return binary output - 0 or 1. 
  */
  
 var hash = require("../../utils/hash");
@@ -30,6 +31,7 @@ function WinnowHash(opts) {
 	this.demotion = opts.demotion || 0.5;
 	this.margin = opts.margin || 1.0;
 	this.retrain_count = opts.retrain_count || 0;
+	this.continuous_output = opts.continuous_output || false;
 		
 	this.positive_weights = {};
 	this.negative_weights = {};
@@ -83,7 +85,7 @@ WinnowHash.prototype = {
 
 			if (this.debug) console.log('> features',features,' this.positive_weights ',this.positive_weights,', this.negative_weights: ',this.negative_weights);
 
-			var score = this.perceive_features(features, /*net=*/true, this.positive_weights, this.negative_weights);
+			var score = this.perceive_features(features, /*continuous_output=*/true, this.positive_weights, this.negative_weights);
 				 // always use the running 'weights' vector for training, and NOT the weights_sum!
 
 			if (this.debug) console.log('> training ',features,', expecting: ',expected, ' got score=', score);
@@ -145,19 +147,13 @@ WinnowHash.prototype = {
 
 		/**
 		 * @param inputs a SINGLE sample; a hash (feature => value).
-		 * @param net if true, return the net classification score. If false [default], return 0 or 1.
+		 * @param continuous_output if true, return the net classification score. If false [default], return 0 or 1.
 		 * @param explain - int - if positive, an "explanation" field, with the given length, will be added to the result.  
 		 * @param positive_weights_for_classification, negative_weights_for_classification, explain) {
 		  the weights vector to use (either the running 'weights' or 'weights_sum').  
 		 * @return the classification of the sample.
 		 */
-		perceive_features: function(features, net, positive_weights_for_classification, negative_weights_for_classification, explain) {
-			//var positive_score = hash.inner_product(features, positive_weights_for_classification); 
-			//if (isNaN(positive_score)) throw new Error("positive_score is NaN! features="+JSON.stringify(features)+" positive weights="+JSON.stringify(positive_weights_for_classification));
-			//var negative_score = hash.inner_product(features, negative_weights_for_classification); 
-			//if (isNaN(negative_score)) throw new Error("negative_score is NaN! features="+JSON.stringify(features)+" negative weights="+JSON.stringify(negative_weights_for_classification));
-			//var score = positive_score - negative_score - this.threshold;
-			
+		perceive_features: function(features, continuous_output, positive_weights_for_classification, negative_weights_for_classification, explain) {
 			var score = 0;
 			if (explain) var explanations = [];
 			for (var feature in features) {
@@ -179,7 +175,7 @@ WinnowHash.prototype = {
 			if (isNaN(score)) throw new Error("score is NaN! positive_score="+positive_score+" negative_score="+negative_score+" this.threshold="+this.threshold);
 
 			if (this.debug) console.log("> perceive_features ",features," = ",score);
-			var result = (net? score: (score > 0 ? 1 : 0));
+			var result = (continuous_output? score: (score > 0 ? 1 : 0));
 			if (explain) {
 				explanations.sort(function(a,b){return Math.abs(b.relevance)-Math.abs(a.relevance)});
 				explanations.splice(explain, explanations.length-explain);  // "explain" is the max length of explanation.
@@ -196,12 +192,12 @@ WinnowHash.prototype = {
 
 		/**
 		 * @param inputs a SINGLE sample (a hash of feature-value pairs).
-		 * @param net if true, return the net classification value. If false [default], return 0 or 1.
+		 * @param continuous_output if true, return the net classification value. If false [default], return 0 or 1.
 		 * @param explain - int - if positive, an "explanation" field, with the given length, will be added to the result.  
 		 * @return the classification of the sample.
 		 */
-		perceive: function(features, net, explain) {
-			return this.perceive_features(this.normalized_features(features, /*remove_unknown_features=*/true), net,
+		perceive: function(features, continuous_output, explain) {
+			return this.perceive_features(this.normalized_features(features, /*remove_unknown_features=*/true), continuous_output,
 				(this.do_averaging? this.positive_weights_sum: this.positive_weights),
 				(this.do_averaging? this.negative_weights_sum: this.negative_weights),
 				explain );
@@ -214,7 +210,7 @@ WinnowHash.prototype = {
 		 * @return the binary classification - 0 or 1.
 		 */
 		classify: function(features, explain) {
-			return this.perceive(features, false, explain);
+			return this.perceive(features, this.continuous_output, explain);
 		},
 }
 

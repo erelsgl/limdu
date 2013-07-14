@@ -9,7 +9,7 @@
 
 /**
  * Adds hypernym features to the given feature-vector.
- * @param hypernyms - an array of objects [regexp: /regexp/, feature: "feature", confidence: confidence]
+ * @param hypernyms - an array of objects {regexp: /regexp/g, feature: "feature", confidence: confidence}
  * @param sample - a string.
  * @param features an initial hash of features (optional).
  * @return a hash with all the different letter n-grams contained in the given sentence.
@@ -25,6 +25,7 @@ module.exports = function(hypernyms) {
 			}
 			while ((matches = hypernym.regexp.exec(sample)) !== null) {
 				var feature = matches[0].replace(hypernym.regexp, hypernym.feature);
+				//console.log("\tmatch:  feature="+feature);
 				features[feature]=hypernym.confidence;
 			}
 		});

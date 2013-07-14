@@ -12,3 +12,10 @@ module.exports = {
 	BinaryClassifierSet: require('./BinaryClassifierSet'),
 	EnhancedClassifier: require('./EnhancedClassifier'),
 }
+
+// add a "classify and log" method to all classifiers, for demos:
+for (var classifierClass in module.exports) {
+	module.exports[classifierClass].prototype.classifyAndLog = function(sample) {
+		console.log(sample+" is "+this.classify(sample));
+	}
+}

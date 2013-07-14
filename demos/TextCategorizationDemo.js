@@ -17,15 +17,15 @@ var collectedDatasetMulti = JSON.parse(fs.readFileSync("../datasets/Dataset1Woz.
 var collectedDatasetSingle = JSON.parse(fs.readFileSync("../datasets/Dataset1Woz1class.json"));
 
 var createBayesianClassifier = function() {
-	var classifiers = require('../classifiers');
+	var classifiers = require(__dirname+'/../classifiers');
 	return new classifiers.BinaryClassifierSet({
 		binaryClassifierType: classifiers.Bayesian,
 	});
 }
 
 var createPerceptronClassifier = function() {
-	var classifiers = require('../classifiers');
-	var FeatureExtractor = require('../features');
+	var classifiers = require(__dirname+'/../classifiers');
+	var FeatureExtractor = require(__dirname+'/../features');
 	
 	return new classifiers.EnhancedClassifier({
 		classifierType: classifiers.BinaryClassifierSet,
@@ -48,8 +48,8 @@ var createPerceptronClassifier = function() {
 }
 
 var createWinnowClassifier = function() {
-	var classifiers = require('../classifiers');
-	var FeatureExtractor = require('../features');
+	var classifiers = require(__dirname+'/../classifiers');
+	var FeatureExtractor = require(__dirname+'/../features');
 
 	return new classifiers.EnhancedClassifier({
 		classifierType: classifiers.BinaryClassifierSet,
@@ -71,8 +71,8 @@ var createWinnowClassifier = function() {
 }
 
 var createSvmClassifier = function() {
-	var classifiers = require('../classifiers');
-	var FeatureExtractor = require('../features');
+	var classifiers = require(__dirname+'/../classifiers');
+	var FeatureExtractor = require(__dirname+'/../features');
 	
 	return new classifiers.EnhancedClassifier({
 		classifierType: classifiers.BinaryClassifierSet,

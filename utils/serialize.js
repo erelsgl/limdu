@@ -51,7 +51,7 @@ exports.fromString = function(string, contextFolderForFunction) {
 	
 	// add context to the 'require' statements:
 	contextFolderForFunction = contextFolderForFunction.replace(/\\/g, "\\\\");   // for Windows
-	var createNewClassifierString = json.createNewClassifierString.replace(/(require\s*\(\s*['"])[.]/g, "$1"+contextFolderForFunction+"/.");
+	var createNewClassifierString = json.createNewClassifierString.replace(/__dirname/g, "'"+contextFolderForFunction+"'");
 	createNewClassifierString = "("+createNewClassifierString+")";
 	var createNewClassifierFunction = eval(createNewClassifierString);
 	try {

@@ -12,7 +12,7 @@ var util = require('util'),
 
 console.log("serialization demo start");
 var createNewClassifier = function() {
-	var classifiers = require('../classifiers');
+	var classifiers = require(__dirname+'/../classifiers');
 	return new classifiers.BinaryClassifierSet({
 		binaryClassifierType: classifiers.Bayesian,
 	});

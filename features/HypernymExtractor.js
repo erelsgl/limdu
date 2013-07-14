@@ -19,9 +19,13 @@ module.exports = function(hypernyms) {
 		if (!features) features = {};
 		hypernyms.forEach(function(hypernym) {
 			var matches = null;
-			if (!hypernym.regexp.global) {
-				console.warn("hypernym regexp, "+hypernym.regexp+", is not global - skipping");
-				hypernym.global = true;
+			if (hypernym.regexp instanceof RegExp) {
+				if (!hypernym.regexp.global) {
+					console.warn("hypernym regexp, "+hypernym.regexp+", is not global - skipping");
+					return;
+				}
+			} else {
+				hypernym.regexp = new RegExp(hypernym.regexp,"gi");
 			}
 			while ((matches = hypernym.regexp.exec(sample)) !== null) {
 				var feature = matches[0].replace(hypernym.regexp, hypernym.feature);

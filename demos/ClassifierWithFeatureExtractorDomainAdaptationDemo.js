@@ -54,10 +54,11 @@ spamClassifier.classifyAndLog("inexpensive replicas");
 spamClassifier.classifyAndLog("windows");
 spamClassifier.classifyAndLog("window");
 
+var hypernyms = [{regexp: /inexpensive/g, feature: "cheap", confidence: 0.9}];
+//console.log(JSON.stringify(hypernyms));
 console.log("\nDomain adaptation (1) - add hypernym: ");
-spamClassifier.setFeatureExtractorForClassification(features.Hypernyms([
-	{regexp: /inexpensive/g, feature: "cheap", confidence: 0.9},
-]));
+spamClassifier.setFeatureExtractorForClassification(features.Hypernyms(hypernyms));
+
 spamClassifier.classifyAndLog("cheap replica");
 spamClassifier.classifyAndLog("inexpensive replicas");
 spamClassifier.classifyAndLog("windows");
@@ -65,7 +66,7 @@ spamClassifier.classifyAndLog("window");
 
 console.log("\nDomain adaptation (2) - add hypernym template: ");
 spamClassifier.setFeatureExtractorForClassification(features.Hypernyms([
-	{regexp: /\b(\w+)s\b/g, feature: "$1", confidence: 0.9},
+	{regexp: "\\b(\\w+)s\\b", feature: "$1", confidence: 0.9},
 ]));
 spamClassifier.classifyAndLog("cheap replica");
 spamClassifier.classifyAndLog("inexpensive replicas");  // 'replicas' will trigger the feature 'replica'

@@ -5,7 +5,7 @@
  * @since 2013-06
  */
 
-var serialize = require('../utils/serialize');
+var mlutils = require('../utils');
 var _ = require('underscore')._;
 var fs = require('fs');
 
@@ -103,9 +103,9 @@ var do_serialization = true;
 var verbosity = 0;
 var explain = 0;
 
-var partitions = require('../utils/partitions');
-var PrecisionRecall = require("../utils/PrecisionRecall");
-var trainAndTest = require('../utils/trainAndTest');
+var partitions = mlutils.partitions;
+var PrecisionRecall = mlutils.PrecisionRecall;
+var trainAndTest = mlutils.trainAndTest;
 
 if (do_cross_dataset_testing) {
 	console.log("\nTrain on domain data, test on woz single class: "+
@@ -186,9 +186,9 @@ if (do_serialization) {
 	console.log(currentStats.shortStats());
 	
 	fs.writeFileSync("serializations/TextCategorizationDemo.json", 
-		serialize.toString(createNewClassifier, classifier), 'utf8');
+		mlutils.serialize.toString(createNewClassifier, classifier), 'utf8');
 
-	var classifier2 = serialize.fromString(
+	var classifier2 = mlutils.serialize.fromString(
 		fs.readFileSync("serializations/TextCategorizationDemo.json"), __dirname);
 
 	console.log("\ntest on training data after reload:")

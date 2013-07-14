@@ -17,7 +17,7 @@ module.exports = function(numOfWords, caseSensitive) {
 		var words = sample.split(/\W+/).filter(function(a){return !!a}); // all non-empty words
 
 		if (!features) features = {};
-		for (var i=0; i<words.length; ++i) {
+		for (var i=0; i<=words.length-numOfWords; ++i) {
 			var feature = words.slice(i, i+numOfWords).join(" ");
 			features[feature]=1;
 		}

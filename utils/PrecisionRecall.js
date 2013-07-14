@@ -48,7 +48,7 @@ PrecisionRecall.prototype = {
 		var allTrue = true;
 		for (var actualClass in actualClasses) {
 			if (actualClass in expectedClasses) { 
-				if (verbosity>0) console.log("\t\t+++ TRUE POSITIVE: "+actualClass);
+				if (verbosity>1) console.log("\t\t+++ TRUE POSITIVE: "+actualClass);
 				this.TP++;
 			} else {
 				if (verbosity>0) console.log("\t\t--- FALSE POSITIVE: "+actualClass);
@@ -64,7 +64,7 @@ PrecisionRecall.prototype = {
 			}
 		}
 		if (allTrue) {
-			if (verbosity>0) console.log("\t\t*** ALL TRUE!");
+			if (verbosity>1) console.log("\t\t*** ALL TRUE!");
 			this.TRUE++;
 		}
 		this.count++;

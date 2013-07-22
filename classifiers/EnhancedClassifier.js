@@ -54,8 +54,13 @@ EnhancedClassifier.prototype = {
 		
 	sampleToFeatures: function(sample, featureExtractor) {
 		var features = sample;
-		if (featureExtractor)
-			features = featureExtractor(sample);
+		if (featureExtractor) {
+			try {
+				features = featureExtractor(sample);
+			} catch (err) {
+				throw new Error("Cannot extract features from '"+sample+"': "+JSON.stringify(err));
+			}
+		}
 		var array = features;
 		if (this.featureLookupTable)
 			array = this.featureLookupTable.hashToArray(features);

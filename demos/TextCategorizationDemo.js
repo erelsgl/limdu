@@ -96,9 +96,9 @@ var createNewClassifier = createWinnowClassifier;
 //var createNewClassifier = createSvmClassifier;
 //var createNewClassifier = createPerceptronClassifier;
 
-var do_cross_dataset_testing = true;
+var do_cross_dataset_testing = false;
 var do_cross_validation = true;
-var do_serialization = true;
+var do_serialization = false;
 
 var verbosity = 0;
 var explain = 0;
@@ -142,17 +142,17 @@ if (do_cross_validation) {
 	var macroAverage = new PrecisionRecall();
 	
 	var devSet = collectedDatasetMulti.concat(collectedDatasetSingle);
-
+	var startTime = new Date();
 	console.log("\nstart "+numOfFolds+"-fold cross-validation on "+grammarDataset.length+" grammar samples and "+devSet.length+" collected samples");
 	partitions.partitions(devSet, numOfFolds, function(trainSet, testSet, index) {
-		console.log("partition #"+index);
+		console.log("partition #"+index+": "+(new Date()-startTime)+" [ms]");
 		trainAndTest(createNewClassifier,
 			trainSet.concat(grammarDataset), testSet, verbosity,
 			microAverage, macroAverage
 		);
 	});
 	_(macroAverage).each(function(value,key) { macroAverage[key]=value/numOfFolds; });
-	console.log("\nend "+numOfFolds+"-fold cross-validation");
+	console.log("\nend "+numOfFolds+"-fold cross-validation: "+(new Date()-startTime)+" [ms]");
 
 	if (verbosity>0) {console.log("\n\nMACRO AVERAGE FULL STATS:"); console.dir(macroAverage.fullStats());}
 	console.log("\nMACRO AVERAGE SUMMARY: "+macroAverage.shortStats());

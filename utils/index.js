@@ -3,6 +3,7 @@ module.exports = {
 	partitions: require("./partitions"),
 	PrecisionRecall: require("./PrecisionRecall"),
 	serialize: require("./serialize"),
-	trainAndTest: require("./trainAndTest"),
+	trainAndTest: require("./trainAndTest").trainAndTest,
+	test: require("./trainAndTest").test,
 }
 

@@ -5,8 +5,33 @@
  * @since 2013-06
  */
 
+var _ = require('underscore')._;
 var hash = require('./hash');
 var PrecisionRecall = require("./PrecisionRecall");
+
+/**
+ * A short light-weight test function. Tests the given classifier on the given dataset, and 
+ * writes a short summary of the mistakes and performance.
+ * @param explain level of explanations for mistakes (0 for none) 
+ */
+module.exports.testLite = function(classifier, dataset, explain) {
+	var currentStats = new PrecisionRecall();
+	for (var i=0; i<dataset.length; ++i) {
+		var expectedClasses = dataset[i].output; 
+		if (!_(expectedClasses).isArray())
+			expectedClasses = [expectedClasses];
+		else
+			expectedClasses.sort(); 
+		var actualClassesWithExplanations = classifier.classify(dataset[i].input, explain);
+		actualClasses = (explain? actualClassesWithExplanations.classes: actualClassesWithExplanations);
+		actualClasses.sort();
+		if (!_(expectedClasses).isEqual(actualClasses)) {
+			console.log("\t"+dataset[i].input+": expected "+expectedClasses+" but got "+(explain? JSON.stringify(actualClassesWithExplanations,null,"\t"): actualClasses));
+		}
+		currentStats.addCases(expectedClasses, actualClasses);
+	}
+	console.log("SUMMARY: "+currentStats.calculateStats().shortStats());
+}
 
 /**
  * Test the given classifier on the given test-set.
@@ -23,19 +48,19 @@ module.exports.test = function(
 		for (var i=0; i<testSet.length; ++i) {
 			var expectedClasses = testSet[i].output;
 			var actualClasses = classifier.classify(testSet[i].input);
-			if (verbosity>1) console.log("\n"+testSet[i].input+": ");
-			currentStats.addCases(expectedClasses, actualClasses, verbosity-1);
-			if (microAverage) microAverage.addCases(expectedClasses, actualClasses, 0);
+			var explanations = currentStats.addCases(expectedClasses, actualClasses, (verbosity>2));
+			if (verbosity>1 && explanations.length>0) console.log("\t"+testSet[i].input+": \n"+explanations.join("\n"));
+			if (microAverage) microAverage.addCases(expectedClasses, actualClasses);
 		}
 		currentStats.calculateStats();
 		if (macroSum) hash.add(macroSum, currentStats.fullStats());
 		
 		if (verbosity>0) {
-			if (verbosity>1) {
+			if (verbosity>2) {
 				console.log("FULL RESULTS:")
 				console.dir(currentStats.fullStats());
 			}
-			console.log("SUMMARY: "+currentStats.shortStats()+"\n");
+			console.log("SUMMARY: "+currentStats.shortStats());
 		}
 		
 		return currentStats;

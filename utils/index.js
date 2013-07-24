@@ -5,5 +5,6 @@ module.exports = {
 	serialize: require("./serialize"),
 	trainAndTest: require("./trainAndTest").trainAndTest,
 	test: require("./trainAndTest").test,
+	testLite: require("./trainAndTest").testLite,
 }
 

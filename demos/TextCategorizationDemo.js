@@ -179,7 +179,7 @@ if (do_serialization) {
 		var expectedClasses = dataset[i].output;
 		var actualClasses = classifier.classify(dataset[i].input);
 		if (verbosity>0) console.log(dataset[i].input+": "+actualClasses);
-		currentStats.addCases(expectedClasses, actualClasses, verbosity-1);
+		if (verbosity>0) console.log(currentStats.addCases(expectedClasses, actualClasses).join("\n"));
 		resultsBeforeReload[i] = actualClasses;
 	}
 	currentStats.calculateStats();

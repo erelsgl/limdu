@@ -39,35 +39,38 @@ PrecisionRecall.prototype = {
 	 *
 	 * @param expectedClasses - the expected set of classes (as an array or a hash).
 	 * @param actualClasses   - the actual   set of classes (as an array or a hash).
-	 * @param verbosity - if positive, also log the results. 
+	 * @param logTruePositives- if true, log the true positives. 
+	 * @return an array of explanations "FALSE POSITIVE", "FALSE NEGATIVE", and maybe also "TRUE POSITIVE"
 	 */
-	addCases: function (expectedClasses, actualClasses, verbosity) {
+	addCases: function (expectedClasses, actualClasses, logTruePositives) {
+		var explanations = [];
 		actualClasses = hash.normalized(actualClasses);
 		expectedClasses = hash.normalized(expectedClasses);
 
 		var allTrue = true;
 		for (var actualClass in actualClasses) {
 			if (actualClass in expectedClasses) { 
-				if (verbosity>1) console.log("\t\t+++ TRUE POSITIVE: "+actualClass);
+				if (logTruePositives) explanations.push("\t\t+++ TRUE POSITIVE: "+actualClass);
 				this.TP++;
 			} else {
-				if (verbosity>0) console.log("\t\t--- FALSE POSITIVE: "+actualClass);
+				explanations.push("\t\t--- FALSE POSITIVE: "+actualClass);
 				this.FP++;
 				allTrue = false;
 			}
 		}
 		for (var expectedClass in expectedClasses) {
 			if (!(expectedClass in actualClasses)) {
-				if (verbosity>0) console.log("\t\t--- FALSE NEGATIVE: "+expectedClass);
+				explanations.push("\t\t--- FALSE NEGATIVE: "+expectedClass);
 				this.FN++;
 				allTrue = false;
 			}
 		}
 		if (allTrue) {
-			if (verbosity>1) console.log("\t\t*** ALL TRUE!");
+			if (logTruePositives) explanations.push("\t\t*** ALL TRUE!");
 			this.TRUE++;
 		}
 		this.count++;
+		return explanations;
 	},
 	
 	/**
@@ -96,8 +99,8 @@ PrecisionRecall.prototype = {
 	 * @return a one-line summary of the main results of the most recent experiment.
 	 */
 	shortStats: function() {
-		return sprintf("count=%d Accuracy=%1.0f%% Precision=%1.0f%% Recall=%1.0f%% F1=%1.0f%% timePerSample=%1.0f[ms]",
-				this.count, this.Accuracy*100, this.Precision*100, this.Recall*100, this.F1*100, this.timePerSampleMillis);
+		return sprintf("Accuracy=%d/%d=%1.0f%% Precision=%1.0f%% Recall=%1.0f%% F1=%1.0f%% timePerSample=%1.0f[ms]",
+				this.TRUE, this.count, this.Accuracy*100, this.Precision*100, this.Recall*100, this.F1*100, this.timePerSampleMillis);
 	}
 }
 

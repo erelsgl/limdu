@@ -6,9 +6,9 @@
  */
 
 var util = require('util'),
-    serialize = require('../utils/serialize'),
-    fs = require('fs')
-    ;
+	serialize = require('../utils/serialize'),
+	fs = require('fs')
+	;
 
 console.log("serialization demo start");
 var createNewClassifier = function() {
@@ -43,5 +43,18 @@ var newDocument = "cheap clocks !!!";
 console.log("'"+newDocument+"' is "+classifier2.classify(newDocument));  
 newDocument = "I don't know if this is a replica of windows";
 console.log("'"+newDocument+"' is "+classifier2.classify(newDocument));  
+
+// re-serialize:
+fs.writeFileSync("serializations/SerializationDemo2.json", 
+	serialize.toString(classifier2.createNewClassifierString, classifier2), 'utf8');
+
+console.log("\nDE-RE-SERIALIZED CLASSIFIER: ");
+var classifier3 = serialize.fromString(
+	fs.readFileSync("serializations/SerializationDemo2.json"), __dirname);
+
+var newDocument = "cheap clocks !!!";
+console.log("'"+newDocument+"' is "+classifier3.classify(newDocument));  
+newDocument = "I don't know if this is a replica of windows";
+console.log("'"+newDocument+"' is "+classifier3.classify(newDocument));  
 
 console.log("\nserialization demo end");

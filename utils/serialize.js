@@ -14,7 +14,7 @@
  */
 exports.toString = function(createNewClassifierFunction, trainedClassifier) {
 	// convert the function to a string that can be evaluated later, at load time, to create a new classifier:
-	var createNewClassifierString = createNewClassifierFunction.toString();
+	var createNewClassifierString = (createNewClassifierFunction instanceof String? createNewClassifierFunction: createNewClassifierFunction.toString());
 	
 	if (!trainedClassifier.fromJSON) {
 		throw new Error("trainedClassifier does not have a fromJSON method - you will not be able to restore it");
@@ -66,5 +66,6 @@ exports.fromString = function(string, contextFolderForFunction) {
 		console.dir(json);
 		throw new Error("Cannot create new classifier from function in string");
 	}
+	newClassifier.createNewClassifierString = json.createNewClassifierString;
 	return newClassifier.fromJSON(json.trainedClassifier);
 }

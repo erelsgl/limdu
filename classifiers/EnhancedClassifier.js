@@ -113,7 +113,19 @@ EnhancedClassifier.prototype = {
 
 	retrain: function() {
 		if (this.pastTrainingSamples) {
-			this.trainBatch(this.pastTrainingSamples);
+			var featureLookupTable = this.featureLookupTable;
+			var featureExtractor = this.featureExtractor;
+			var dataset = this.pastTrainingSamples;
+	
+			dataset = dataset.map(function(datum) {
+				datum = _(datum).clone();
+				if (featureExtractor)
+					datum.input = featureExtractor(datum.input);
+				if (featureLookupTable)
+					datum.input = featureLookupTable.hashToArray(datum.input);
+				return datum;
+			});
+			this.classifier.trainBatch(dataset, this.classifierOptions);
 		} else {
 			throw new Error("No pastTrainingSamples array - can't retrain");
 		}
@@ -133,6 +145,7 @@ EnhancedClassifier.prototype = {
 		return {
 			classifier: this.classifier.toJSON(callback),
 			featureLookupTable: (this.featureLookupTable? this.featureLookupTable.toJSON(): undefined),
+			pastTrainingSamples: (this.pastTrainingSamples? this.pastTrainingSamples: undefined),
 			/* Note: the feature extractors are functions - they should be created at initialization - they cannot be serialized! */ 
 		};
 	},
@@ -140,6 +153,8 @@ EnhancedClassifier.prototype = {
 	fromJSON : function(json) {
 		this.classifier.fromJSON(json.classifier);
 		if (this.featureLookupTable) this.featureLookupTable.fromJSON(json.featureLookupTable);
+		if (this.pastTrainingSamples) this.pastTrainingSamples = json.pastTrainingSamples;
+		
 		/* Note: the feature extractors are functions - they should be created at initialization - they cannot be deserialized! */ 
 		return this;
 	},

@@ -186,7 +186,7 @@ if (do_serialization) {
 	console.log(currentStats.shortStats());
 	
 	fs.writeFileSync("serializations/TextCategorizationDemo.json", 
-		mlutils.serialize.toString(createNewClassifier, classifier), 'utf8');
+		mlutils.serialize.toString(classifier, createNewClassifier), 'utf8');
 
 	var classifier2 = mlutils.serialize.fromString(
 		fs.readFileSync("serializations/TextCategorizationDemo.json"), __dirname);

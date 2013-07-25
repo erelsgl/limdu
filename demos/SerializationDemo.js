@@ -33,7 +33,7 @@ newDocument = "I don't know if this is a replica of windows";
 console.log("'"+newDocument+"' is "+classifier.classify(newDocument));  
 
 fs.writeFileSync("serializations/SerializationDemo.json", 
-	serialize.toString(createNewClassifier, classifier), 'utf8');
+	serialize.toString(classifier, createNewClassifier), 'utf8');
 
 console.log("\nDESERIALIZED CLASSIFIER: ");
 var classifier2 = serialize.fromString(
@@ -46,7 +46,7 @@ console.log("'"+newDocument+"' is "+classifier2.classify(newDocument));
 
 // re-serialize:
 fs.writeFileSync("serializations/SerializationDemo2.json", 
-	serialize.toString(classifier2.createNewClassifierString, classifier2), 'utf8');
+	serialize.toString(classifier2), 'utf8');
 
 console.log("\nDE-RE-SERIALIZED CLASSIFIER: ");
 var classifier3 = serialize.fromString(

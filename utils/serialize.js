@@ -4,21 +4,30 @@
  * @author Erel Segal-Halevi
  * @since 2013-06
  */
+ 
+
 
 
 /**
  * Save a trained classifier to a string.
- * @param createNewClassifierFunction a function for creating a new (untrained) classifier. This function will be saved verbatim in the file, in order to reproduce the exact type of the classifier.
  * @param trainedClassifier This is the trained classifier itself. It should have "toJSON" and "fromJSON" functions (but if "toJSON" is not present, then the object itself will be saved).
+ * @param createNewClassifierFunction [optional] a function for creating a new (untrained) classifier. This function will be saved verbatim in the file, in order to reproduce the exact type of the classifier.
  * @return A nicely-formatted string. Can be saved directly to a file. 
  */
-exports.toString = function(createNewClassifierFunction, trainedClassifier) {
-	// convert the function to a string that can be evaluated later, at load time, to create a new classifier:
-	var createNewClassifierString = (createNewClassifierFunction instanceof String? createNewClassifierFunction: createNewClassifierFunction.toString());
-	
-	if (!trainedClassifier.fromJSON) {
+exports.toString = function(trainedClassifier, createNewClassifierFunction) {
+	if (!trainedClassifier.fromJSON) 
 		throw new Error("trainedClassifier does not have a fromJSON method - you will not be able to restore it");
-	}
+
+	// convert the function to a string that can be evaluated later, at load time, to create a new classifier:
+	var createNewClassifierString = null;
+	if (trainedClassifier.createNewClassifierString)
+		createNewClassifierString = trainedClassifier.createNewClassifierString;
+	else if (trainedClassifier.createNewClassifierFunction) 
+		createNewClassifierString = trainedClassifier.createNewClassifierFunction.toString();
+	else if (createNewClassifierFunction)
+		createNewClassifierString = createNewClassifierFunction.toString();
+	else
+		throw new Error("createNewClassifierFunction should be present either as a field of the classifier or as a separate parameter!");
 
 	var trainedClassifierJson;
 	if (!trainedClassifier.toJSON) {
@@ -67,5 +76,8 @@ exports.fromString = function(string, contextFolderForFunction) {
 		throw new Error("Cannot create new classifier from function in string");
 	}
 	newClassifier.createNewClassifierString = json.createNewClassifierString;
+	newClassifier.createNewClassifierFunction = createNewClassifierFunction;
 	return newClassifier.fromJSON(json.trainedClassifier);
 }
+
+

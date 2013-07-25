@@ -84,6 +84,8 @@ PrecisionRecall.prototype = {
 		this.endTime = new Date();
 		this.timeMillis = this.endTime-this.startTime;
 		this.timePerSampleMillis = this.timeMillis / this.count;
+		this.shortStatsString = sprintf("Accuracy=%d/%d=%1.0f%% Precision=%1.0f%% Recall=%1.0f%% F1=%1.0f%% timePerSample=%1.0f[ms]",
+				this.TRUE, this.count, this.Accuracy*100, this.Precision*100, this.Recall*100, this.F1*100, this.timePerSampleMillis);
 		return this;
 	},
 	
@@ -99,8 +101,7 @@ PrecisionRecall.prototype = {
 	 * @return a one-line summary of the main results of the most recent experiment.
 	 */
 	shortStats: function() {
-		return sprintf("Accuracy=%d/%d=%1.0f%% Precision=%1.0f%% Recall=%1.0f%% F1=%1.0f%% timePerSample=%1.0f[ms]",
-				this.TRUE, this.count, this.Accuracy*100, this.Precision*100, this.Recall*100, this.F1*100, this.timePerSampleMillis);
+		return this.shortStatsString;
 	}
 }
 

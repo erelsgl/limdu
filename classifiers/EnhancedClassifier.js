@@ -8,6 +8,7 @@ var CollectionOfExtractors = require('../features/CollectionOfExtractors');
  * Obligatory option: 'classifierType', which is the base type of the classifier.
  * Optional:
  * * 'classifierOptions' - options that will be sent to the base classifier.
+ * * 'normalizer' - a function that normalizes the input samples, before they are sent to feature extraction.
  * * 'featureExtractor' - a single feature-extractor (see the "features" folder), or an array of extractors, for extracting features from training and classification samples.
  * * 'featureExtractorForClassification' - additional feature extractor[s], for extracting features from samples during classification. Used for domain adaptation.
  * * 'featureLookupTable' - an instance of FeatureLookupTable for converting features to numeric indices and back.
@@ -19,6 +20,7 @@ var EnhancedClassifier = function(opts) {
 		throw new Error("opts must contain classifierType");
 	}
 	this.classifierType = opts.classifierType;
+	this.normalizer = opts.normalizer;
 	this.setFeatureExtractor(opts.featureExtractor);
 	this.setFeatureExtractorForClassification(opts.featureExtractorForClassification);
 	this.classifierOptions = opts.classifierOptions;
@@ -51,8 +53,15 @@ EnhancedClassifier.prototype = {
 			this.featureExtractorForClassification = new CollectionOfExtractors(featureExtractorForClassification);
 		}
 	},
-		
+
 	sampleToFeatures: function(sample, featureExtractor) {
+		if (this.normalizer) {
+			try {
+				sample = this.normalizer(sample);
+			} catch (err) {
+				throw new Error("Cannot normalize '"+sample+"': "+JSON.stringify(err));
+			}
+		}
 		var features = sample;
 		if (featureExtractor) {
 			try {
@@ -90,14 +99,17 @@ EnhancedClassifier.prototype = {
 	 * @param dataset an array with objects of the format: {input: sample1, output: [class11, class12...]}
 	 */
 	trainBatch: function(dataset) {
-		var featureLookupTable = this.featureLookupTable;
+		var normalizer = this.normalizer;
 		var featureExtractor = this.featureExtractor;
+		var featureLookupTable = this.featureLookupTable;
 		var pastTrainingSamples = this.pastTrainingSamples;
 
 		dataset = dataset.map(function(datum) {
 			if (pastTrainingSamples)
 				pastTrainingSamples.push(datum);
 			datum = _(datum).clone();
+			if (normalizer)
+				datum.input = normalizer(datum.input);
 			if (featureExtractor)
 				datum.input = featureExtractor(datum.input);
 			if (featureLookupTable)

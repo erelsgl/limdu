@@ -5,6 +5,8 @@
  * For example: if regexp=/no (.*)/ and feature="without $1", then, 
  *   if the sample contains "no car", the extractor will add the feature "without car", with the given confidence score (usually a number from 0 to 1).
  *
+ * @author Erel Segal-haLevi
+ * @since 2013-07
  */
 
 /**

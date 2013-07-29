@@ -5,5 +5,6 @@ module.exports = {
 	Hypernyms: require("./HypernymExtractor"),
 	CollectionOfExtractors: require("./CollectionOfExtractors"),
 	FeatureLookupTable: require("./FeatureLookupTable"),
+	RegexpNormalizer: require("./RegexpNormalizer"),
 }
 

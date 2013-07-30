@@ -124,23 +124,24 @@ EnhancedClassifier.prototype = {
 	},
 
 	retrain: function() {
-		if (this.pastTrainingSamples) {
-			var featureLookupTable = this.featureLookupTable;
-			var featureExtractor = this.featureExtractor;
-			var dataset = this.pastTrainingSamples;
-	
-			dataset = dataset.map(function(datum) {
-				datum = _(datum).clone();
-				if (featureExtractor)
-					datum.input = featureExtractor(datum.input);
-				if (featureLookupTable)
-					datum.input = featureLookupTable.hashToArray(datum.input);
-				return datum;
-			});
-			this.classifier.trainBatch(dataset, this.classifierOptions);
-		} else {
+		if (!this.pastTrainingSamples)
 			throw new Error("No pastTrainingSamples array - can't retrain");
-		}
+			
+		var featureLookupTable = this.featureLookupTable;
+		var featureExtractor = this.featureExtractor;
+		var dataset = this.pastTrainingSamples;
+
+		dataset = dataset.map(function(datum) {
+			datum = _(datum).clone();
+			if (normalizer)
+				datum.input = normalizer(datum.input);
+			if (featureExtractor)
+				datum.input = featureExtractor(datum.input);
+			if (featureLookupTable)
+				datum.input = featureLookupTable.hashToArray(datum.input);
+			return datum;
+		});
+		this.classifier.trainBatch(dataset, this.classifierOptions);
 	},
 
 	/**
@@ -151,6 +152,22 @@ EnhancedClassifier.prototype = {
 	classify: function(sample, explain) {
 		return this.classifier.classify(
 			this.sampleToFeatures(sample, this.featureExtractorForClassification? this.featureExtractorForClassification: this.featureExtractor), explain);
+	},
+	
+	/**
+	 * @return an array with all samples whose class is the given class.
+	 * Available only if the pastTrainingSamples are saved.
+	 */
+	backClassify: function(theClass) {
+		if (!this.pastTrainingSamples)
+			throw new Error("No pastTrainingSamples array - can't backClassify");
+		
+		var samples = [];
+		this.pastTrainingSamples.forEach(function(datum) {
+			if (_(datum.output).isEqual(theClass))
+				samples.push(datum.input);
+		});
+		return samples;
 	},
 	
 	toJSON : function(callback) {

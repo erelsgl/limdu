@@ -28,26 +28,56 @@ function show(input) {
 		console.dir(classification);
 }
 
-classifier.trainBatch([
-	{input: {I:true, want:true, a:true}, output: ['A']},
-	{input: {I:true, want:true, b:true}, output: ['B']},
-	{input: {I:true, want:true, c:true}, output: ['C']},
-]);
+function createAndShow(activeClasses) {
+	var input = {I:true, want:true, and:true, ",":true};
+	activeClasses.forEach(function(theClass) {
+		input[theClass]= true;
+	});
+	show(input);
+}
 
-console.log("Classify the training set (single class per sample):");
-show({I:true, want:true, a:true});
-show({I:true, want:true, b:true});
-show({I:true, want:true, c:true});
+var classes = ['A','B','C','D','E','F'];
+var dataset = classes.map(function(theClass) {
+	var input = {I:true, want:true, and:true};
+	input[theClass] = true;
+	var sample = {input: input, output: [theClass]};
+	return sample;
+});
 
-console.log("Classify two classes per sample:");
-show({I:true, want:true, a:true, and:true, b:true});
-show({I:true, want:true, b:true, and:true, c:true});
-show({I:true, want:true, c:true, and:true, a:true});
-
-console.log("Classify three classes per sample:");
-show({I:true, want:true, a:true, ",":true, b:true, and:true, c:true});
+classifier.trainBatch(dataset);
 
 console.log("Classify no classes per sample:");
 show({I:true, want:true, nothing:true});
+
+console.log("Classify the training set (single class per sample):");
+classes.forEach(function(theClass) {
+	createAndShow([theClass]);
+});
+
+console.log("Classify two classes per sample:");
+classes.forEach(function(theClass, index) {
+	createAndShow([theClass, classes[(index+1)%classes.length]]);
+});
+
+console.log("Classify three classes per sample:");
+classes.forEach(function(theClass, index) {
+	createAndShow([theClass, classes[(index+1)%classes.length], classes[(index+2)%classes.length]]);
+});
+
+console.log("Classify four classes per sample:");
+classes.forEach(function(theClass, index) {
+	createAndShow([theClass, classes[(index+1)%classes.length], classes[(index+2)%classes.length], classes[(index+3)%classes.length]]);
+});
+
+console.log("Classify five classes per sample:");
+classes.forEach(function(theClass, index) {
+	createAndShow([theClass, classes[(index+1)%classes.length], classes[(index+2)%classes.length], classes[(index+3)%classes.length], classes[(index+4)%classes.length]]);
+});
+
+console.log("Classify six classes per sample:");
+classes.forEach(function(theClass, index) {
+	createAndShow([theClass, classes[(index+1)%classes.length], classes[(index+2)%classes.length], classes[(index+3)%classes.length], classes[(index+4)%classes.length], classes[(index+5)%classes.length]]);
+});
+
 
 console.log("Multi-Label Classification demo end");

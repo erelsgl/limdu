@@ -84,9 +84,10 @@ EnhancedClassifier.prototype = {
 	 * Online training: 
 	 * Tell the classifier that the given sample belongs to the given classes.
 	 * @param sample a document.
-	 * @param classes an object whose KEYS are classes, or an array whose VALUES are classes.
+	 * @param classes an array whose VALUES are classes.
 	 */
 	trainOnline: function(sample, classes) {
+		classes = normalizeClasses(classes);
 		this.classifier.trainOnline(
 			this.sampleToFeatures(sample, this.featureExtractor), classes);
 		if (this.pastTrainingSamples)
@@ -105,6 +106,7 @@ EnhancedClassifier.prototype = {
 		var pastTrainingSamples = this.pastTrainingSamples;
 
 		dataset = dataset.map(function(datum) {
+			datum.output = normalizeClasses(datum.output);
 			if (pastTrainingSamples)
 				pastTrainingSamples.push(datum);
 			datum = _(datum).clone();
@@ -161,15 +163,19 @@ EnhancedClassifier.prototype = {
 	backClassify: function(theClass) {
 		if (!this.pastTrainingSamples)
 			throw new Error("No pastTrainingSamples array - can't backClassify");
-		
+
+		//console.log("\tbackClassify "+JSON.stringify(theClass));
+		if (!(theClass instanceof Array))
+			theClass = [theClass];
 		var samples = [];
 		this.pastTrainingSamples.forEach(function(datum) {
+			//console.log("\t\tChecking "+datum.output);
 			if (_(datum.output).isEqual(theClass))
 				samples.push(datum.input);
 		});
 		return samples;
 	},
-	
+
 	toJSON : function(callback) {
 		return {
 			classifier: this.classifier.toJSON(callback),
@@ -187,6 +193,19 @@ EnhancedClassifier.prototype = {
 		/* Note: the feature extractors are functions - they should be created at initialization - they cannot be deserialized! */ 
 		return this;
 	},
+}  // end of EnhancedClassifier prototype
+
+
+var stringifyClass = function (aClass) {
+	return (_(aClass).isString()? aClass: JSON.stringify(aClass));
+}
+
+var normalizeClasses = function (expectedClasses) {
+	if (!_(expectedClasses).isArray())
+		expectedClasses = [expectedClasses];
+	expectedClasses = expectedClasses.map(stringifyClass);
+	expectedClasses.sort();
+	return expectedClasses;
 }
 
 module.exports = EnhancedClassifier;

@@ -9,6 +9,18 @@ var _ = require('underscore')._;
 var hash = require('./hash');
 var PrecisionRecall = require("./PrecisionRecall");
 
+var stringifyClass = function (aClass) {
+	return (_(aClass).isString()? aClass: JSON.stringify(aClass));
+}
+
+var normalizeClasses = function (expectedClasses) {
+	if (!_(expectedClasses).isArray())
+		expectedClasses = [expectedClasses];
+	expectedClasses = expectedClasses.map(stringifyClass);
+	expectedClasses.sort();
+	return expectedClasses;
+}
+
 /**
  * A short light-weight test function. Tests the given classifier on the given dataset, and 
  * writes a short summary of the mistakes and performance.
@@ -17,11 +29,7 @@ var PrecisionRecall = require("./PrecisionRecall");
 module.exports.testLite = function(classifier, dataset, explain) {
 	var currentStats = new PrecisionRecall();
 	for (var i=0; i<dataset.length; ++i) {
-		var expectedClasses = dataset[i].output; 
-		if (!_(expectedClasses).isArray())
-			expectedClasses = [expectedClasses];
-		else
-			expectedClasses.sort(); 
+		var expectedClasses = normalizeClasses(dataset[i].output); 
 		var actualClassesWithExplanations = classifier.classify(dataset[i].input, explain);
 		actualClasses = (explain? actualClassesWithExplanations.classes: actualClassesWithExplanations);
 		actualClasses.sort();
@@ -46,7 +54,7 @@ module.exports.test = function(
 		verbosity, microAverage, macroSum) {
 		var currentStats = new PrecisionRecall();
 		for (var i=0; i<testSet.length; ++i) {
-			var expectedClasses = testSet[i].output;
+			var expectedClasses = normalizeClasses(testSet[i].output);
 			var actualClasses = classifier.classify(testSet[i].input);
 			var explanations = currentStats.addCases(expectedClasses, actualClasses, (verbosity>2));
 			if (verbosity>1 && explanations.length>0) console.log("\t"+testSet[i].input+": \n"+explanations.join("\n"));

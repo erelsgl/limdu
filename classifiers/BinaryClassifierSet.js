@@ -1,5 +1,6 @@
 var hash = require("../utils/hash");
 var sprintf = require("sprintf").sprintf;
+var _ = require("underscore")._;
 
 /**
  * BinaryClassifierSet - combines several binary classifiers to produce a
@@ -37,12 +38,13 @@ BinaryClassifierSet.prototype = {
 	 *            classes.
 	 */
 	addClasses: function(classes) {
-		classes = hash.normalized(classes);
-		for ( var aClass in classes)
+		classes = normalizeClasses(classes);
+		for ( var aClass in classes) {
 			if (!this.mapClassnameToClassifier[aClass]) {
 				this.mapClassnameToClassifier[aClass] = new this.binaryClassifierType(
-						this.binaryClassifierOptions);
+					this.binaryClassifierOptions);
 			}
+		}
 	},
 	
 	getAllClasses: function() {
@@ -55,11 +57,10 @@ BinaryClassifierSet.prototype = {
 	 * @param sample
 	 *            a document.
 	 * @param classes
-	 *            an object whose KEYS are classes, or an array whose VALUES are
-	 *            classes.
+	 *            an object whose KEYS are classes, or an array whose VALUES are classes.
 	 */
 	trainOnline: function(sample, classes) {
-		classes = hash.normalized(classes);
+		classes = normalizeClasses(classes);
 		for ( var positiveClass in classes) {
 			this.makeSureClassifierExists(positiveClass);
 			this.mapClassnameToClassifier[positiveClass].trainOnline(sample, 1);
@@ -83,7 +84,8 @@ BinaryClassifierSet.prototype = {
 		// create positive samples for each class:
 		for ( var i = 0; i < dataset.length; ++i) {
 			var sample = dataset[i].input;
-			dataset[i].output = hash.normalized(dataset[i].output);
+			//console.dir(dataset[i]);
+			dataset[i].output = normalizeClasses(dataset[i].output);
 
 			var classes = dataset[i].output;
 			for ( var positiveClass in classes) {
@@ -114,6 +116,7 @@ BinaryClassifierSet.prototype = {
 
 		// train all classifiers:
 		for (var aClass in mapClassnameToDataset) {
+			//console.dir("TRAIN class="+aClass);
 			this.mapClassnameToClassifier[aClass]
 					.trainBatch(mapClassnameToDataset[aClass]);
 		}
@@ -189,6 +192,21 @@ BinaryClassifierSet.prototype = {
 					this.binaryClassifierOptions);
 		}
 	},
+}
+
+
+var stringifyClass = function (aClass) {
+	return (_(aClass).isString()? aClass: JSON.stringify(aClass));
+}
+
+var normalizeClasses = function (classes) {
+	//console.log("normalizeClasses "+JSON.stringify(classes));
+	if (classes instanceof Array)
+		classes = classes.map(stringifyClass);
+	else 
+		classes = stringifyClass(classes);
+	//console.log("normalizeClasses="+JSON.stringify(classes));
+	return hash.normalized(classes);
 }
 
 module.exports = BinaryClassifierSet;

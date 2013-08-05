@@ -18,7 +18,7 @@ var classifier = new classifiers.BinaryClassifierSet({
 	},
 });
 
-var explain=4;
+var explain=0;
 
 function show(input) {
 	var classification = classifier.classify(input, explain);
@@ -28,7 +28,7 @@ function show(input) {
 		console.dir(classification);
 }
 
-function createAndShow(activeClasses) {
+function createAndShow1(activeClasses) {
 	var input = {I:true, want:true, and:true, ",":true};
 	activeClasses.forEach(function(theClass) {
 		input[theClass]= true;
@@ -36,7 +36,12 @@ function createAndShow(activeClasses) {
 	show(input);
 }
 
-var classes = ['A','B','C','D','E','F'];
+function createAndShow(activeClasses) {
+	console.log(activeClasses.map(function(x){return x+":1.0 "}).join("")+ "7:1.0 8:1.0 9:1.0 ");
+}
+
+//var classes = ['A','B','C','D','E','F','G'];
+var classes = ['0','1','2','3','4','5','6'];
 var dataset = classes.map(function(theClass) {
 	var input = {I:true, want:true, and:true};
 	input[theClass] = true;
@@ -79,5 +84,7 @@ classes.forEach(function(theClass, index) {
 	createAndShow([theClass, classes[(index+1)%classes.length], classes[(index+2)%classes.length], classes[(index+3)%classes.length], classes[(index+4)%classes.length], classes[(index+5)%classes.length]]);
 });
 
+console.log("Classify all classes:");
+createAndShow(classes);
 
 console.log("Multi-Label Classification demo end");

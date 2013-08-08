@@ -9,21 +9,20 @@ var _ = require('underscore')._;
 var hash = require('./hash');
 var PrecisionRecall = require("./PrecisionRecall");
 
-var stringifyClass = function (aClass) {
-	return (_(aClass).isString()? aClass: JSON.stringify(aClass));
-}
-
-var normalizeClasses = function (expectedClasses) {
-	if (!_(expectedClasses).isArray())
-		expectedClasses = [expectedClasses];
-	expectedClasses = expectedClasses.map(stringifyClass);
-	expectedClasses.sort();
-	return expectedClasses;
+/**
+ * Write the dataset, one sample per line, with the given separator between sample and output 
+ * writes a short summary of the mistakes and total performance.
+ * @param explain level of explanations for mistakes (0 for none) 
+ */
+module.exports.writeDataset = function(dataset, separator) {
+	dataset.forEach(function(sample) {
+		console.log(JSON.stringify(sample.input)+separator+"["+sample.output+"]");
+	});
 }
 
 /**
  * A short light-weight test function. Tests the given classifier on the given dataset, and 
- * writes a short summary of the mistakes and performance.
+ * writes a short summary of the mistakes and total performance.
  * @param explain level of explanations for mistakes (0 for none) 
  */
 module.exports.testLite = function(classifier, dataset, explain) {
@@ -34,7 +33,7 @@ module.exports.testLite = function(classifier, dataset, explain) {
 		actualClasses = (explain? actualClassesWithExplanations.classes: actualClassesWithExplanations);
 		actualClasses.sort();
 		if (!_(expectedClasses).isEqual(actualClasses)) {
-			console.log("\t"+dataset[i].input+": expected "+expectedClasses+" but got "+(explain? JSON.stringify(actualClassesWithExplanations,null,"\t"): actualClasses));
+			console.log("\t"+JSON.stringify(dataset[i].input)+": expected "+expectedClasses+" but got "+(explain? JSON.stringify(actualClassesWithExplanations,null,"\t"): actualClasses));
 		}
 		currentStats.addCases(expectedClasses, actualClasses);
 	}
@@ -99,3 +98,15 @@ module.exports.trainAndTest = function(
 		// TEST:
 		return module.exports.test(classifier, testSet, verbosity, microAverage, macroSum);
 };
+
+var stringifyClass = function (aClass) {
+	return (_(aClass).isString()? aClass: JSON.stringify(aClass));
+}
+
+var normalizeClasses = function (expectedClasses) {
+	if (!_(expectedClasses).isArray())
+		expectedClasses = [expectedClasses];
+	expectedClasses = expectedClasses.map(stringifyClass);
+	expectedClasses.sort();
+	return expectedClasses;
+}

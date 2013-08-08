@@ -3,14 +3,11 @@ var sprintf = require("sprintf").sprintf;
 var _ = require("underscore")._;
 
 /**
- * BinaryClassifierSet - combines several binary classifiers to produce a
- * multi-class classifier, where each sample can belong to zero or more classes.
+ * BinaryClassifierSet - Multi-label classifier, based on a collection of binary classifiers.  
  * 
  * @param opts
- *            Must contain the option 'binaryClassifierType' - the type of the
- *            base binary classifier. Can also contain the option
- *            'binaryClassifierOptions' - options that will be sent to the
- *            binary classifier constructor.
+ *            binaryClassifierType (mandatory) - the type of the base binary classifier. 
+ *            binaryClassifierOptions (optional) - options that will be sent to the binary classifier constructor.
  */
 var BinaryClassifierSet = function(opts) {
 	if (!('binaryClassifierType' in opts)) {

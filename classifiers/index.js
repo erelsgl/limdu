@@ -6,6 +6,7 @@ module.exports = {
 	BayesClassifier: require('./apparatus/lib/apparatus/classifier/bayes_classifier'),
 	LogisticRegressionClassifier: require('./apparatus/lib/apparatus/classifier/logistic_regression_classifier'),
 	Perceptron: require('./perceptron/perceptron_hash'),
+	MultiLabelPassiveAggressive: require('./perceptron/MultiLabelPassiveAggressiveHash'),
 	Winnow: require('./winnow/winnow_hash'),
 	
 	// meta classifiers:

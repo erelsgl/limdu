@@ -5,19 +5,25 @@
  * @since 2013-08
  */
 
+
 console.log("Multi-Label Classification demo start");
 
 var classifiers = require('../classifiers');
 var mlutils = require('../utils');
 var _ = require('underscore')._;
 
-var classifier = new classifiers.BinaryClassifierSet({
+var classifier1 = new classifiers.BinaryClassifierSet({
 	'binaryClassifierType': classifiers.Winnow,
 	'binaryClassifierOptions': {
 		promotion: 1.5,
 		demotion: 0.5,
 		retrain_count: 10,
 	},
+});
+
+var classifier = new classifiers.MultiLabelPassiveAggressive({
+	Constant: 5.0,
+	retrain_count: 1,
 });
 
 var explain=0;
@@ -52,6 +58,8 @@ for (var numClasses=0; numClasses<classes.length; ++numClasses) {
 
 var explain = 0;
 classifier.trainBatch(trainSet);
+console.dir(classifier);
 mlutils.testLite(classifier, testSet, explain);
 
 console.log("Multi-Label Classification demo end");
+

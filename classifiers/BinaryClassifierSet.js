@@ -197,12 +197,10 @@ var stringifyClass = function (aClass) {
 }
 
 var normalizeClasses = function (classes) {
-	//console.log("normalizeClasses "+JSON.stringify(classes));
 	if (classes instanceof Array)
 		classes = classes.map(stringifyClass);
 	else 
 		classes = stringifyClass(classes);
-	//console.log("normalizeClasses="+JSON.stringify(classes));
 	return hash.normalized(classes);
 }
 

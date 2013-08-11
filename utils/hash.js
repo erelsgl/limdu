@@ -61,7 +61,7 @@ exports.fromString = function(string) {
 }
  
 /**
- * add one hash to another.
+ * add one hash to another (target += source)
  * @param target [input and output]
  * @param source [input]: will be added to target.
  */
@@ -69,14 +69,30 @@ exports.add  = function(target, source) {
 	for (var feature in source) {
 		if (!(feature in target))
 			target[feature]=0;
-		if (target[feature] instanceof Function)
-			continue;
+		//if (target[feature] instanceof Function)			continue;
 		target[feature] += source[feature];
 	}
+	return target;
+}
+ 
+/**
+ * add one hash to another (target += scalar * source)
+ * @param target [input and output]
+ * @param source [input]
+ * @param scalar [input]
+ */
+exports.addtimes  = function(target, scalar, source) {
+	for (var feature in source) {
+		if (!(feature in target))
+			target[feature]=0;
+		//if (target[feature] instanceof Function)			continue;
+		target[feature] += scalar*source[feature];
+	}
+	return target;
 }
 
 /**
- * multiply one hash by another.
+ * multiply one hash by another (elementwise multiplication).
  * @param target [input and output]
  * @param source [input]: target will be multiplied by it.
  */
@@ -84,10 +100,10 @@ exports.multiply  = function(target, source) {
 	for (var feature in source) {
 		if (!(feature in target))
 			target[feature]=1;
-		if (target[feature] instanceof Function)
-			continue;
+		//if (target[feature] instanceof Function)			continue;
 		target[feature] *= source[feature];
 	}
+	return target;
 }
 
 /**
@@ -101,22 +117,39 @@ exports.multiply_scalar  = function(target, source) {
 			continue;
 		target[feature] *= source;
 	}
+	return target;
 }
 
 /**
- * calculate the scalar product of the given two arrays.
- * @param features [input]
- * @param weights [input]
+ * calculate the scalar product (dot product) of the given two hashes.
+ * @param features [input] - a hash representing a 1-dimensional vector.
+ * @param weights [input] - a hash representing a 1-dimensional vector.
+ * @return a scalar - the sum of elementwise products.
  * @note Usually, there are much less features than weights.
  */
 exports.inner_product = function(features, weights) {
 	var result = 0;
 	for (var feature in features) {
 			if (feature in weights) {
-					result += features[feature] * weights[feature]
+				result += features[feature] * weights[feature]
 			} else {
 					/* the sample contains a feature that was never seen in training - ignore it for now */ 
 			}
+	}
+	return result;
+}
+
+/**
+ * calculate the vector dot product of the given two hashes.
+ * @param features [input] - a hash representing a 1-dimensional vector.
+ * @param weights [input] - a hash of hashes, representing a 2-dimensional matrix.
+ * @return a hash - for each key of weights, return the dot product of the given row with features.
+ * @note Usually, there are much less features than weights.
+ */
+exports.inner_product_matrix = function(features, weights) {
+	var result = {};
+	for (category in weights) {
+		result[category] = exports.inner_product(features, weights[category]);
 	}
 	return result;
 }

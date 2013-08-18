@@ -133,7 +133,7 @@ BinaryClassifierSet.prototype = {
 		for (var aClass in this.mapClassnameToClassifier) {
 			var classifier = this.mapClassnameToClassifier[aClass];
 			var classification = classifier.classify(sample, explain);
-			if (classification.explanations) {
+			if (classification.explanation) {
 				var explanations_string = classification.explanation.reduce(function(a,b) {
 					return a + " " + sprintf("%s%+1.2f",b.feature,b.relevance);
 				}, "");

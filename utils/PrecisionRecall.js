@@ -78,14 +78,15 @@ PrecisionRecall.prototype = {
 	 */
 	calculateStats: function() {
 		this.Accuracy = (this.TRUE) / (this.count);
+		this.HammingGain = (this.TN+this.TP) / (this.FN+this.FP+this.TN+this.TP);
 		this.Precision = this.TP / (this.TP+this.FP);
 		this.Recall = this.TP / (this.TP+this.FN);
 		this.F1 = 2 / (1/this.Recall + 1/this.Precision);
 		this.endTime = new Date();
 		this.timeMillis = this.endTime-this.startTime;
 		this.timePerSampleMillis = this.timeMillis / this.count;
-		this.shortStatsString = sprintf("Accuracy=%d/%d=%1.0f%% Precision=%1.0f%% Recall=%1.0f%% F1=%1.0f%% timePerSample=%1.0f[ms]",
-				this.TRUE, this.count, this.Accuracy*100, this.Precision*100, this.Recall*100, this.F1*100, this.timePerSampleMillis);
+		this.shortStatsString = sprintf("Accuracy=%d/%d=%1.0f%% HammingGain=%d/%d=%1.0f%% Precision=%1.0f%% Recall=%1.0f%% F1=%1.0f%% timePerSample=%1.0f[ms]",
+				this.TRUE, this.count, this.Accuracy*100, (this.TN+this.TP), (this.FN+this.FP+this.TN+this.TP), this.HammingGain*100, this.Precision*100, this.Recall*100, this.F1*100, this.timePerSampleMillis);
 		return this;
 	},
 	

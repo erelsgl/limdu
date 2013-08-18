@@ -69,7 +69,7 @@ exports.add  = function(target, source) {
 	for (var feature in source) {
 		if (!(feature in target))
 			target[feature]=0;
-		//if (target[feature] instanceof Function)			continue;
+		if (target[feature] instanceof Function)			continue;
 		target[feature] += source[feature];
 	}
 	return target;
@@ -85,7 +85,7 @@ exports.addtimes  = function(target, scalar, source) {
 	for (var feature in source) {
 		if (!(feature in target))
 			target[feature]=0;
-		//if (target[feature] instanceof Function)			continue;
+		if (target[feature] instanceof Function)			continue;
 		target[feature] += scalar*source[feature];
 	}
 	return target;
@@ -100,7 +100,7 @@ exports.multiply  = function(target, source) {
 	for (var feature in source) {
 		if (!(feature in target))
 			target[feature]=1;
-		//if (target[feature] instanceof Function)			continue;
+		if (target[feature] instanceof Function)			continue;
 		target[feature] *= source[feature];
 	}
 	return target;

@@ -18,10 +18,16 @@ FeatureLookupTable.prototype = {
 		}
 	},
 	
-	// add all features in the given hash
+	// add all features in the given hash or array
 	addFeatures: function(hash) {
-		for (var feature in hash)
-			this.addFeature(feature);
+		if (hash instanceof Array) {
+			for (var index in hash)
+				this.addFeature(hash[index]);
+		} else if (hash instanceof Object) {
+			for (var feature in hash)
+				this.addFeature(feature);
+		} 
+		else throw new Error("Unsupported type: "+JSON.stringify(hash));
 	},
 
 	// add all features in all hashes in the given array
@@ -40,8 +46,16 @@ FeatureLookupTable.prototype = {
 	hashToArray: function(hash) {
 		this.addFeatures(hash);
 		var array = [];
-		for (var feature in this.featureNameToFeatureIndex)
-			array[this.featureNameToFeatureIndex[feature]] = hash[feature] || 0;
+		for (var featureIndex=0; featureIndex<this.featureIndexToFeatureName.length; ++featureIndex)
+			array[featureIndex]=0;
+		if (hash instanceof Array) {
+			for (var i in hash)
+				array[this.featureNameToFeatureIndex[hash[i]]] = true;
+		} else if (hash instanceof Object) {
+			for (var feature in hash)
+				array[this.featureNameToFeatureIndex[feature]] = hash[feature];
+		}
+		else throw new Error("Unsupported type: "+JSON.stringify(hash));
 		return array;
 	},
 	

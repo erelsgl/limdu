@@ -8,16 +8,15 @@
 console.log("cross-validation demo start");
 
 var fs = require('fs');
-var datasets = require('../utils/partitions');
-var PrecisionRecall = require("../utils/PrecisionRecall");
-var trainAndTest = require('../utils/trainAndTest');
+var mlutils = require("../utils");
 var _ = require('underscore')._;
 
 var dataset = JSON.parse(fs.readFileSync("../datasets/Dataset1Woz.json"));
 var numOfFolds = 5; // for k-fold cross-validation
 
-var microAverage = new PrecisionRecall();
-var macroAverage = new PrecisionRecall();
+var microAverage = new mlutils.PrecisionRecall();
+var macroAverage = new mlutils.PrecisionRecall();
+
 var verbosity = 1;
 
 function createNewClassifier() {
@@ -28,16 +27,20 @@ function createNewClassifier() {
 	});
 }
 
-datasets.partitions(dataset, numOfFolds, function(train, test) {
-	trainAndTest(
+mlutils.partitions.partitions(dataset, numOfFolds, function(train, test) {
+	mlutils.trainAndTest(
 		createNewClassifier,
 		train, test, verbosity,
 		microAverage, macroAverage
 	);
 });
 
-_(macroAverage).each(function(value,key) {macroAverage[key]=value/numOfFolds});
+for (var key in macroAverage) {
+	if (_(macroAverage[key]).isNumber()) 
+		macroAverage[key] /= numOfFolds;
+};
 
+macroAverage.calculateStats();
 console.log("\n\nMACRO AVERAGE FULL STATS:"); console.dir(macroAverage.fullStats());
 console.log("\nMACRO AVERAGE SUMMARY: "+macroAverage.shortStats());
 

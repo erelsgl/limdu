@@ -149,7 +149,7 @@ WinnowHash.prototype = {
 		 * @param inputs a SINGLE sample; a hash (feature => value).
 		 * @param continuous_output if true, return the net classification score. If false [default], return 0 or 1.
 		 * @param explain - int - if positive, an "explanation" field, with the given length, will be added to the result.  
-		 * @param positive_weights_for_classification, negative_weights_for_classification, explain) {
+		 * @param positive_weights_for_classification, negative_weights_for_classification -
 		  the weights vector to use (either the running 'weights' or 'weights_sum').  
 		 * @return the classification of the sample.
 		 */
@@ -182,7 +182,7 @@ WinnowHash.prototype = {
 				
 				result = {
 					classification: result,
-					explanations: explanations,
+					explanation: explanations,
 					threshold: -this.threshold,
 					net_score: score, 
 				}

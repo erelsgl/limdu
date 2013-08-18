@@ -131,7 +131,7 @@ MultiLabelPassiveAggressive.prototype = {
 	 * Use the model trained so far to classify a new sample.
 	 * 
 	 * @param sample a document.
-	 * @param explain - int - if positive, an "explanation" field, with the given length, will be added to the result.
+	 * @param explain - int - if positive, an "explanation" field, with the given length, should be added to the result.
 	 *  
 	 * @return an array whose VALUES are classes.
 	 */
@@ -142,7 +142,9 @@ MultiLabelPassiveAggressive.prototype = {
 			if (pair[1]>0)
 				results.push(pair[0]);
 		});
-		return results;
+		return explain?
+			{classification: results, explanation: "no explanation yet"}: 
+			results; 
 	},
 
 	/**

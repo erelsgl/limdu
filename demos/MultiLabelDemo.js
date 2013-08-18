@@ -10,9 +10,10 @@ console.log("Multi-Label Classification demo start");
 
 var classifiers = require('../classifiers');
 var mlutils = require('../utils');
+var fs = require('fs');
 var _ = require('underscore')._;
 
-var classifier1 = new classifiers.BinaryClassifierSet({
+var BinaryRelevanceClassifier = new classifiers.BinaryClassifierSet({
 	'binaryClassifierType': classifiers.Winnow,
 	'binaryClassifierOptions': {
 		promotion: 1.5,
@@ -21,10 +22,12 @@ var classifier1 = new classifiers.BinaryClassifierSet({
 	},
 });
 
-var classifier = new classifiers.MultiLabelPassiveAggressive({
+var PassiveAggressiveClassifier = new classifiers.MultiLabelPassiveAggressive({
 	Constant: 5.0,
-	retrain_count: 1,
+	retrain_count: 10,
 });
+
+var classifier = BinaryRelevanceClassifier;
 
 var explain=0;
 var classes = ['A','B','C','D','E','F','G'];
@@ -34,10 +37,13 @@ var extra_features = {/*me:1, wants:1, the:1, and:1*/};
 // Create a training set - one class per sample   
 var trainSet = classes.map(function(theClass) {
 	var input = _(extra_features).clone();
-	input[theClass] = true;
+	var theFeature = theClass+theClass;
+	input[theFeature] = 1;
 	var sample = {input: input, output: [theClass]};
 	return sample;
 });
+
+fs.writeFileSync("multilabel.train.arff", mlutils.toARFF(trainSet,"multilabel"));
 
 // Create a test set - combinations of zero or more classes per sample
 var testSet = [];
@@ -47,19 +53,21 @@ for (var numClasses=0; numClasses<classes.length; ++numClasses) {
 		var output = [];
 		for (var iClass=0; iClass<numClasses; ++iClass) {
 			var theClass = classes[(iFirstClass+iClass)%classes.length];
-			input[theClass]=1;
+			var theFeature = theClass+theClass;
+			input[theFeature] = 1;
 			output.push(theClass);
 		}
 		var sample={input:input, output:output};
 		testSet.push(sample);
 	}
 }
-//mlutils.writeDataset(testSet, " / ");
+
+fs.writeFileSync("multilabel.test.arff", mlutils.toARFF(testSet,"multilabel"));
 
 var explain = 0;
 classifier.trainBatch(trainSet);
-console.dir(classifier);
-mlutils.testLite(classifier, testSet, explain);
+//console.dir(classifier);
+//mlutils.testLite(classifier, testSet, explain);
 
 console.log("Multi-Label Classification demo end");
 

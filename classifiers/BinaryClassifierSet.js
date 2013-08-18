@@ -134,7 +134,7 @@ BinaryClassifierSet.prototype = {
 			var classifier = this.mapClassnameToClassifier[aClass];
 			var classification = classifier.classify(sample, explain);
 			if (classification.explanations) {
-				var explanations_string = classification.explanations.reduce(function(a,b) {
+				var explanations_string = classification.explanation.reduce(function(a,b) {
 					return a + " " + sprintf("%s%+1.2f",b.feature,b.relevance);
 				}, "");
 				if (classification.classification > 0.5) {
@@ -151,8 +151,10 @@ BinaryClassifierSet.prototype = {
 		if (explain)
 			return {
 				classes: Object.keys(classes), 
-				positive_explanations: positive_explanations, 
-				negative_explanations: negative_explanations
+				explanation: {
+					positive: positive_explanations, 
+					negative: negative_explanations,
+				}
 			};
 		else
 			return Object.keys(classes);

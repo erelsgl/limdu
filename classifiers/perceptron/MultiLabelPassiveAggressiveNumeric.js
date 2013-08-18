@@ -127,11 +127,10 @@ MultiLabelPassiveAggressive.prototype = {
 	 * Use the model trained so far to classify a new sample.
 	 * 
 	 * @param sample a document.
-	 * @param explain - int - if positive, an "explanation" field, with the given length, will be added to the result.
 	 *  
 	 * @return an array whose VALUES are classes.
 	 */
-	classify : function(sample, explain) {
+	classify : function(sample) {
 		return this.predict(sample, /*averaging=*/true);
 	},
 

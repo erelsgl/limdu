@@ -28,10 +28,11 @@ var PassiveAggressiveClassifier = new classifiers.MultiLabelPassiveAggressive({
 });
 
 var classifier = BinaryRelevanceClassifier;
+//var classifier = PassiveAggressiveClassifier;
 
 var explain=0;
 var classes = ['A','B','C','D','E','F','G'];
-var extra_features = {/*me:1, wants:1, the:1, and:1*/};
+var extra_features = {me:1, wants:1, the:1, and:1};
 //var classes = ['1','2','3','4','5','6','7'];
 
 // Create a training set - one class per sample   
@@ -42,8 +43,6 @@ var trainSet = classes.map(function(theClass) {
 	var sample = {input: input, output: [theClass]};
 	return sample;
 });
-
-fs.writeFileSync("multilabel.train.arff", mlutils.toARFF(trainSet,"multilabel"));
 
 // Create a test set - combinations of zero or more classes per sample
 var testSet = [];
@@ -62,12 +61,9 @@ for (var numClasses=0; numClasses<classes.length; ++numClasses) {
 	}
 }
 
-fs.writeFileSync("multilabel.test.arff", mlutils.toARFF(testSet,"multilabel"));
-
 var explain = 0;
 classifier.trainBatch(trainSet);
-//console.dir(classifier);
-//mlutils.testLite(classifier, testSet, explain);
+mlutils.testLite(classifier, testSet, explain);
 
 console.log("Multi-Label Classification demo end");
 

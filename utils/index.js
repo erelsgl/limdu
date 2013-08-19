@@ -8,5 +8,6 @@ module.exports = {
 	testLite: require("./trainAndTest").testLite,
 	writeDataset: require("./trainAndTest").writeDataset,
 	toARFF: require("./arff").toARFF,
+	toARFFs: require("./arff").toARFFs,
 }
 

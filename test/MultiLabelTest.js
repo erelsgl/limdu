@@ -8,7 +8,7 @@
 var should = require('should');
 var classifiers = require('../classifiers');
 
-var classifier = new classifiers.BinaryClassifierSet({
+var classifier = new classifiers.multilabel.BinaryRelevance({
 	'binaryClassifierType': classifiers.Winnow,
 	'binaryClassifierOptions': {
 		promotion: 1.5,

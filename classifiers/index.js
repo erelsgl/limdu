@@ -16,6 +16,7 @@ module.exports = {
 	multilabel: {
 		BinaryRelevance:   require('./BinaryClassifierSet'),
 		PassiveAggressive: require('./perceptron/MultiLabelPassiveAggressiveHash'),
+		TransformationBased: require('./transformationbased/TransformationBasedMultiLearner'),
 	}
 }
 

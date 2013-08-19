@@ -9,5 +9,6 @@ module.exports = {
 	writeDataset: require("./trainAndTest").writeDataset,
 	toARFF: require("./arff").toARFF,
 	toARFFs: require("./arff").toARFFs,
+	hammingDistance: require("./hamming").hammingDistance,
 }
 

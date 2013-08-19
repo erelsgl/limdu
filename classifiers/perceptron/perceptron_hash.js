@@ -131,12 +131,18 @@ PerceptronHash.prototype = {
 	 * @param net if true, return the net classification value. If false [default], return 0 or 1.
 	 * @return the classification of the sample.
 	 */
-	perceive_features: function(features, net, weights_for_classification) {
-		var result = hash.inner_product(features, weights_for_classification);
-		if (this.debug) console.log("> perceive_features ",features," = ",result);
-		return net
-			? result
-			: result > 0 ? 1 : 0
+	perceive_features: function(features, continuous_output, weights_for_classification, explain) {
+		var score = hash.inner_product(features, weights_for_classification);
+		if (this.debug) console.log("> perceive_features ",features," = ",score);
+		var result = (continuous_output? score: (score > 0 ? 1 : 0));
+		if (explain) {
+			result = {
+				classification: result,
+				explanation: "Perceptron does not support explanations yet",
+				net_score: score, 
+			}
+		}
+		return result;
 	},
 
 	/**
@@ -144,19 +150,20 @@ PerceptronHash.prototype = {
 	 * @param net if true, return the net classification value. If false [default], return 0 or 1.
 	 * @return the classification of the sample.
 	 */
-	perceive: function(inputs, net) {
+	perceive: function(inputs, continuous_output, explain) {
 		return this.perceive_features(
 			this.normalized_features(inputs, /*remove_unknown_features=*/true), 
-			net,
-			(this.do_averaging? this.weights_sum: this.weights) );
+			continuous_output,
+			(this.do_averaging? this.weights_sum: this.weights),
+			explain );
 	},
 
 	/**
 	 * @param inputs a SINGLE sample.
 	 * @return the binary classification - 0 or 1.
 	 */
-	classify: function(inputs) {
-		return this.perceive(inputs, false);
+	classify: function(inputs, explain) {
+		return this.perceive(inputs, false, explain);
 	},
 }
 

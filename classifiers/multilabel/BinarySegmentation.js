@@ -92,10 +92,10 @@ BinarySegmentation.prototype = {
 
 		// create positive samples for each class:
 		for ( var i = 0; i < dataset.length; ++i) {
-			dataset[i].input = this.sampleToFeatures(dataset[i].input, this.featureExtractor);
+			dataset[i].features = this.sampleToFeatures(dataset[i].input, this.featureExtractor);
 			dataset[i].output = hash.normalized(dataset[i].output);
 
-			var sample = dataset[i].input;
+			var sample = dataset[i].features;
 			var classes = dataset[i].output;
 			for (var positiveClass in classes) {  // the current sample is a positive example for each of the classes in its set
 				this.makeSureClassifierExists(positiveClass);
@@ -108,9 +108,9 @@ BinarySegmentation.prototype = {
 			}
 		}
 
-		// create negative samples for each class (after all classes are in the  array):
+		// create negative samples for each class (after all classes are in the array):
 		for ( var i = 0; i < dataset.length; ++i) {
-			var sample = dataset[i].input;
+			var sample = dataset[i].features;
 			var classes = dataset[i].output;
 			for (var negativeClass in this.mapClassnameToClassifier) { // the current sample is a negative example for each of the classes NOT in its set
 				if (!(negativeClass in mapClassnameToDataset)) // make sure dataset for this class exists
@@ -160,16 +160,13 @@ BinarySegmentation.prototype = {
 					classes[aClass] = true;
 			}
 		}
-		if (explain)
-			return {
-				classes: Object.keys(classes), 
-				explanation: {
-					positive: positive_explanations, 
-					negative: negative_explanations,
-				}
-			};
-		else
-			return Object.keys(classes);
+		classes = Object.keys(classes);
+		return (explain?
+			{
+				classes: classes, 
+				explanation: explanations
+			}:
+			classes);
 	},
 	
 	/**
@@ -189,6 +186,7 @@ BinarySegmentation.prototype = {
 			var segment = words.slice(currentStart,currentEnd).join(" ");
 			var segmentClassesWithExplain = this.classifySegment(segment, explain);
 			var segmentClasses = (segmentClassesWithExplain.classes? segmentClassesWithExplain.classes: segmentClassesWithExplain);
+			//console.log(segment+": "+segmentClasses);
 			if (segmentClasses.length==1) {
 				// greedy algorithm: found a section with a single class - cut it and go on
 				accumulatedClasses[segmentClasses[0]]=true;
@@ -248,7 +246,7 @@ BinarySegmentation.prototype = {
 			try {
 				features = featureExtractor(sample);
 			} catch (err) {
-				throw new Error("Cannot extract features from '"+sample+"': "+JSON.stringify(err));
+				throw new Error("Cannot extract features from '"+JSON.stringify(sample)+"': "+JSON.stringify(err));
 			}
 		}
 		return features;

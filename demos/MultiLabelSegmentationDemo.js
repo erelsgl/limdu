@@ -33,7 +33,9 @@ var trainSet = classes.map(function(theClass) {
 	var input = Object.keys(extra_features).join(" ");
 	var theFeature = theClass+theClass;
 	input += " "+theFeature;
-	var sample = {input: input, output: [theClass]};
+	var sample = {
+		input: input, 
+		output: [{"Offer":theClass}]};
 	return sample;
 });
 
@@ -47,7 +49,7 @@ for (var numClasses=0; numClasses<classes.length; ++numClasses) {
 			var theClass = classes[(iFirstClass+iClass)%classes.length];
 			var theFeature = theClass+theClass;
 			input += " "+theFeature;
-			output.push(theClass);
+			output.push({"Offer":theClass});
 		}
 		var sample={input:input, output:output};
 		testSet.push(sample);

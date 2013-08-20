@@ -1,4 +1,5 @@
 var FeaturesUnit = require('../features');
+var _ = require('underscore')._;
 
 /**
  * EnhancedClassifier - wraps any classifier with feature-extractors and feature-lookup-tables.
@@ -39,12 +40,12 @@ EnhancedClassifier.prototype = {
 	/** Set an additional feature extractor, for classification only. */
 	setFeatureExtractorForClassification: function (featureExtractorForClassification) {
 		if (featureExtractorForClassification) {
-			if (_(featureExtractorForClassification).isArray()) {
+			if (Array.isArray(featureExtractorForClassification)) {
 				featureExtractorForClassification.unshift(this.featureExtractor);
 			} else {
 				featureExtractorForClassification = [this.featureExtractor, featureExtractorForClassification];
 			}
-			this.featureExtractorForClassification = new CollectionOfExtractors(featureExtractorForClassification);
+			this.featureExtractorForClassification = new FeaturesUnit.CollectionOfExtractors(featureExtractorForClassification);
 		}
 	},
 
@@ -195,7 +196,7 @@ var stringifyClass = function (aClass) {
 }
 
 var normalizeClasses = function (expectedClasses) {
-	if (!_(expectedClasses).isArray())
+	if (!Array.isArray(expectedClasses))
 		expectedClasses = [expectedClasses];
 	expectedClasses = expectedClasses.map(stringifyClass);
 	expectedClasses.sort();

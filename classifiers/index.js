@@ -6,19 +6,15 @@ module.exports = {
 	BayesClassifier: require('./apparatus/lib/apparatus/classifier/bayes_classifier'),
 	LogisticRegressionClassifier: require('./apparatus/lib/apparatus/classifier/logistic_regression_classifier'),
 	Perceptron: require('./perceptron/perceptron_hash'),
-	MultiLabelPassiveAggressive: require('./perceptron/MultiLabelPassiveAggressiveHash'), // for backward compatibility
 	Winnow: require('./winnow/winnow_hash'),
+
+	multilabel: require('./multilabel'),
 	
-	// meta classifiers:
-	BinaryClassifierSet: require('./BinaryClassifierSet'),  // for backward compatibility
+	// meta classifier:
 	EnhancedClassifier: require('./EnhancedClassifier'),
-	
-	multilabel: {
-		BinaryRelevance:   require('./BinaryClassifierSet'),
-		PassiveAggressive: require('./perceptron/MultiLabelPassiveAggressiveHash'),
-		TransformationBased: require('./transformationbased/TransformationBasedMultiLearner'),
-	}
 }
+
+module.exports.BinaryClassifierSet = module.exports.multilabel.BinaryRelevance; // for backward compatibility
 
 // add a "classify and log" method to all classifiers, for demos:
 for (var classifierClass in module.exports) {

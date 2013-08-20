@@ -13,7 +13,7 @@ var mlutils = require('../utils');
 var fs = require('fs');
 var _ = require('underscore')._;
 
-var BinaryRelevanceClassifier = new classifiers.BinaryClassifierSet({
+var BinaryRelevanceClassifier = new classifiers.multilabel.BinaryRelevance({
 	'binaryClassifierType': classifiers.Winnow,
 	'binaryClassifierOptions': {
 		promotion: 1.5,
@@ -22,7 +22,7 @@ var BinaryRelevanceClassifier = new classifiers.BinaryClassifierSet({
 	},
 });
 
-var PassiveAggressiveClassifier = new classifiers.MultiLabelPassiveAggressive({
+var PassiveAggressiveClassifier = new classifiers.multilabel.PassiveAggressive({
 	Constant: 5.0,
 	retrain_count: 10,
 });

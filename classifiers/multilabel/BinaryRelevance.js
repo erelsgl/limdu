@@ -1,15 +1,15 @@
-var hash = require("../utils/hash");
+var hash = require("../../utils/hash");
 var sprintf = require("sprintf").sprintf;
 var _ = require("underscore")._;
 
 /**
- * BinaryClassifierSet - Multi-label classifier, based on a collection of binary classifiers.  
+ * BinaryRelevance - Multi-label classifier, based on a collection of binary classifiers.  
  * 
  * @param opts
  *            binaryClassifierType (mandatory) - the type of the base binary classifier. 
  *            binaryClassifierOptions (optional) - options that will be sent to the binary classifier constructor.
  */
-var BinaryClassifierSet = function(opts) {
+var BinaryRelevance = function(opts) {
 	if (!('binaryClassifierType' in opts)) {
 		console.dir(opts);
 		throw new Error("opts must contain binaryClassifierType");
@@ -23,7 +23,7 @@ var BinaryClassifierSet = function(opts) {
 	this.mapClassnameToClassifier = {};
 }
 
-BinaryClassifierSet.prototype = {
+BinaryRelevance.prototype = {
 
 	/**
 	 * Tell the classifier that the given classes will be used for the following
@@ -206,4 +206,4 @@ var normalizeClasses = function (classes) {
 	return hash.normalized(classes);
 }
 
-module.exports = BinaryClassifierSet;
+module.exports = BinaryRelevance;

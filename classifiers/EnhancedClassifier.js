@@ -76,7 +76,7 @@ EnhancedClassifier.prototype = {
 		return array;
 	},
 	
-	getAllClasses: function() {  // relevant for BinaryClassifierSet
+	getAllClasses: function() {  // relevant for multilabel classifiers
 		return this.classifier.getAllClasses();
 	},
 

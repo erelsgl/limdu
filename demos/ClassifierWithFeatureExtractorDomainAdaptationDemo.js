@@ -10,7 +10,7 @@
 console.log("ClassifierWithFeatureExtractor DomainAdaptation demo start");
 
 var classifiers = require('../classifiers');
-var features = require('../features');
+var FeaturesUnit = require('../features');
 
 var spamClassifier = new classifiers.EnhancedClassifier({
 	classifierType:   classifiers.Winnow,
@@ -20,7 +20,7 @@ var spamClassifier = new classifiers.EnhancedClassifier({
 					margin: 1,
 					continuous_output: true,
 	},
-	featureExtractor: features.WordsFromText(1)
+	featureExtractor: FeaturesUnit.WordsFromText(1)
 });
 
 
@@ -57,7 +57,7 @@ spamClassifier.classifyAndLog("window");
 var hypernyms = [{regexp: /inexpensive/g, feature: "cheap", confidence: 0.9}];
 //console.log(JSON.stringify(hypernyms));
 console.log("\nDomain adaptation (1) - add hypernym: ");
-spamClassifier.setFeatureExtractorForClassification(features.Hypernyms(hypernyms));
+spamClassifier.setFeatureExtractorForClassification(FeaturesUnit.Hypernyms(hypernyms));
 
 spamClassifier.classifyAndLog("cheap replica");
 spamClassifier.classifyAndLog("inexpensive replicas");
@@ -65,7 +65,7 @@ spamClassifier.classifyAndLog("windows");
 spamClassifier.classifyAndLog("window");
 
 console.log("\nDomain adaptation (2) - add hypernym template: ");
-spamClassifier.setFeatureExtractorForClassification(features.Hypernyms([
+spamClassifier.setFeatureExtractorForClassification(FeaturesUnit.Hypernyms([
 	{regexp: "\\b(\\w+)s\\b", feature: "$1", confidence: 0.9},
 ]));
 spamClassifier.classifyAndLog("cheap replica");

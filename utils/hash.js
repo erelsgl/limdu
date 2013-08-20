@@ -8,27 +8,6 @@
 
 
 /**
- * Convert any object to a hash (representing a set):
- *
- * - an array ['a', 'b', 'c'..] to a hash {'a': true, 'b': true, 'c': true};
- * - a string 'a' to a hash {'a': true}.
- */
-exports.normalized = function(object) {
-	if (Array.isArray(object)) {
-		var result = {}; 
-		for (var i=0; i<object.length; ++i) 
-			result[object[i]]=true;
-		return result;
-	} else if (object instanceof Object) {
-		return object;
-	} else {
-		var result = {};
-		result[object]=true; 
-		return result;
-	}
-}
-
-/**
  * create a hash from a string in the format:
  
  * key1 / value1
@@ -215,3 +194,40 @@ exports.stringify_sorted = function(weights, separator) {
 	result += "}";
 	return result;	
 }
+
+
+/**
+ * Convert any object to a hash (representing a set):
+ *
+ * - an array ['a', 'b', 'c'..] to a hash {'a': true, 'b': true, 'c': true};
+ * - a string 'a' to a hash {'a': true}.
+ */
+exports.normalized = function(object) {
+	if (Array.isArray(object)) {
+		var result = {}; 
+		for (var i=0; i<object.length; ++i) 
+			result[stringifyIfNeeded(object[i])]=true;
+		return result;
+	} else if (object instanceof Object) {
+		return object;
+	} else {
+		var result = {};
+		result[stringifyIfNeeded(object)]=true; 
+		return result;
+	}
+}
+
+
+var stringifyIfNeeded = function (aClass) {
+	return (typeof(aClass)==='string'? aClass: JSON.stringify(aClass));
+}
+
+/*
+var toStringOrStringArray = function (classes) {
+	if (classes instanceof Array)
+		classes = classes.map(stringifyIfNeeded);
+	else 
+		classes = stringifyIfNeeded(classes);
+	return hash.normalized(classes);
+}
+*/

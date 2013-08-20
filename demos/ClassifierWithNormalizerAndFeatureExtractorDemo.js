@@ -10,16 +10,16 @@
 console.log("ClassifierWithNormalizerAndFeatureExtractor demo start");
 
 var classifiers = require('../classifiers');
-var features = require('../features');
+var FeaturesUnit = require('../features');
 
 
 var spamClassifier = new classifiers.EnhancedClassifier({
 	classifierType:   classifiers.NeuralNetwork,
-	normalizer: features.RegexpNormalizer([
+	normalizer: FeaturesUnit.RegexpNormalizer([
 		{source: "\\b(...+)est\\b", target: "$1"},
 		{source: "\\b(...+)er\\b", target: "$1"},
 	]),
-	featureExtractor: features.WordsFromText(1)
+	featureExtractor: FeaturesUnit.WordsFromText(1)
 });
 spamClassifier.trainBatch([
 	{input: "cheaper replica watch es", output: [1]},

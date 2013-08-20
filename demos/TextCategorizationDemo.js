@@ -25,7 +25,7 @@ var createBayesianClassifier = function() {
 
 var createPerceptronClassifier = function() {
 	var classifiers = require(__dirname+'/../classifiers');
-	var FeatureExtractor = require(__dirname+'/../features');
+	var FeaturesUnit = require(__dirname+'/../features');
 	
 	return new classifiers.EnhancedClassifier({
 		classifierType: classifiers.BinaryClassifierSet,
@@ -39,17 +39,17 @@ var createPerceptronClassifier = function() {
 				},
 		},
 		featureExtractor: [
-					FeatureExtractor.WordsFromText(1),
-					//FeatureExtractor.WordsFromText(2),
-					//FeatureExtractor.LettersFromText(3), 
-					//FeatureExtractor.LettersFromText(4),
+					FeaturesUnit.WordsFromText(1),
+					//FeaturesUnit.WordsFromText(2),
+					//FeaturesUnit.LettersFromText(3), 
+					//FeaturesUnit.LettersFromText(4),
 		],
 	});
 }
 
 var createWinnowClassifier = function() {
 	var classifiers = require(__dirname+'/../classifiers');
-	var FeatureExtractor = require(__dirname+'/../features');
+	var FeaturesUnit = require(__dirname+'/../features');
 
 	return new classifiers.EnhancedClassifier({
 		classifierType: classifiers.BinaryClassifierSet,
@@ -62,17 +62,17 @@ var createWinnowClassifier = function() {
 				},
 		},
 		featureExtractor: [
-					FeatureExtractor.WordsFromText(1),
-					FeatureExtractor.WordsFromText(2),
-					//FeatureExtractor.LettersFromText(3), 
-					//FeatureExtractor.LettersFromText(4),
+					FeaturesUnit.WordsFromText(1),
+					FeaturesUnit.WordsFromText(2),
+					//FeaturesUnit.LettersFromText(3), 
+					//FeaturesUnit.LettersFromText(4),
 		],		
 	});
 }
 
 var createSvmClassifier = function() {
 	var classifiers = require(__dirname+'/../classifiers');
-	var FeatureExtractor = require(__dirname+'/../features');
+	var FeaturesUnit = require(__dirname+'/../features');
 	
 	return new classifiers.EnhancedClassifier({
 		classifierType: classifiers.BinaryClassifierSet,
@@ -83,12 +83,12 @@ var createSvmClassifier = function() {
 				},
 		},
 		featureExtractor: [
-					FeatureExtractor.WordsFromText(1),
-					FeatureExtractor.WordsFromText(2),
-					//FeatureExtractor.LettersFromText(2), 
-					//FeatureExtractor.LettersFromText(4),
+					FeaturesUnit.WordsFromText(1),
+					FeaturesUnit.WordsFromText(2),
+					//FeaturesUnit.LettersFromText(2), 
+					//FeaturesUnit.LettersFromText(4),
 		],
-		featureLookupTable: new FeatureExtractor.FeatureLookupTable(),
+		featureLookupTable: new FeaturesUnit.FeatureLookupTable(),
 	});
 }
 

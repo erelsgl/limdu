@@ -7,7 +7,7 @@
 
 console.log("SVM with feature extractor demo start");
 
-var FeatureExtractor = require('../features');
+var FeaturesUnit = require('../features');
 var classifiers = require('../classifiers');
 var serialize = require('../utils/serialize');
 
@@ -18,11 +18,11 @@ var classifier = new classifiers.EnhancedClassifier({
 		C: 1.0,
 	},
 	featureExtractor: [
-	    FeatureExtractor.WordsFromText(1),
-	    FeatureExtractor.WordsFromText(2),
-	    FeatureExtractor.LettersFromText(3),
+	    FeaturesUnit.WordsFromText(1),
+	    FeaturesUnit.WordsFromText(2),
+	    FeaturesUnit.LettersFromText(3),
 	],
-	featureLookupTable: new FeatureExtractor.FeatureLookupTable(),
+	featureLookupTable: new FeaturesUnit.FeatureLookupTable(),
 });
 
 classifier.trainBatch([

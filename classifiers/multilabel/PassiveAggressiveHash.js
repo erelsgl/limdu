@@ -184,16 +184,4 @@ MultiLabelPassiveAggressive.prototype = {
 }
 
 
-var stringifyClass = function (aClass) {
-	return (_(aClass).isString()? aClass: JSON.stringify(aClass));
-}
-
-var normalizeClasses = function (classes) {
-	if (classes instanceof Array)
-		classes = classes.map(stringifyClass);
-	else 
-		classes = stringifyClass(classes);
-	return hash.normalized(classes);
-}
-
 module.exports = MultiLabelPassiveAggressive;

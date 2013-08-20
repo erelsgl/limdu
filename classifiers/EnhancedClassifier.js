@@ -1,5 +1,4 @@
-var _ = require("underscore")._;
-var CollectionOfExtractors = require('../features/CollectionOfExtractors');
+var FeaturesUnit = require('../features');
 
 /**
  * EnhancedClassifier - wraps any classifier with feature-extractors and feature-lookup-tables.
@@ -34,12 +33,7 @@ EnhancedClassifier.prototype = {
 
 	/** Set the main feature extactor, used for both training and classification. */
 	setFeatureExtractor: function (featureExtractor) {
-		if (featureExtractor) {
-			this.featureExtractor = (
-				_(featureExtractor).isArray()? 
-					new CollectionOfExtractors(featureExtractor):
-					featureExtractor);
-		}
+		this.featureExtractor = FeaturesUnit.normalize(featureExtractor);
 	},
 
 	/** Set an additional feature extractor, for classification only. */
@@ -75,7 +69,7 @@ EnhancedClassifier.prototype = {
 			array = this.featureLookupTable.hashToArray(features);
 		return array;
 	},
-	
+
 	getAllClasses: function() {  // relevant for multilabel classifiers
 		return this.classifier.getAllClasses();
 	},

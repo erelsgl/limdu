@@ -1,6 +1,7 @@
 module.exports = {
 	BinaryRelevance:   require('./BinaryRelevance'),
 	PassiveAggressive: require('./PassiveAggressiveHash'),
+	BinarySegmentation:require('./BinarySegmentation'),
 	//TransformationBased: require('./TransformationBased'),
 }
 

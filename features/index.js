@@ -8,3 +8,17 @@ module.exports = {
 	RegexpNormalizer: require("./RegexpNormalizer"),
 }
 
+
+/**
+ * If the input is a featureExtractor, return it as is.
+ *
+ * If it is an array of featureExtractors, convert it to a CollectionOfExtractors.
+ *
+ */
+module.exports.normalize = function(featureExtractorOrArray) {
+	return (!featureExtractorOrArray? 
+				featureExtractorOrArray:
+			Array.isArray(featureExtractorOrArray)? 
+				new module.exports.CollectionOfExtractors(featureExtractorOrArray):
+				featureExtractorOrArray);	
+}

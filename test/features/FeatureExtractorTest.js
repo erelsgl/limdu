@@ -6,18 +6,18 @@
  */
 
 var should = require('should');
-var features = require('../../features');
+var FeaturesUnit = require('../../features');
 
 describe('word unigram feature extractor', function() {
 	it('should create word unigram features', function() {
-		var fe = features.WordsFromText(1);
+		var fe = FeaturesUnit.WordsFromText(1);
 		fe("This is a demo, you know?").should.eql({ 'this': 1, is: 1, a: 1, demo: 1, you: 1, know: 1 });
 	})
 })
 
 describe('word bigram feature extractor', function() {
 	it('should create word bigram features', function() {
-		var fe = features.WordsFromText(2);
+		var fe = FeaturesUnit.WordsFromText(2);
 		fe("This is a demo, you know?").should.eql({
 			'<start> this': 1,
 			'this is': 1,
@@ -34,7 +34,7 @@ describe('hypernym extractor', function() {
 		var hypernyms = [
 			{regexp: /demo/g, feature: "demonstration", confidence: 0.9}
 		];
-		var fe = features.Hypernyms(hypernyms);
+		var fe = FeaturesUnit.Hypernyms(hypernyms);
 		fe("This is a demo, you know?").should.eql({ demonstration: 0.9 });
 	});
 });
@@ -42,7 +42,7 @@ describe('hypernym extractor', function() {
 
 describe('letter unigram feature extractor', function() {
 	it('should create letter unigram features', function() {
-		var fe = features.LettersFromText(1);
+		var fe = FeaturesUnit.LettersFromText(1);
 		fe("This is a demo, you know?").should.eql({ t: 1,
 		  h: 1,
 		  i: 1,
@@ -67,9 +67,9 @@ describe('letter unigram feature extractor', function() {
 
 describe('collection of extractors', function() {
 	it('should create collection of features', function() {
-		var fe = features.CollectionOfExtractors(
-				[features.WordsFromText(1), 
-				 features.WordsFromText(2)])
+		var fe = FeaturesUnit.CollectionOfExtractors(
+				[FeaturesUnit.WordsFromText(1), 
+				 FeaturesUnit.WordsFromText(2)])
 		fe("This is a demo, you know?").should.eql({
 			'this': 1, is: 1, a: 1, demo: 1, you: 1, know: 1 ,
 			'<start> this': 1,

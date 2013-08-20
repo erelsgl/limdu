@@ -28,7 +28,7 @@ module.exports.testLite = function(classifier, dataset, explain) {
 	for (var i=0; i<dataset.length; ++i) {
 		var expectedClasses = normalizeClasses(dataset[i].output); 
 		var actualClassesWithExplanations = classifier.classify(dataset[i].input, explain);
-		actualClasses = (explain? actualClassesWithExplanations.classes: actualClassesWithExplanations);
+		actualClasses = (actualClassesWithExplanations.classes? actualClassesWithExplanations.classes: actualClassesWithExplanations);
 		actualClasses.sort();
 		if (!_(expectedClasses).isEqual(actualClasses)) {
 			console.log("\t"+JSON.stringify(dataset[i].input)+": expected "+expectedClasses+" but got "+(explain? JSON.stringify(actualClassesWithExplanations,null,"\t"): actualClasses));

@@ -9,7 +9,7 @@
 
 
 var _ = require('underscore')._;
-var features = new require('../features');
+var FeaturesUnit = new require('../features');
 
 /**
  * convert a single dataset to Weka ARFF string.
@@ -21,7 +21,7 @@ var features = new require('../features');
 exports.toARFF = function(dataset, relationName, featureExtractor) {
 	if (!featureExtractor) featureExtractor=_.identity;
 	
-	var featureLookupTable = new features.FeatureLookupTable();
+	var featureLookupTable = new FeaturesUnit.FeatureLookupTable();
 	
 	// Extract the input attributes (- features):
 	dataset.forEach(function(datum) {
@@ -52,7 +52,7 @@ exports.toARFF = function(dataset, relationName, featureExtractor) {
  */
 exports.toARFFs = function(outputFolder, mapFileNameToDataset, featureExtractor) {
 	if (!featureExtractor) featureExtractor=_.identity;
-	var featureLookupTable = new features.FeatureLookupTable();
+	var featureLookupTable = new FeaturesUnit.FeatureLookupTable();
 	
 	// Extract the input attributes (- features):
 	for (var relationName in mapFileNameToDataset) {

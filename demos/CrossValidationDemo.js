@@ -20,7 +20,7 @@ var macroAverage = new mlutils.PrecisionRecall();
 var verbosity = 1;
 
 function createNewClassifier() {
-	var FeatureExtractor = require('../features');
+	var FeaturesUnit = require('../features');
 	var classifiers = require('../classifiers');
 	return new classifiers.BinaryClassifierSet({
 		binaryClassifierType: classifiers.Bayesian,

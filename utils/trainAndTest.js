@@ -10,9 +10,7 @@ var hash = require('./hash');
 var PrecisionRecall = require("./PrecisionRecall");
 
 /**
- * Write the dataset, one sample per line, with the given separator between sample and output 
- * writes a short summary of the mistakes and total performance.
- * @param explain level of explanations for mistakes (0 for none) 
+ * Write the dataset, one sample per line, with the given separator between sample and output. 
  */
 module.exports.writeDataset = function(dataset, separator) {
 	dataset.forEach(function(sample) {
@@ -74,6 +72,37 @@ module.exports.test = function(
 };
 
 /**
+ * Compare two classifiers on the same dataset. 
+ * writes a short summary of the differences between them and total performance.
+ * @param explain level of explanations for mistakes (0 for none) 
+ */
+module.exports.compare = function(classifier1, classifier2, dataset, explain) {
+	var stats1 = new PrecisionRecall(), stats2 = new PrecisionRecall();
+	for (var i=0; i<dataset.length; ++i) {
+		var expectedClasses = normalizeClasses(dataset[i].output); 
+		var actualClassesWithExplanations1 = classifier1.classify(dataset[i].input, explain);
+		var actualClassesWithExplanations2 = classifier2.classify(dataset[i].input, explain);
+		actualClasses1 = (explain? actualClassesWithExplanations1.classes: actualClassesWithExplanations1);
+		actualClasses2 = (explain? actualClassesWithExplanations2.classes: actualClassesWithExplanations2);
+		actualClasses1.sort();
+		actualClasses2.sort();
+		if (!_(actualClasses1).isEqual(actualClasses2)) {
+			console.log("\t"+JSON.stringify(dataset[i].input)+
+				" : classes1="+(explain? JSON.stringify(actualClassesWithExplanations1,null,"\t"): actualClasses1)+
+				" ; classes2="+(explain? JSON.stringify(actualClassesWithExplanations2,null,"\t"): actualClasses2)+
+				"");
+			if (_(actualClasses1).isEqual(expectedClasses)) {
+				console.log("\t\tClassifier1 is correct");
+			} else if (_(actualClasses2).isEqual(expectedClasses)) {
+				console.log("\t\tClassifier2 is correct");
+			} else {
+				console.log("\t\tboth are incorrect");
+			}
+		}
+	}
+}
+
+/**
  * Test the given classifier on the given train-set and test-set.
  * @param createNewClassifierFunction a function that creates a new, empty, untrained classifier (of type BinaryClassifierSet).
  * @param trainSet, testSet arrays with objects of the format: {input: "sample1", output: "class1"}
@@ -87,7 +116,7 @@ module.exports.trainAndTest = function(
 		verbosity, microAverage, macroSum) {
 		// TRAIN:
 		var classifier = createNewClassifierFunction();
-		//classifier.addClasses(trainSet.allClasses); // not needed - handled by trainBatch
+
 		if (verbosity>0) console.log("\nstart training on "+trainSet.length+" samples, "+(trainSet.allClasses? trainSet.allClasses.length+' classes': ''));
 		var startTime = new Date()
 		if (verbosity>2) console.dir(trainSet);
@@ -98,6 +127,30 @@ module.exports.trainAndTest = function(
 		// TEST:
 		return module.exports.test(classifier, testSet, verbosity, microAverage, macroSum);
 };
+
+module.exports.trainAndCompare = function(
+		createNewClassifier1Function, createNewClassifier2Function,
+		trainSet, testSet, verbosity) {
+		// TRAIN:
+		var classifier1 = createNewClassifier1Function();
+		var classifier2 = createNewClassifier2Function();
+
+		if (verbosity>0) console.log("\nstart training on "+trainSet.length+" samples, "+(trainSet.allClasses? trainSet.allClasses.length+' classes': ''));
+		var startTime = new Date()
+		classifier1.trainBatch(trainSet);
+		var elapsedTime = new Date()-startTime;
+		if (verbosity>0) console.log("end training on "+trainSet.length+" samples, "+(trainSet.allClasses? trainSet.allClasses.length+' classes, ': '')+elapsedTime+" [ms]");
+
+		if (verbosity>0) console.log("start training on "+trainSet.length+" samples, "+(trainSet.allClasses? trainSet.allClasses.length+' classes': ''));
+		var startTime = new Date()
+		classifier2.trainBatch(trainSet);
+		var elapsedTime = new Date()-startTime;
+		if (verbosity>0) console.log("end training on "+trainSet.length+" samples, "+(trainSet.allClasses? trainSet.allClasses.length+' classes, ': '')+elapsedTime+" [ms]");
+	
+		// TEST:
+		return module.exports.compare(classifier1, classifier2, testSet, verbosity);
+};
+
 
 var stringifyClass = function (aClass) {
 	return (_(aClass).isString()? aClass: JSON.stringify(aClass));

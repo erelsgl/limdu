@@ -8,7 +8,7 @@
  */
 
 /**
- * Adds hypernym features to the given feature-vector.
+ * normalizes a sentence based on a list of regular expressions.
  * @param normalizations - an array of objects {source: /regexp/g, target: "target"}
  * @param sample - a string.
  * @return a new string, with all normalizations carried out.

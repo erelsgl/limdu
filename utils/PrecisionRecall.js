@@ -78,7 +78,8 @@ PrecisionRecall.prototype = {
 	 */
 	calculateStats: function() {
 		this.Accuracy = (this.TRUE) / (this.count);
-		this.HammingGain = (this.TN+this.TP) / (this.FN+this.FP+this.TN+this.TP);
+		this.HammingLoss = (this.FN+this.FP) / (this.FN+this.TP); // "the percentage of the wrong labels to the total number of labels"
+		this.HammingGain = 1-this.HammingLoss;
 		this.Precision = this.TP / (this.TP+this.FP);
 		this.Recall = this.TP / (this.TP+this.FN);
 		this.F1 = 2 / (1/this.Recall + 1/this.Precision);

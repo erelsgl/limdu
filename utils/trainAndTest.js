@@ -10,15 +10,6 @@ var hash = require('./hash');
 var PrecisionRecall = require("./PrecisionRecall");
 
 /**
- * Write the dataset, one sample per line, with the given separator between sample and output. 
- */
-module.exports.writeDataset = function(dataset, separator) {
-	dataset.forEach(function(sample) {
-		console.log(JSON.stringify(sample.input)+separator+"["+sample.output+"]");
-	});
-}
-
-/**
  * A short light-weight test function. Tests the given classifier on the given dataset, and 
  * writes a short summary of the mistakes and total performance.
  * @param explain level of explanations for mistakes (0 for none) 
@@ -162,4 +153,13 @@ var normalizeClasses = function (expectedClasses) {
 	expectedClasses = expectedClasses.map(stringifyClass);
 	expectedClasses.sort();
 	return expectedClasses;
+}
+
+/**
+ * Write the dataset, one sample per line, with the given separator between sample and output. 
+ */
+module.exports.writeDataset = function(dataset, separator) {
+	dataset.forEach(function(sample) {
+		console.log(JSON.stringify(sample.input)+separator+"["+sample.output+"]");
+	});
 }

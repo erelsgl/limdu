@@ -30,6 +30,14 @@ var BinarySegmentation = function(opts) {
 	this.binaryClassifierType = opts.binaryClassifierType;
 	this.binaryClassifierOptions = opts.binaryClassifierOptions;
 	this.featureExtractor = FeaturesUnit.normalize(opts.featureExtractor);
+	this.sentenceSplitter = opts.sentenceSplitter;
+	
+	switch (opts.segmentSplitStrategy) {
+	case 'shortestSegment': this.segmentSplitStrategy = this.shortestSegmentSplitStrategy; break;
+	case 'longestSegment':  this.segmentSplitStrategy = this.longestSegmentSplitStrategy;  break;
+	default: this.segmentSplitStrategy = null;
+	}
+	
 	this.mapClassnameToClassifier = {};
 }
 
@@ -138,10 +146,10 @@ BinarySegmentation.prototype = {
 	 *  
 	 * @return an array whose VALUES are classes.
 	 */
-	classifySegment: function(sample, explain) {
+	classifySegment: function(segment, explain) {
 		var classes = {};
-		sample = this.sampleToFeatures(sample, this.featureExtractor);
-		if (explain) var positive_explanations = {}, negative_explanations = {};
+		sample = this.sampleToFeatures(segment, this.featureExtractor);
+		if (explain>0) var positive_explanations = {}, negative_explanations = {};
 		for (var aClass in this.mapClassnameToClassifier) {
 			var classifier = this.mapClassnameToClassifier[aClass];
 			var classification = classifier.classify(sample, explain);
@@ -151,9 +159,9 @@ BinarySegmentation.prototype = {
 				}, "");
 				if (classification.classification > 0.5) {
 					classes[aClass] = true;
-					positive_explanations[aClass]=explanations_string;
+					if (explain>0) positive_explanations[aClass]=explanations_string;
 				} else {
-					negative_explanations[aClass]=explanations_string;
+					if (explain>0) negative_explanations[aClass]=explanations_string;
 				}
 			} else {
 				if (classification > 0.5)
@@ -161,14 +169,86 @@ BinarySegmentation.prototype = {
 			}
 		}
 		classes = Object.keys(classes);
-		return (explain?
+		return (explain>0?
 			{
 				classes: classes, 
-				explanation: explanations
+				explanation: {
+					positive: positive_explanations,
+					negative: negative_explanations
+				}
 			}:
 			classes);
 	},
 	
+	
+	/**
+	 * protected function:
+	 * Strategy of classifying the shortest segments with a single class.
+	 */
+	shortestSegmentSplitStrategy: function(words, accumulatedClasses, explain, explanations) {
+		var currentStart = 0;
+		for (var currentEnd=1; currentEnd<=words.length; ++currentEnd) {
+			var segment = words.slice(currentStart,currentEnd).join(" ");
+			var segmentClassesWithExplain = this.classifySegment(segment, explain);
+			var segmentClasses = (segmentClassesWithExplain.classes? segmentClassesWithExplain.classes: segmentClassesWithExplain);
+
+			if (segmentClasses.length==1) {
+				// greedy algorithm: found a section with a single class - cut it and go on
+				accumulatedClasses[segmentClasses[0]]=true;
+				currentStart = currentEnd;
+				if (explain>0) {
+					explanations.push(segment);
+					explanations.push(segmentClassesWithExplain.explanation);
+				};
+			}
+		}
+	},
+
+	
+	/**
+	 * protected function:
+	 * Strategy of classifying the longest segments with a single class.
+	 */
+	longestSegmentSplitStrategy: function(words, accumulatedClasses, explain, explanations) {
+		var currentStart = 0;
+		var segment = null;
+		var segmentClassesWithExplain = null;
+		var segmentClasses = null;
+		for (var currentEnd=1; currentEnd<=words.length; ++currentEnd) {
+			var nextSegment = words.slice(currentStart,currentEnd).join(" ");
+			var nextSegmentClassesWithExplain = this.classifySegment(nextSegment, explain);
+			var nextSegmentClasses = (nextSegmentClassesWithExplain.classes? nextSegmentClassesWithExplain.classes: nextSegmentClassesWithExplain);
+			//console.log("\t"+JSON.stringify(nextSegment) +" -> "+nextSegmentClasses)
+			nextSegmentClasses.sort();
+
+			if (segmentClasses && segmentClasses.length==1 && (nextSegmentClasses.length>1 || !_(nextSegmentClasses).isEqual(segmentClasses))) {
+				// greedy algorithm: found a section with a single class - cut it and go on
+				accumulatedClasses[segmentClasses[0]]=true;
+				currentStart = currentEnd-1;
+				if (explain>0) {
+					explanations.push(segment);
+					explanations.push(segmentClassesWithExplain.explanation);
+				};
+			}
+
+			segment = nextSegment;
+			segmentClassesWithExplain = nextSegmentClassesWithExplain;
+			segmentClasses = nextSegmentClasses;
+		}
+		
+		// add the classes of the last section:
+		for (var i in segmentClasses) 
+			accumulatedClasses[segmentClasses[i]]=true;
+		if (explain>0) {
+			explanations.push(segment);
+			explanations.push(segmentClassesWithExplain.explanation);
+		};
+		/*if (words.length>20)  {
+			console.dir(explanations);
+			process.exit(1);
+		}*/
+	},
+
 	/**
 	 * Use the model trained so far to classify a new sample.
 	 * 
@@ -177,34 +257,50 @@ BinarySegmentation.prototype = {
 	 *  
 	 * @return an array whose VALUES are classes.
 	 */
-	classify: function(sentence, explain) {
-		var words = sentence.split(/ /);
-		var currentStart = 0;
-		var accumulatedClasses = {};
-		if (explain) explanations = [];
-		for (var currentEnd=1; currentEnd<=words.length; ++currentEnd) {
-			var segment = words.slice(currentStart,currentEnd).join(" ");
-			var segmentClassesWithExplain = this.classifySegment(segment, explain);
+	classifySentence: function(sentence, explain) {
+		if (this.segmentSplitStrategy) {
+			var words = sentence.split(/ /);
+			var accumulatedClasses = {};
+			var explanations = [];
+			this.segmentSplitStrategy(words, accumulatedClasses, explain, explanations); 
+			// this is either this.shortestSegmentSplitStrategy, or this.longestSegmentSplitStrategy
+			return	{
+				accumulatedClasses: accumulatedClasses, 
+				explanation: explanations
+			};
+		} else {
+			var segmentClassesWithExplain = this.classifySegment(sentence, explain);
 			var segmentClasses = (segmentClassesWithExplain.classes? segmentClassesWithExplain.classes: segmentClassesWithExplain);
-			//console.log(segment+": "+segmentClasses);
-			if (segmentClasses.length==1) {
-				// greedy algorithm: found a section with a single class - cut it and go on
-				accumulatedClasses[segmentClasses[0]]=true;
-				currentStart = currentEnd;
-				if (explain) {
-					explanations.push(segment);
-					explanations.push(segmentClassesWithExplain.explanation);
-				};
+			return {
+				accumulatedClasses: _(segmentClasses).invert(),
+				explanation: segmentClassesWithExplain.explanation? 
+						[sentence, segmentClassesWithExplain.explanation]:
+						[]
 			}
 		}
-		//console.log(explanations);
+	},
+	
+	classify: function(text, explain) {
+		var sentences = (this.sentenceSplitter?
+				this.sentenceSplitter(text):
+				[text]);
+		var accumulatedClasses = {};
+		var explanations = [];
+		var self = this;
+		sentences.forEach(function(sentence) {
+			var classification = self.classifySentence(sentence,explain);
+			for (var aClass in classification.accumulatedClasses)
+				accumulatedClasses[aClass]=true;
+			if (explain>0)
+				for (var i in classification.explanation)
+					explanations.push(classification.explanation[i]);
+		});
 		var classes = Object.keys(accumulatedClasses);
-		return (explain?
-			{
-				classes: classes, 
-				explanation: explanations
-			}:
-			classes);
+		return (explain>0?	{
+			classes: classes, 
+			explanation: explanations
+		}: 
+		classes);
 	},
 
 	toJSON : function(callback) {

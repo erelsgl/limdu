@@ -14,7 +14,7 @@ module.exports = function(numOfWords, caseSensitive) {
 	return function(sample, features) {
 		if (!caseSensitive) sample=sample.toLowerCase();
 		
-		var words = sample.split(/\W+/).filter(function(a){return !!a}); // all non-empty words
+		var words = sample.split(/[ \t,;.]/).filter(function(a){return !!a}); // all non-empty words
 
 		for (var i=0; i<numOfWords-1; ++i) {
 			words.push("<end>");

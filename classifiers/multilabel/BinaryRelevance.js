@@ -130,7 +130,10 @@ BinaryRelevance.prototype = {
 	 */
 	classify : function(sample, explain) {
 		var classes = {};
-		if (explain) var positive_explanations = {}, negative_explanations = {};
+		if (explain>0) {
+			var positive_explanations = {};
+			var negative_explanations = {};
+		}
 		for (var aClass in this.mapClassnameToClassifier) {
 			var classifier = this.mapClassnameToClassifier[aClass];
 			var classification = classifier.classify(sample, explain);
@@ -140,9 +143,9 @@ BinaryRelevance.prototype = {
 				}, "");
 				if (classification.classification > 0.5) {
 					classes[aClass] = true;
-					positive_explanations[aClass]=explanations_string;
+					if (explain>0) positive_explanations[aClass]=explanations_string;
 				} else {
-					negative_explanations[aClass]=explanations_string;
+					if (explain>0) negative_explanations[aClass]=explanations_string;
 				}
 			} else {
 				if (classification > 0.5)
@@ -150,7 +153,7 @@ BinaryRelevance.prototype = {
 			}
 		}
 		classes = Object.keys(classes);
-		return (explain?
+		return (explain>0?
 			{
 				classes: classes, 
 				explanation: {

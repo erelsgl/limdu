@@ -6,6 +6,7 @@
  */
 
 var _ = require('underscore')._;
+var util = require('util');
 var hash = require('./hash');
 var PrecisionRecall = require("./PrecisionRecall");
 
@@ -22,11 +23,15 @@ module.exports.testLite = function(classifier, dataset, explain) {
 		actualClasses = (actualClassesWithExplanations.classes? actualClassesWithExplanations.classes: actualClassesWithExplanations);
 		actualClasses.sort();
 		if (!_(expectedClasses).isEqual(actualClasses)) {
-			console.log("\t"+JSON.stringify(dataset[i].input)+": expected "+expectedClasses+" but got "+(explain? JSON.stringify(actualClassesWithExplanations,null,"\t"): actualClasses));
+			console.log(
+				"\t"+JSON.stringify(dataset[i].input)+":"+
+				" expected "+expectedClasses+
+				" but got "+(explain>0? JSON.stringify(actualClassesWithExplanations,null,"\t"): actualClasses));
 		}
 		currentStats.addCases(expectedClasses, actualClasses);
 	}
 	console.log("SUMMARY: "+currentStats.calculateStats().shortStats());
+	return currentStats;
 }
 
 /**
@@ -38,28 +43,19 @@ module.exports.testLite = function(classifier, dataset, explain) {
  * @return the currentStats.
  */
 module.exports.test = function(
-		classifier, testSet, 
-		verbosity, microAverage, macroSum) {
-		var currentStats = new PrecisionRecall();
-		for (var i=0; i<testSet.length; ++i) {
-			var expectedClasses = normalizeClasses(testSet[i].output);
-			var actualClasses = classifier.classify(testSet[i].input);
-			var explanations = currentStats.addCases(expectedClasses, actualClasses, (verbosity>2));
-			if (verbosity>1 && explanations.length>0) console.log("\t"+testSet[i].input+": \n"+explanations.join("\n"));
-			if (microAverage) microAverage.addCases(expectedClasses, actualClasses);
-		}
-		currentStats.calculateStats();
-		if (macroSum) hash.add(macroSum, currentStats.fullStats());
-		
-		if (verbosity>0) {
-			if (verbosity>2) {
-				console.log("FULL RESULTS:")
-				console.dir(currentStats.fullStats());
-			}
-			console.log("SUMMARY: "+currentStats.shortStats());
-		}
-		
-		return currentStats;
+	classifier, testSet, 
+	verbosity, microAverage, macroSum) {
+	var currentStats = new PrecisionRecall();
+	for (var i=0; i<testSet.length; ++i) {
+		var expectedClasses = normalizeClasses(testSet[i].output);
+		var actualClasses = classifier.classify(testSet[i].input);
+		var explanations = currentStats.addCases(expectedClasses, actualClasses, (verbosity>2));
+		if (verbosity>1 && explanations.length>0) console.log("\t"+testSet[i].input+": \n"+explanations.join("\n"));
+		if (microAverage) microAverage.addCases(expectedClasses, actualClasses);
+	}
+	currentStats.calculateStats();
+	if (macroSum) hash.add(macroSum, currentStats.fullStats());
+	return currentStats;
 };
 
 /**
@@ -73,14 +69,14 @@ module.exports.compare = function(classifier1, classifier2, dataset, explain) {
 		var expectedClasses = normalizeClasses(dataset[i].output); 
 		var actualClassesWithExplanations1 = classifier1.classify(dataset[i].input, explain);
 		var actualClassesWithExplanations2 = classifier2.classify(dataset[i].input, explain);
-		actualClasses1 = (explain? actualClassesWithExplanations1.classes: actualClassesWithExplanations1);
-		actualClasses2 = (explain? actualClassesWithExplanations2.classes: actualClassesWithExplanations2);
+		actualClasses1 = (explain>0? actualClassesWithExplanations1.classes: actualClassesWithExplanations1);
+		actualClasses2 = (explain>0? actualClassesWithExplanations2.classes: actualClassesWithExplanations2);
 		actualClasses1.sort();
 		actualClasses2.sort();
 		if (!_(actualClasses1).isEqual(actualClasses2)) {
 			console.log("\t"+JSON.stringify(dataset[i].input)+
-				" : classes1="+(explain? JSON.stringify(actualClassesWithExplanations1,null,"\t"): actualClasses1)+
-				" ; classes2="+(explain? JSON.stringify(actualClassesWithExplanations2,null,"\t"): actualClasses2)+
+				" : classes1="+(explain>0? JSON.stringify(actualClassesWithExplanations1,null,"\t"): actualClasses1)+
+				" ; classes2="+(explain>0? JSON.stringify(actualClassesWithExplanations2,null,"\t"): actualClasses2)+
 				"");
 			if (_(actualClasses1).isEqual(expectedClasses)) {
 				console.log("\t\tClassifier1 is correct");
@@ -94,7 +90,32 @@ module.exports.compare = function(classifier1, classifier2, dataset, explain) {
 }
 
 /**
- * Test the given classifier on the given train-set and test-set.
+ * Test the given classifier-type on the given train-set and test-set.
+ * @param createNewClassifierFunction a function that creates a new, empty, untrained classifier (of type BinaryClassifierSet).
+ * @param trainSet, testSet arrays with objects of the format: {input: "sample1", output: "class1"}
+ * @param verbosity [int] level of details in log (0 = no log)
+ * @param microAverage, macroSum [output] - objects of type PrecisionRecall, used to return the results. 
+ * @return the currentStats.
+ */
+module.exports.trainAndTestLite = function(
+		createNewClassifierFunction, 
+		trainSet, testSet, 
+		verbosity, microAverage, macroSum) {
+		// TRAIN:
+		var classifier = createNewClassifierFunction();
+
+		if (verbosity>0) console.log("\nstart training on "+trainSet.length+" samples, "+(trainSet.allClasses? trainSet.allClasses.length+' classes': ''));
+		var startTime = new Date()
+		classifier.trainBatch(trainSet);
+		var elapsedTime = new Date()-startTime;
+		if (verbosity>0) console.log("end training on "+trainSet.length+" samples, "+(trainSet.allClasses? trainSet.allClasses.length+' classes, ': '')+elapsedTime+" [ms]");
+	
+		// TEST:
+		return module.exports.testLite(classifier, testSet, /*explain=*/verbosity-1);
+};
+
+/**
+ * Test the given classifier-type on the given train-set and test-set.
  * @param createNewClassifierFunction a function that creates a new, empty, untrained classifier (of type BinaryClassifierSet).
  * @param trainSet, testSet arrays with objects of the format: {input: "sample1", output: "class1"}
  * @param verbosity [int] level of details in log (0 = no log)
@@ -110,7 +131,6 @@ module.exports.trainAndTest = function(
 
 		if (verbosity>0) console.log("\nstart training on "+trainSet.length+" samples, "+(trainSet.allClasses? trainSet.allClasses.length+' classes': ''));
 		var startTime = new Date()
-		if (verbosity>2) console.dir(trainSet);
 		classifier.trainBatch(trainSet);
 		var elapsedTime = new Date()-startTime;
 		if (verbosity>0) console.log("end training on "+trainSet.length+" samples, "+(trainSet.allClasses? trainSet.allClasses.length+' classes, ': '')+elapsedTime+" [ms]");

@@ -20,7 +20,7 @@ var EnhancedClassifier = function(opts) {
 		throw new Error("opts must contain classifierType");
 	}
 	this.classifierType = opts.classifierType;
-	this.normalizer = opts.normalizer;
+	this.setNormalizer(opts.normalizer);
 	this.setFeatureExtractor(opts.featureExtractor);
 	this.setFeatureExtractorForClassification(opts.featureExtractorForClassification);
 	this.classifierOptions = opts.classifierOptions;
@@ -34,25 +34,33 @@ EnhancedClassifier.prototype = {
 
 	/** Set the main feature extactor, used for both training and classification. */
 	setFeatureExtractor: function (featureExtractor) {
-		this.featureExtractor = FeaturesUnit.normalize(featureExtractor);
+		this.featureExtractors = FeaturesUnit.normalize(featureExtractor);
+	},
+	
+	/** Set the main feature extactor, used for both training and classification. */
+	setNormalizer: function (normalizer) {
+		if (normalizer)
+			this.normalizers = (Array.isArray(normalizer)? normalizer: [normalizer]);
 	},
 
 	/** Set an additional feature extractor, for classification only. */
 	setFeatureExtractorForClassification: function (featureExtractorForClassification) {
 		if (featureExtractorForClassification) {
 			if (Array.isArray(featureExtractorForClassification)) {
-				featureExtractorForClassification.unshift(this.featureExtractor);
+				featureExtractorForClassification.unshift(this.featureExtractors);
 			} else {
-				featureExtractorForClassification = [this.featureExtractor, featureExtractorForClassification];
+				featureExtractorForClassification = [this.featureExtractors, featureExtractorForClassification];
 			}
-			this.featureExtractorForClassification = new FeaturesUnit.CollectionOfExtractors(featureExtractorForClassification);
+			this.featureExtractorsForClassification = new FeaturesUnit.CollectionOfExtractors(featureExtractorForClassification);
 		}
 	},
 
 	sampleToFeatures: function(sample, featureExtractor) {
-		if (this.normalizer) {
+		if (this.normalizers) {
 			try {
-				sample = this.normalizer(sample);
+				for (var i in this.normalizers) {
+					sample = this.normalizers[i](sample);
+				}
 			} catch (err) {
 				throw new Error("Cannot normalize '"+sample+"': "+JSON.stringify(err));
 			}
@@ -84,7 +92,7 @@ EnhancedClassifier.prototype = {
 	trainOnline: function(sample, classes) {
 		classes = normalizeClasses(classes);
 		this.classifier.trainOnline(
-			this.sampleToFeatures(sample, this.featureExtractor), classes);
+			this.sampleToFeatures(sample, this.featureExtractors), classes);
 		if (this.pastTrainingSamples)
 			this.pastTrainingSamples.push({input: sample, output: classes});
 	},
@@ -95,8 +103,8 @@ EnhancedClassifier.prototype = {
 	 * @param dataset an array with objects of the format: {input: sample1, output: [class11, class12...]}
 	 */
 	trainBatch: function(dataset) {
-		var normalizer = this.normalizer;
-		var featureExtractor = this.featureExtractor;
+		var normalizers = this.normalizers;
+		var featureExtractor = this.featureExtractors;
 		var featureLookupTable = this.featureLookupTable;
 		var pastTrainingSamples = this.pastTrainingSamples;
 
@@ -105,8 +113,9 @@ EnhancedClassifier.prototype = {
 			if (pastTrainingSamples)
 				pastTrainingSamples.push(datum);
 			datum = _(datum).clone();
-			if (normalizer)
-				datum.input = normalizer(datum.input);
+			if (normalizers)
+				for (var i in normalizers)
+					datum.input = normalizers[i](datum.input);
 			if (featureExtractor)
 				datum.input = featureExtractor(datum.input);
 			if (featureLookupTable)
@@ -125,7 +134,7 @@ EnhancedClassifier.prototype = {
 			throw new Error("No pastTrainingSamples array - can't retrain");
 			
 		var featureLookupTable = this.featureLookupTable;
-		var featureExtractor = this.featureExtractor;
+		var featureExtractor = this.featureExtractors;
 		var dataset = this.pastTrainingSamples;
 
 		dataset = dataset.map(function(datum) {
@@ -148,7 +157,7 @@ EnhancedClassifier.prototype = {
 	 */
 	classify: function(sample, explain) {
 		return this.classifier.classify(
-			this.sampleToFeatures(sample, this.featureExtractorForClassification? this.featureExtractorForClassification: this.featureExtractor), explain);
+			this.sampleToFeatures(sample, this.featureExtractorsForClassification? this.featureExtractorsForClassification: this.featureExtractors), explain);
 	},
 	
 	/**

@@ -15,10 +15,14 @@ var FeaturesUnit = require('../features');
 
 var spamClassifier = new classifiers.EnhancedClassifier({
 	classifierType:   classifiers.NeuralNetwork,
-	normalizer: FeaturesUnit.RegexpNormalizer([
-		{source: "\\b(...+)est\\b", target: "$1"},
-		{source: "\\b(...+)er\\b", target: "$1"},
-	]),
+	normalizer: [
+		FeaturesUnit.RegexpNormalizer([
+			{source: "\\b(...+)er\\b", target: "$1"},
+		]),
+		FeaturesUnit.RegexpNormalizer([
+			{source: "\\b(...+)est\\b", target: "$1"},
+		]),
+	],		
 	featureExtractor: FeaturesUnit.WordsFromText(1)
 });
 spamClassifier.trainBatch([

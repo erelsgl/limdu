@@ -181,7 +181,6 @@ EnhancedClassifier.prototype = {
 	 * @return an array whose VALUES are classes.
 	 */
 	classifyPart: function(sample, explain) {
-		sample = this.normalizedSample(sample);
 		var features = this.sampleToFeatures(sample, this.featureExtractorsForClassification? this.featureExtractorsForClassification: this.featureExtractors);
 		features = this.correctSpelling(features);
 		var array = this.featuresToArray(features);
@@ -194,6 +193,7 @@ EnhancedClassifier.prototype = {
 	 * @return an array whose VALUES are classes.
 	 */
 	classify: function(sample, explain) {
+		sample = this.normalizedSample(sample);
 		if (!this.inputSplitter) {
 			return this.classifyPart(sample, explain);
 		} else {
@@ -210,6 +210,7 @@ EnhancedClassifier.prototype = {
 					explanations.push(part);
 					explanations.push(classesWithExplanation.explanation);
 				}
+				//console.log(part+" "+JSON.stringify(accumulatedClasses));
 			});
 			classes = Object.keys(accumulatedClasses);
 			if (explain>0) 

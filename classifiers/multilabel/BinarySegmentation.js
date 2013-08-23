@@ -30,7 +30,6 @@ var BinarySegmentation = function(opts) {
 	this.binaryClassifierType = opts.binaryClassifierType;
 	this.binaryClassifierOptions = opts.binaryClassifierOptions;
 	this.featureExtractor = FeaturesUnit.normalize(opts.featureExtractor);
-	this.sentenceSplitter = opts.sentenceSplitter;
 	
 	switch (opts.segmentSplitStrategy) {
 	case 'shortestSegment': this.segmentSplitStrategy = this.shortestSegmentSplitStrategy; break;
@@ -257,50 +256,23 @@ BinarySegmentation.prototype = {
 	 *  
 	 * @return an array whose VALUES are classes.
 	 */
-	classifySentence: function(sentence, explain) {
+	classify: function(sentence, explain) {
 		if (this.segmentSplitStrategy) {
 			var words = sentence.split(/ /);
 			var accumulatedClasses = {};
 			var explanations = [];
 			this.segmentSplitStrategy(words, accumulatedClasses, explain, explanations); 
 			// this is either this.shortestSegmentSplitStrategy, or this.longestSegmentSplitStrategy
-			return	{
-				accumulatedClasses: accumulatedClasses, 
+			
+			var classes = Object.keys(accumulatedClasses);
+			return (explain>0?	{
+				classes: classes, 
 				explanation: explanations
-			};
+			}: 
+			classes);
 		} else {
-			var segmentClassesWithExplain = this.classifySegment(sentence, explain);
-			var segmentClasses = (segmentClassesWithExplain.classes? segmentClassesWithExplain.classes: segmentClassesWithExplain);
-			return {
-				accumulatedClasses: _(segmentClasses).invert(),
-				explanation: segmentClassesWithExplain.explanation? 
-						[sentence, segmentClassesWithExplain.explanation]:
-						[]
-			}
+			return this.classifySegment(sentence, explain);
 		}
-	},
-	
-	classify: function(text, explain) {
-		var sentences = (this.sentenceSplitter?
-				this.sentenceSplitter(text):
-				[text]);
-		var accumulatedClasses = {};
-		var explanations = [];
-		var self = this;
-		sentences.forEach(function(sentence) {
-			var classification = self.classifySentence(sentence,explain);
-			for (var aClass in classification.accumulatedClasses)
-				accumulatedClasses[aClass]=true;
-			if (explain>0)
-				for (var i in classification.explanation)
-					explanations.push(classification.explanation[i]);
-		});
-		var classes = Object.keys(accumulatedClasses);
-		return (explain>0?	{
-			classes: classes, 
-			explanation: explanations
-		}: 
-		classes);
 	},
 
 	toJSON : function(callback) {

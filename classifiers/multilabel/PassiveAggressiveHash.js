@@ -92,9 +92,11 @@ MultiLabelPassiveAggressive.prototype = {
 		if (loss > 0) {
 			var sample_norm2 = hash.sum_of_square_values(sample);
 			var tau = Math.min(this.Constant, loss / sample_norm2);
-			
-			hash.addtimes(this.weights[r], tau, sample);  // weights[r] += tau*sample
-			hash.addtimes(this.weights[s], -tau, sample); // weights[s] -= tau*sample
+
+			if (r_score < Number.MAX_VALUE)
+				hash.addtimes(this.weights[r], tau, sample);  // weights[r] += tau*sample
+			if (s_score > -Number.MAX_VALUE)
+				hash.addtimes(this.weights[s], -tau, sample); // weights[s] -= tau*sample
 		}
 		// this.weights_sum = (this.weights + this.weights_sum);
 		for (category in this.weights)

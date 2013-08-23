@@ -10,7 +10,7 @@
     "dependencies" : {
         "underscore" : ">=1.1.0",
         "sprintf": "*",
-        "csr-matrix": "*"
+        "wordsworth": "*"
     },
     "devDependencies" : {
         "mocha"  : ">=1.0.0",

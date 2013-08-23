@@ -27,8 +27,8 @@ var PassiveAggressiveClassifier = new classifiers.multilabel.PassiveAggressive({
 	retrain_count: 10,
 });
 
-var classifier = BinaryRelevanceClassifier;
-//var classifier = PassiveAggressiveClassifier;
+//var classifier = BinaryRelevanceClassifier;
+var classifier = PassiveAggressiveClassifier;
 
 var explain=0;
 var classes = ['A','B','C','D','E','F','G'];
@@ -36,7 +36,7 @@ var extra_features = {me:1, wants:1, the:1, and:1};
 //var classes = ['1','2','3','4','5','6','7'];
 
 // Create a training set - one class per sample   
-var trainSet = classes.map(function(theClass) {
+var oneClassPerSample = classes.map(function(theClass) {
 	var input = _(extra_features).clone();
 	var theFeature = theClass+theClass;
 	input[theFeature] = 1;
@@ -44,9 +44,11 @@ var trainSet = classes.map(function(theClass) {
 	return sample;
 });
 
+zeroClassesPerSample = [{input: _(extra_features).clone(), output: []}];
+
 // Create a test set - combinations of zero or more classes per sample
-var testSet = [];
-for (var numClasses=0; numClasses<classes.length; ++numClasses) {
+var twoOrMoreClassesPerSample = [];
+for (var numClasses=2; numClasses<classes.length; ++numClasses) {
 	for (var iFirstClass=0; iFirstClass<(numClasses? classes.length: 1); ++iFirstClass) {
 		var input = _(extra_features).clone();
 		var output = [];
@@ -57,13 +59,16 @@ for (var numClasses=0; numClasses<classes.length; ++numClasses) {
 			output.push(theClass);
 		}
 		var sample={input:input, output:output};
-		testSet.push(sample);
+		twoOrMoreClassesPerSample.push(sample);
 	}
 }
 
 var explain = 0;
-classifier.trainBatch(trainSet);
-mlutils.testLite(classifier, testSet, explain);
+//classifier.trainBatch(oneClassPerSample);
+//mlutils.testLite(classifier, oneClassPerSample.concat(twoOrMoreClassesPerSample).concat(zeroClassesPerSample), explain);
+
+classifier.trainBatch(twoOrMoreClassesPerSample.concat(zeroClassesPerSample));
+mlutils.testLite(classifier, oneClassPerSample, explain);
 
 console.log("Multi-Label Classification demo end");
 

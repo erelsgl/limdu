@@ -12,7 +12,8 @@ var _ = require('underscore')._;
  * * 'featureExtractor' - a single feature-extractor (see the "features" folder), or an array of extractors, for extracting features from training and classification samples.
  * * 'featureExtractorForClassification' - additional feature extractor[s], for extracting features from samples during classification. Used for domain adaptation.
  * * 'featureLookupTable' - an instance of FeatureLookupTable for converting features to numeric indices and back.
- * * 'pastTrainingSamples' - an array that keeps all past training samples, to enable retraining. 
+ * * 'pastTrainingSamples' - an array that keeps all past training samples, to enable retraining.
+ * * 'spellChecker' - if true, use the 'wordsworth' spell checker to spell-check features during classification. 
  */
 var EnhancedClassifier = function(opts) {
 	if (!opts.classifierType) {
@@ -26,6 +27,9 @@ var EnhancedClassifier = function(opts) {
 	this.classifierOptions = opts.classifierOptions;
 	this.featureLookupTable = opts.featureLookupTable;
 	this.pastTrainingSamples = opts.pastTrainingSamples;
+	if (opts.spellChecker) {
+		this.spellChecker = require('wordsworth').getInstance();
+	}
 	
 	this.classifier = new this.classifierType(this.classifierOptions);
 }
@@ -54,8 +58,9 @@ EnhancedClassifier.prototype = {
 			this.featureExtractorsForClassification = new FeaturesUnit.CollectionOfExtractors(featureExtractorForClassification);
 		}
 	},
-
-	sampleToFeatures: function(sample, featureExtractor) {
+	
+	// private function: use this.normalizers to normalize the given sample:
+	normalizedSample: function(sample) {
 		if (this.normalizers) {
 			try {
 				for (var i in this.normalizers) {
@@ -65,6 +70,10 @@ EnhancedClassifier.prototype = {
 				throw new Error("Cannot normalize '"+sample+"': "+JSON.stringify(err));
 			}
 		}
+		return sample;
+	},
+
+	sampleToFeatures: function(sample, featureExtractor) {
 		var features = sample;
 		if (featureExtractor) {
 			try {
@@ -73,11 +82,17 @@ EnhancedClassifier.prototype = {
 				throw new Error("Cannot extract features from '"+sample+"': "+JSON.stringify(err));
 			}
 		}
+		return features;
+	},
+	
+	featuresToArray: function(features) {
 		var array = features;
-		if (this.featureLookupTable)
+		if (this.featureLookupTable) {
 			array = this.featureLookupTable.hashToArray(features);
+		}
 		return array;
 	},
+	
 
 	getAllClasses: function() {  // relevant for multilabel classifiers
 		return this.classifier.getAllClasses();
@@ -91,8 +106,10 @@ EnhancedClassifier.prototype = {
 	 */
 	trainOnline: function(sample, classes) {
 		classes = normalizeClasses(classes);
-		this.classifier.trainOnline(
-			this.sampleToFeatures(sample, this.featureExtractors), classes);
+		sample = this.normalizedSample(sample);
+		var features = this.sampleToFeatures(sample, this.featureExtractors);
+		var array = this.featuresToArray(features);
+		this.classifier.trainOnline(array, classes);
 		if (this.pastTrainingSamples)
 			this.pastTrainingSamples.push({input: sample, output: classes});
 	},
@@ -103,8 +120,7 @@ EnhancedClassifier.prototype = {
 	 * @param dataset an array with objects of the format: {input: sample1, output: [class11, class12...]}
 	 */
 	trainBatch: function(dataset) {
-		var normalizers = this.normalizers;
-		var featureExtractor = this.featureExtractors;
+		var self = this;
 		var featureLookupTable = this.featureLookupTable;
 		var pastTrainingSamples = this.pastTrainingSamples;
 
@@ -113,11 +129,9 @@ EnhancedClassifier.prototype = {
 			if (pastTrainingSamples)
 				pastTrainingSamples.push(datum);
 			datum = _(datum).clone();
-			if (normalizers)
-				for (var i in normalizers)
-					datum.input = normalizers[i](datum.input);
-			if (featureExtractor)
-				datum.input = featureExtractor(datum.input);
+			datum.input = self.normalizedSample(datum.input);
+			datum.input = self.sampleToFeatures(datum.input, self.featureExtractors);
+			//console.dir(datum);
 			if (featureLookupTable)
 				featureLookupTable.addFeatures(datum.input);
 			return datum;
@@ -129,6 +143,21 @@ EnhancedClassifier.prototype = {
 		this.classifier.trainBatch(dataset, this.classifierOptions);
 	},
 
+	/**
+	 * Use the model trained so far to classify a new sample.
+	 * @param sample a document.
+	 * @return an array whose VALUES are classes.
+	 */
+	classify: function(sample, explain) {
+		sample = this.normalizedSample(sample);
+		var features = this.sampleToFeatures(sample, this.featureExtractorsForClassification? this.featureExtractorsForClassification: this.featureExtractors);
+		var array = this.featuresToArray(features);
+		return this.classifier.classify(array, explain);
+	},
+	
+	/**
+	 * Train on past training samples
+	 */
 	retrain: function() {
 		if (!this.pastTrainingSamples)
 			throw new Error("No pastTrainingSamples array - can't retrain");
@@ -148,16 +177,6 @@ EnhancedClassifier.prototype = {
 			return datum;
 		});
 		this.classifier.trainBatch(dataset, this.classifierOptions);
-	},
-
-	/**
-	 * Use the model trained so far to classify a new sample.
-	 * @param sample a document.
-	 * @return an array whose VALUES are classes.
-	 */
-	classify: function(sample, explain) {
-		return this.classifier.classify(
-			this.sampleToFeatures(sample, this.featureExtractorsForClassification? this.featureExtractorsForClassification: this.featureExtractors), explain);
 	},
 	
 	/**

@@ -11,8 +11,9 @@ module.exports = {
 	trainAndTest: trainAndTest.trainAndTest,
 	trainAndCompare: trainAndTest.trainAndCompare,
 	writeDataset: require("./trainAndTest").writeDataset,
-	toARFF: require("./arff").toARFF,
-	toARFFs: require("./arff").toARFFs,
 	hammingDistance: require("./hamming").hammingDistance,
+	
+	arff: require("./arff"),
+	json: require("./json"),
 }
 

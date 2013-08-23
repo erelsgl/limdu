@@ -7,12 +7,13 @@
 
 var should = require('should');
 var classifiers = require('../../classifiers');
+var FeaturesUnit = require('../../features');
 
-describe('classifier with word feature extractor', function() {
+describe('classifier with a single feature extractor for words', function() {
 	it('should classify sentences', function() {
 		var spamClassifier = new classifiers.EnhancedClassifier({
 			classifierType:   classifiers.NeuralNetwork,
-			featureExtractor: require('../../features').WordsFromText(1)
+			featureExtractor: FeaturesUnit.WordsFromText(1)
 		});
 		
 		spamClassifier.trainBatch([
@@ -30,14 +31,15 @@ describe('classifier with word feature extractor', function() {
 	})
 
 	it('should explain its decisions', function() {
+		// TODO
 	})
 })
 
-describe('classifier with array feature extractor', function() {
+describe('classifier with an array of feature extractors, for words and bigrams', function() {
 	it('should classify sentences', function() {
 		var spamClassifier = new classifiers.EnhancedClassifier({
 			classifierType:   classifiers.NeuralNetwork,
-			featureExtractor: [require('../../features').WordsFromText(1),require('../../features').WordsFromText(2)]
+			featureExtractor: [FeaturesUnit.WordsFromText(1),FeaturesUnit.WordsFromText(2)]
 		});
 		
 		spamClassifier.trainBatch([
@@ -55,5 +57,56 @@ describe('classifier with array feature extractor', function() {
 	})
 
 	it('should explain its decisions', function() {
+		// TODO
+	})
+})
+
+describe('classifier with a single normalizer and a feature extractor for words', function() {
+	it('should classify sentences', function() {
+		var spamClassifier = new classifiers.EnhancedClassifier({
+			classifierType:   classifiers.NeuralNetwork,
+			featureExtractor: FeaturesUnit.WordsFromText(1),
+			normalizer: FeaturesUnit.RegexpNormalizer([
+			                               			{source: "er\\b", target: ""},
+			                            			{source: "est\\b", target: ""},
+			                            			{source: " es\\b", target: "es"},
+			                           				])
+		});
+
+		spamClassifier.trainBatch([
+			{input: "cheaper watch es", output: [1]},
+			{input: "", output: [0]},
+		]);
+
+		spamClassifier.classify("cheapest watches").should.be.above(0.8);  // very high number (spam)
+		spamClassifier.classify("cheapless clocks").should.be.below(0.2);  // low number (not spam)
+	})
+
+	it('should explain its decisions', function() {
+		// TODO
+	})
+})
+
+describe('classifier with an array of normalizers and a feature extractor for words', function() {
+	it('should classify sentences', function() {
+		var spamClassifier = new classifiers.EnhancedClassifier({
+			classifierType:   classifiers.NeuralNetwork,
+			featureExtractor: FeaturesUnit.WordsFromText(1),
+			normalizer: [FeaturesUnit.RegexpNormalizer([{source: "er\\b", target: ""}]),
+			             FeaturesUnit.RegexpNormalizer([{source: "est\\b", target: ""}]),
+			             FeaturesUnit.RegexpNormalizer([{source: " es\\b", target: "es"}])]
+		});
+
+		spamClassifier.trainBatch([
+			{input: "cheaper watch es", output: [1]},
+			{input: "", output: [0]},
+		]);
+
+		spamClassifier.classify("cheapest watches").should.be.above(0.8);  // very high number (spam)
+		spamClassifier.classify("cheapless clocks").should.be.below(0.2);  // low number (not spam)
+	})
+
+	it('should explain its decisions', function() {
+		// TODO
 	})
 })

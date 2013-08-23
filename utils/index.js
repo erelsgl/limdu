@@ -10,6 +10,7 @@ module.exports = {
 	trainAndTestLite: trainAndTest.trainAndTestLite,
 	trainAndTest: trainAndTest.trainAndTest,
 	trainAndCompare: trainAndTest.trainAndCompare,
+	learningCurve: trainAndTest.learningCurve,
 	writeDataset: require("./trainAndTest").writeDataset,
 	hammingDistance: require("./hamming").hammingDistance,
 	

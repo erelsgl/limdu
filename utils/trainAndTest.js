@@ -163,6 +163,32 @@ module.exports.trainAndCompare = function(
 };
 
 
+/**
+ * Train on datasets[0], test on datasets[1].
+ * Train on datasets[0+1], test on datasets[2].
+ * Train on datasets[0+1+2], test on datasets[3].
+ * etc...
+ */
+module.exports.learningCurve = function(createNewClassifierFunction, datasets, verbosity) {
+
+	var trainSet = [];
+	for (var i=1; i<datasets.length; ++i) {
+		trainSet = trainSet.concat(datasets[i-1]);
+		var testSet = datasets[i];
+
+		var classifier = createNewClassifierFunction();
+		var startTime = new Date();
+		classifier.trainBatch(trainSet);
+		var elapsedTime = new Date()-startTime;
+		var testStats = module.exports.test(classifier, testSet, verbosity).shortStats();
+
+		console.log("Train on "+trainSet.length+" samples ("+elapsedTime+" ms): "+testStats);
+	}
+}
+
+
+
+
 var stringifyClass = function (aClass) {
 	return (_(aClass).isString()? aClass: JSON.stringify(aClass));
 }

@@ -14,7 +14,7 @@ describe('baseline - classifier without a spell-checker', function() {
 		var spamClassifier = new classifiers.EnhancedClassifier({
 			classifierType:   classifiers.NeuralNetwork,
 			featureExtractor: FeaturesUnit.WordsFromText(1),
-			spellChecker: false,
+			spellChecker: null,
 		});
 
 		spamClassifier.trainBatch([
@@ -33,7 +33,7 @@ describe('classifier with spell-checker', function() {
 		var spamClassifier = new classifiers.EnhancedClassifier({
 			classifierType:   classifiers.NeuralNetwork,
 			featureExtractor: FeaturesUnit.WordsFromText(1),
-			spellChecker: true,
+			spellChecker: require('wordsworth').getInstance(),
 		});
 
 		spamClassifier.trainBatch([

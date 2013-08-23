@@ -14,7 +14,7 @@ var _ = require('underscore')._;
  * * 'featureLookupTable' - an instance of FeatureLookupTable for converting features to numeric indices and back.
  * * 'pastTrainingSamples' - an array that keeps all past training samples, to enable retraining.
  * * 'inputSplitter' - a function that splits the input samples into sub-samples, for multi-label classification (useful mainly for sentences). 
- * * 'spellChecker' - if true, use the 'wordsworth' spell checker to spell-check features during classification.
+ * * 'spellChecker' - an initialized 'wordsworth' spell checker, to spell-check features during classification.
  */
 var EnhancedClassifier = function(opts) {
 	if (!opts.classifierType) {
@@ -31,7 +31,7 @@ var EnhancedClassifier = function(opts) {
 	this.inputSplitter = opts.inputSplitter;
 	
 	if (opts.spellChecker) {
-		this.spellChecker = require('wordsworth').getInstance();
+		this.spellChecker = opts.spellChecker;
 	}
 	
 	this.classifier = new this.classifierType(this.classifierOptions);
@@ -107,12 +107,19 @@ EnhancedClassifier.prototype = {
 			}
 			var correctedFeatures = {};
 			for (var feature in features) {
+				if (!isNaN(parseInt(feature))) { // don't spell-correct numeric features
+					correctedFeatures[feature] = features[feature];
+					continue;
+				}
 				var suggestions = this.spellChecker.suggest(feature); // If feature exists, returns empty. Otherwise, returns ordered list of suggested corrections from the training set.
 				if (suggestions.length==0) {
 					correctedFeatures[feature] = features[feature];
-				} else { // take the first suggestion; but decrement its value a little:
-					correctedFeatures[suggestions[0]] = features[feature] * 0.9;
+					continue;
 				}
+				
+				// take the first suggestion; but decrement its value a little:
+				//if (suggestions[0]=='i') {				console.log("spellCheck("+feature+")="+suggestions);				}
+				correctedFeatures[suggestions[0]] = features[feature] * 0.9;
 			}
 			return correctedFeatures;
 		} else {
@@ -184,9 +191,16 @@ EnhancedClassifier.prototype = {
 		var features = this.sampleToFeatures(sample, this.featureExtractorsForClassification? this.featureExtractorsForClassification: this.featureExtractors);
 		features = this.correctSpelling(features);
 		var array = this.featuresToArray(features);
-		return this.classifier.classify(array, explain);
+		var classification = this.classifier.classify(array, explain);
+		if (this.spellChecker && classification.explanation) {
+			if (Array.isArray(classification.explanation))
+				classification.explanation.unshift({SpellCorrectedFeatures: JSON.stringify(features)});
+			else
+				classification.explanation['SpellCorrectedFeatures']=JSON.stringify(features);
+		}
+		return classification;
 	},
-	
+
 	/**
 	 * Use the model trained so far to classify a new sample.
 	 * @param sample a document.
@@ -272,6 +286,7 @@ EnhancedClassifier.prototype = {
 		return {
 			classifier: this.classifier.toJSON(callback),
 			featureLookupTable: (this.featureLookupTable? this.featureLookupTable.toJSON(): undefined),
+			spellChecker:  (this.spellChecker? this.spellChecker/*.toJSON()*/: undefined),
 			pastTrainingSamples: (this.pastTrainingSamples? this.pastTrainingSamples: undefined),
 			/* Note: the feature extractors are functions - they should be created at initialization - they cannot be serialized! */ 
 		};
@@ -280,6 +295,7 @@ EnhancedClassifier.prototype = {
 	fromJSON : function(json) {
 		this.classifier.fromJSON(json.classifier);
 		if (this.featureLookupTable) this.featureLookupTable.fromJSON(json.featureLookupTable);
+		if (this.spellChecker) this.spellChecker = json.spellChecker; 
 		if (this.pastTrainingSamples) this.pastTrainingSamples = json.pastTrainingSamples;
 		
 		/* Note: the feature extractors are functions - they should be created at initialization - they cannot be deserialized! */ 

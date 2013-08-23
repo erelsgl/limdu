@@ -85,6 +85,38 @@ EnhancedClassifier.prototype = {
 		return features;
 	},
 	
+	trainSpellChecker: function(features) {
+		if (this.spellChecker) {
+			if (!_.isObject(features)) {
+				throw new Error("The spell-checker cannot train because the 'features' are not organized as a hash");
+			}
+			for (var feature in features) {
+				this.spellChecker.understand(feature); // Adds the given word to the index of the spell-checker.
+				this.spellChecker.train(feature);      // Adds the given word to the probabilistic model of the spell-checker.
+			}
+		}
+	},
+	
+	correctSpelling: function(features) {
+		if (this.spellChecker) {
+			if (!_.isObject(features)) {
+				throw new Error("The spell-checker cannot correct because the 'features' are not organized as a hash");
+			}
+			var correctedFeatures = {};
+			for (var feature in features) {
+				var suggestions = this.spellChecker.suggest(feature); // If feature exists, returns empty. Otherwise, returns ordered list of suggested corrections from the training set.
+				if (suggestions.length==0) {
+					correctedFeatures[feature] = features[feature];
+				} else { // take the first suggestion; but decrement its value a little:
+					correctedFeatures[suggestions[0]] = features[feature] * 0.9;
+				}
+			}
+			return correctedFeatures;
+		} else {
+			return features;
+		}
+	},
+	
 	featuresToArray: function(features) {
 		var array = features;
 		if (this.featureLookupTable) {
@@ -93,10 +125,6 @@ EnhancedClassifier.prototype = {
 		return array;
 	},
 	
-
-	getAllClasses: function() {  // relevant for multilabel classifiers
-		return this.classifier.getAllClasses();
-	},
 
 	/**
 	 * Online training: 
@@ -108,6 +136,7 @@ EnhancedClassifier.prototype = {
 		classes = normalizeClasses(classes);
 		sample = this.normalizedSample(sample);
 		var features = this.sampleToFeatures(sample, this.featureExtractors);
+		this.trainSpellChecker(features);
 		var array = this.featuresToArray(features);
 		this.classifier.trainOnline(array, classes);
 		if (this.pastTrainingSamples)
@@ -131,7 +160,7 @@ EnhancedClassifier.prototype = {
 			datum = _(datum).clone();
 			datum.input = self.normalizedSample(datum.input);
 			datum.input = self.sampleToFeatures(datum.input, self.featureExtractors);
-			//console.dir(datum);
+			self.trainSpellChecker(datum.input);
 			if (featureLookupTable)
 				featureLookupTable.addFeatures(datum.input);
 			return datum;
@@ -151,6 +180,7 @@ EnhancedClassifier.prototype = {
 	classify: function(sample, explain) {
 		sample = this.normalizedSample(sample);
 		var features = this.sampleToFeatures(sample, this.featureExtractorsForClassification? this.featureExtractorsForClassification: this.featureExtractors);
+		features = this.correctSpelling(features);
 		var array = this.featuresToArray(features);
 		return this.classifier.classify(array, explain);
 	},
@@ -215,6 +245,10 @@ EnhancedClassifier.prototype = {
 		
 		/* Note: the feature extractors are functions - they should be created at initialization - they cannot be deserialized! */ 
 		return this;
+	},
+
+	getAllClasses: function() {  // relevant for multilabel classifiers
+		return this.classifier.getAllClasses();
 	},
 }  // end of EnhancedClassifier prototype
 

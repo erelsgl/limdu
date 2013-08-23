@@ -13,7 +13,8 @@ var _ = require('underscore')._;
  * * 'featureExtractorForClassification' - additional feature extractor[s], for extracting features from samples during classification. Used for domain adaptation.
  * * 'featureLookupTable' - an instance of FeatureLookupTable for converting features to numeric indices and back.
  * * 'pastTrainingSamples' - an array that keeps all past training samples, to enable retraining.
- * * 'spellChecker' - if true, use the 'wordsworth' spell checker to spell-check features during classification. 
+ * * 'inputSplitter' - a function that splits the input samples into sub-samples, for multi-label classification (useful mainly for sentences). 
+ * * 'spellChecker' - if true, use the 'wordsworth' spell checker to spell-check features during classification.
  */
 var EnhancedClassifier = function(opts) {
 	if (!opts.classifierType) {
@@ -27,6 +28,8 @@ var EnhancedClassifier = function(opts) {
 	this.classifierOptions = opts.classifierOptions;
 	this.featureLookupTable = opts.featureLookupTable;
 	this.pastTrainingSamples = opts.pastTrainingSamples;
+	this.inputSplitter = opts.inputSplitter;
+	
 	if (opts.spellChecker) {
 		this.spellChecker = require('wordsworth').getInstance();
 	}
@@ -173,17 +176,52 @@ EnhancedClassifier.prototype = {
 	},
 
 	/**
-	 * Use the model trained so far to classify a new sample.
+	 * internal function - classify a single segment of the input (used mainly when there is an inputSplitter) 
 	 * @param sample a document.
 	 * @return an array whose VALUES are classes.
 	 */
-	classify: function(sample, explain) {
+	classifyPart: function(sample, explain) {
 		sample = this.normalizedSample(sample);
 		var features = this.sampleToFeatures(sample, this.featureExtractorsForClassification? this.featureExtractorsForClassification: this.featureExtractors);
 		features = this.correctSpelling(features);
 		var array = this.featuresToArray(features);
 		return this.classifier.classify(array, explain);
 	},
+	
+	/**
+	 * Use the model trained so far to classify a new sample.
+	 * @param sample a document.
+	 * @return an array whose VALUES are classes.
+	 */
+	classify: function(sample, explain) {
+		if (!this.inputSplitter) {
+			return this.classifyPart(sample, explain);
+		} else {
+			var parts = 	this.inputSplitter(sample);
+			var accumulatedClasses = {};
+			var explanations = [];
+			var self = this;
+			parts.forEach(function(part) {
+				var classesWithExplanation = self.classifyPart(part,explain);
+				var classes = (explain>0? classesWithExplanation.classes: classesWithExplanation);
+				for (var i in classes)
+					accumulatedClasses[classes[i]]=true;
+				if (explain>0) {
+					explanations.push(part);
+					explanations.push(classesWithExplanation.explanation);
+				}
+			});
+			classes = Object.keys(accumulatedClasses);
+			if (explain>0) 
+				return {
+					classes: classes,
+					explanation: explanations
+				};
+			else
+				return classes;
+		}
+	},
+
 	
 	/**
 	 * Train on past training samples

@@ -6,6 +6,7 @@ module.exports = {
 	CollectionOfExtractors: require("./CollectionOfExtractors"),
 	FeatureLookupTable: require("./FeatureLookupTable"),
 	RegexpNormalizer: require("./RegexpNormalizer"),
+	RegexpSplitter: require("./RegexpSplitter"),
 }
 
 

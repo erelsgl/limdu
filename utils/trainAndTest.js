@@ -89,6 +89,27 @@ module.exports.compare = function(classifier1, classifier2, dataset, explain) {
 	}
 }
 
+/**easy
+ * Split the given dataset to two datasets: 
+ ** easy (the classifier gets right), 
+ ** and hard (the classifier errs).  
+ */
+module.exports.splitToEasyAndHard = function(classifier, dataset) {
+	var easyDataset = [];
+	var hardDataset = [];
+	for (var i=0; i<dataset.length; ++i) {
+		var expectedClasses = normalizeClasses(dataset[i].output); 
+		var actualClasses = classifier.classify(dataset[i].input);
+		actualClasses.sort();
+		if (_(expectedClasses).isEqual(actualClasses)) {
+			easyDataset.push(dataset[i]);
+		} else {
+			hardDataset.push(dataset[i]);
+		}
+	}
+	return {easy: easyDataset, hard: hardDataset};
+}
+
 /**
  * Test the given classifier-type on the given train-set and test-set.
  * @param createNewClassifierFunction a function that creates a new, empty, untrained classifier (of type BinaryClassifierSet).
@@ -185,6 +206,8 @@ module.exports.learningCurve = function(createNewClassifierFunction, datasets, v
 		console.log("Train on "+trainSet.length+" samples ("+elapsedTime+" ms): "+testStats);
 	}
 }
+
+
 
 
 

@@ -164,6 +164,7 @@ EnhancedClassifier.prototype = {
 		var pastTrainingSamples = this.pastTrainingSamples;
 
 		dataset = dataset.map(function(datum) {
+			//console.log(JSON.stringify(datum));
 			datum.output = normalizeClasses(datum.output);
 			if (pastTrainingSamples)
 				pastTrainingSamples.push(datum);

@@ -34,6 +34,7 @@ var BinarySegmentation = function(opts) {
 	switch (opts.segmentSplitStrategy) {
 	case 'shortestSegment': this.segmentSplitStrategy = this.shortestSegmentSplitStrategy; break;
 	case 'longestSegment':  this.segmentSplitStrategy = this.longestSegmentSplitStrategy;  break;
+	case 'cheapestSegment':  this.segmentSplitStrategy = this.cheapestSegmentSplitStrategy;  break;
 	default: this.segmentSplitStrategy = null;
 	}
 	
@@ -140,7 +141,7 @@ BinarySegmentation.prototype = {
 	/**
 	 * Internal function - use the model trained so far to classify a single segment of a sentence.
 	 * 
-	 * @param sample a part of a text sentence.
+	 * @param segment a part of a text sentence.
 	 * @param explain - int - if positive, an "explanation" field, with the given length, will be added to the result.
 	 *  
 	 * @return an array whose VALUES are classes.
@@ -178,7 +179,75 @@ BinarySegmentation.prototype = {
 			}:
 			classes);
 	},
+
+	/**
+	 * Internal function - use the model trained so far to classify a single segment of a sentence.
+	 * 
+	 * @param segment a part of a text sentence.
+	 * @param explain - int - if positive, an "explanation" field, with the given length, will be added to the result.
+	 *  
+	 * @return an array [the_best_class, and_its_probability].
+	 */
+	bestClassOfSegment: function(segment) {
+		var classes = this.classifySegment(segment);
+		if (classes.length==0) {
+			return [null, 0];
+		} else {
+			return [classes[0], 1 / classes.length];
+		}
+	},
 	
+	
+	/**
+	 * protected function:
+	 * Strategy of finding the cheapest segmentation (- most probable segmentation), using a dynamic programming algorithm.
+	 * Based on: 
+	 * Morbini Fabrizio, Sagae Kenji. Joint Identification and Segmentation of Domain-Specific Dialogue Acts for Conversational Dialogue Systems. ACL-HLT 2011
+ 	 * http://www.citeulike.org/user/erelsegal-halevi/article/10259046
+	 */
+	cheapestSegmentSplitStrategy: function(words, accumulatedClasses, explain, explanations) {
+		
+		// Calculate the cost of classification of the segment from i to j.
+		// (Cost = - log probability).
+		var segmentClassificationCosts = [];  // best cost to classify segment [i,j]
+		for (var start=0; start<=words.length; ++start) {
+			segmentClassificationCosts[start] = [];
+			for (var end=0; end<start; ++end)
+				segmentClassificationCosts[start][end]=Infinity;
+			segmentClassificationCosts[start][start]=0;
+			for (var end=start+1; end<=words.length; ++end) {
+				var segment = words.slice(start,end).join(" ");
+				var bestClassAndProbability = this.bestClassOfSegment(segment);
+				//console.log(segment+" - "+bestClassAndProbability);
+				var bestClass = bestClassAndProbability[0];
+				var bestClassProbability = bestClassAndProbability[1];
+				segmentClassificationCosts[start][end] = -Math.log(bestClassProbability);
+			}
+		}
+		//console.log("segmentClassificationCosts");		console.dir(segmentClassificationCosts);
+		var cheapest_paths = require("../../../graph-paths/graph-paths").cheapest_paths;
+		cheapestSegmentClassificationCosts = cheapest_paths(segmentClassificationCosts, 0);
+		cheapestSentenceClassificationCost = cheapestSegmentClassificationCosts[words.length];
+		if (!cheapestSentenceClassificationCost)
+			throw new Error("cheapestSegmentClassificationCosts["+words.length+"] is empty");
+		
+		var cheapestClassificationPath = cheapestSentenceClassificationCost.path;
+		explanations.push(cheapestSentenceClassificationCost);
+		for (var i=0; i<cheapestClassificationPath.length-1; ++i) {
+			var segment = words.slice(cheapestClassificationPath[i],cheapestClassificationPath[i+1]).join(" ");
+			var segmentClassesWithExplain = this.classifySegment(segment, explain);
+			var segmentClasses = (segmentClassesWithExplain.classes? segmentClassesWithExplain.classes: segmentClassesWithExplain);
+			//console.log(segment+": "+segmentClasses);
+			for (var j in segmentClasses) {
+				accumulatedClasses[segmentClasses[j]]=true;
+			}
+			if (explain>0) {
+				explanations.push(segment);
+				explanations.push(segmentClassesWithExplain.explanation);
+			};
+			
+		}
+	},
 	
 	/**
 	 * protected function:
@@ -257,8 +326,9 @@ BinarySegmentation.prototype = {
 	 * @return an array whose VALUES are classes.
 	 */
 	classify: function(sentence, explain) {
-		if (this.segmentSplitStrategy) {
-			var words = sentence.split(/ /);
+		var minWordsToSplit = 2;
+		var words = sentence.split(/ /);
+		if (this.segmentSplitStrategy && words.length>=minWordsToSplit) {
 			var accumulatedClasses = {};
 			var explanations = [];
 			this.segmentSplitStrategy(words, accumulatedClasses, explain, explanations); 

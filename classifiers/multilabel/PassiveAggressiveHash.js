@@ -1,7 +1,6 @@
 var hash = require("../../utils/hash");
 var sprintf = require("sprintf").sprintf;
 var _ = require("underscore")._;
-var CSRMatrix = require("csr-matrix");
 
 
 

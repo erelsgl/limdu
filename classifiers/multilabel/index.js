@@ -1,8 +1,8 @@
 module.exports = {
-	BinaryRelevance:   require('./BinaryRelevance'),
-	PassiveAggressive: require('./PassiveAggressiveHash'),
-	BinarySegmentation:require('./BinarySegmentation'),
-	//TransformationBased: require('./TransformationBased'),
+	BinaryRelevance:        require('./BinaryRelevance'),
+	PassiveAggressive:      require('./PassiveAggressiveHash'),
+	BinarySegmentation:     require('./BinarySegmentation'),
+	MulticlassSegmentation: require('./MulticlassSegmentation')
 }
 
 // add a "classify and log" method to all classifiers, for demos:

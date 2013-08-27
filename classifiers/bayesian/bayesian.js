@@ -12,6 +12,8 @@ var Bayesian = function(options) {
 	this.default = options.default || 'unclassified';
 	this.weight = options.weight || 1;
 	this.assumed = options.assumed || 0.5;
+	this.normalizeOutputProbabilities = options.normalizeOutputProbabilities||false;
+	this.calculateRelativeProbabilities = options.calculateRelativeProbabilities||false;
 
 	var backend = options.backend || { type: 'memory' };
 	switch(backend.type.toLowerCase()) {
@@ -51,13 +53,24 @@ Bayesian.prototype = {
 	
 	/**
 	 * Ask the classifier what category the given document belongs to.
-	 * @param doc [string] a sentence.
+	 * @param doc a hash {feature1: value1, feature2: value2, ...}
 	 * @return the most probable class of this sample.
+	 * If explain>0, also return its probability.
 	 */
 	classify: function(doc, explain) {
+		if (!_.isObject(doc)) {
+			throw new Error("doc should be an object, but is "+JSON.stringify(doc));
+		}
 		var probs = this.getProbsSync(doc);
+		//console.log("probs for "+JSON.stringify(doc)+" are "+JSON.stringify(probs));
+		
 		var max = this.bestMatch(probs);
-		return (explain>0? max: max.category);
+		if (explain>0) {
+			max.explanation = probs;
+			return max;
+		} else {
+			return max.category;
+		}
 	},
 
 	/**
@@ -65,47 +78,64 @@ Bayesian.prototype = {
 	 * Get the probabilities of the words in the given sentence.
 	 * @param doc a hash {feature1: value1, feature2: value2, ...}
 	 */
-	getProbsSync : function(doc) {
+	getProbsSync: function(doc) {
 		var words = Object.keys(doc); // an array with the unique words in the text, for example: [ 'free', 'watches' ]
 		var cats = this.getCats(); // a hash with the possible categories: { 'cat1': 1, 'cat2': 1 }
 		var counts = this.getWordCounts(words, cats); // For each word encountered during training, the counts of times it occured in each category. 
 		var probs = this.getCatProbs(cats, words, counts); // The probabilities that the given document belongs to each of the categories, i.e.: { 'cat1': 0.1875, 'cat2': 0.0625 }
+		
+		if (this.normalizeOutputProbabilities) {
+			var sum = _(probs).reduce(function(memo, num) { return memo + num; }, 0);
+			for (var cat in probs)
+				probs[cat] = probs[cat]/sum;
+		}
+		
 		return probs;
 	},
 
 	/**
 	 * Used for classification.
-	 * Get the most probable category.
+	 * @return{category: most-probable-category, probability: its-probability}
 	 */
-	bestMatch : function(probs) {
-		//console.dir(probs);
-		var max = _(probs).reduce(function(max, prob, cat) {
-			return max.probability > prob ? max : {category: cat, probability: prob};
-		}, {probability: 0});
+	bestMatch: function(probs) {
+		var pairs = _.pairs(probs);   // [cat,prob]
+		//console.dir(pairs);
+		if (pairs.length==0) {
+			return {category: this.default, probability: 0};
+		}
+		pairs.sort(function(a,b) {   // sort by decreasing prob 
+			return b[1]-a[1];
+		});
 
-		var category = max.category || this.default;
-		var threshold = this.thresholds[max.category] || this.globalThreshold;
+		var maxCategory = pairs[0][0];
+		var maxProbability = pairs[0][1];
+		
+		if (pairs.length>1) {
+			var nextProbability = pairs[1][1];
+			var threshold = this.thresholds[maxCategory] || this.globalThreshold;
+			if (nextProbability * threshold > maxProbability)
+				maxCategory = this.default; // not greater than other category by enough
+			if (this.calculateRelativeProbabilities) 
+				maxProbability /= nextProbability;
+		}
 
-		_(probs).map(function(prob, cat) {
-		 if (!(cat == max.category) && prob * threshold > max.probability) {
-			max.category = this.default; // not greater than other category by enough
-		 }
-		}, this);
-
-		return max;
+		return {
+			category: maxCategory,
+			probability: maxProbability
+		};			
 	},
 	
 	
-	toJSON : function(callback) {
+	toJSON: function(callback) {
 		return this.backend.toJSON(callback);
 	},
 
-	fromJSON : function(json, callback) {
+	fromJSON: function(json, callback) {
 		this.backend.fromJSON(json, callback);
 		return this;
 	},
 
-	getCats : function(callback) {
+	getCats: function(callback) {
 			return this.backend.getCats(callback);
 	},
 	
@@ -117,7 +147,7 @@ Bayesian.prototype = {
 	 *	
 	 */
 	
-	wordProb : function(word, cat, cats, counts) {
+	wordProb: function(word, cat, cats, counts) {
 		// times word appears in a doc in this cat / docs in this cat
 		var prob = (counts[cat] || 0) / cats[cat];
 
@@ -128,7 +158,7 @@ Bayesian.prototype = {
 		return (this.weight * this.assumed + total * prob) / (this.weight + total);
 	},
 
-	getCatProbs : function(cats, words, counts) {
+	getCatProbs: function(cats, words, counts) {
 		var numDocs = _(cats).reduce(function(sum, count) {
 			return sum + count;
 		}, 0);
@@ -149,7 +179,7 @@ Bayesian.prototype = {
 	},
 	
 	
-	getWordCounts : function(words, cats, callback) {
+	getWordCounts: function(words, cats, callback) {
 			return this.backend.getWordCounts(words, cats, callback);
 	},
 
@@ -158,13 +188,15 @@ Bayesian.prototype = {
 	 * @param data an array with objects of the format: {input: sample1, output: class1}
 	 * where sample1 is a feature-value hash: {feature1: value1, feature2: value2, ...} 
 	 */
-	incDocCounts : function(samples, callback) {
+	incDocCounts: function(samples, callback) {
 			// accumulate all the pending increments
 			var wordIncs = {};
 			var catIncs = {};
 			samples.forEach(function(sample) {
 				var cat = sample.output;
-				catIncs[cat] = catIncs[cat] ? catIncs[cat] + 1 : 1;
+				//if (_.isObject(cat))
+				//	cat = JSON.stringify(cat);
+				catIncs[cat] = catIncs[cat] ? catIncs[cat] + 1: 1;
 
 				var features = sample.input;
 				for (var feature in features) {
@@ -177,7 +209,7 @@ Bayesian.prototype = {
 			return this.backend.incCounts(catIncs, wordIncs, callback);
 	},
 
-	setThresholds : function(thresholds) {
+	setThresholds: function(thresholds) {
 			this.thresholds = thresholds;
 	},
 

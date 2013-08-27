@@ -16,12 +16,12 @@ describe('thresholds', function() {
     }
   });
 
-  var spam = ["a c", "b a", "c e"];
+  var spam = ["a c", "b a", "c e", "c a"];
   spam.forEach(function(text) {
     bayes.trainOnline(wordcounts(text), 'spam');
   });
 
-  var not = ["d e", "e f", "f b"];
+  var not = ["d e", "e f", "f b", "b f"];
   not.forEach(function(text) {
     bayes.trainOnline(wordcounts(text), 'notspam');
   });
@@ -35,7 +35,7 @@ describe('thresholds', function() {
   })
 
   it('categorize with really high thresholds', function() {
-    bayes.setThresholds({spam: 4, notspam: 4});
+    bayes.setThresholds({spam: 9, notspam: 9});
 
     assert.equal(bayes.classify(wordcounts("a")), "unclassified");
     assert.equal(bayes.classify(wordcounts("b")), "unclassified");

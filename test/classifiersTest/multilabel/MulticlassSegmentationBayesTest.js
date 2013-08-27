@@ -9,7 +9,9 @@ var should = require('should');
 var classifiers = require('../../../classifiers');
 var FeaturesUnit = require('../../../features');
 
-Array.prototype.sorted = function() {	this.sort(); return this; }
+Object.defineProperty(Array.prototype, 'sorted', {
+	value: function() {	this.sort(); return this; }
+});
 
 var MulticlassSegmentationBayes = classifiers.multilabel.MulticlassSegmentation.bind(this, {
 		multiclassClassifierType: classifiers.Bayesian.bind(this, {

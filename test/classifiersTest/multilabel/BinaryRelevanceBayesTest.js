@@ -1,6 +1,6 @@
 /**
  * a unit-test for Multi-Label classification in the Binary-Relevance method,
- * with Modified Balanced Winnow as the underlying binary classifier.
+ * with Naive Bayes as the underlying binary classifier.
  * 
  * @author Erel Segal-Halevi
  * @since 2013-08
@@ -9,17 +9,15 @@
 var should = require('should');
 var classifiers = require('../../../classifiers');
 
-var BinaryRelevanceWinnow = classifiers.multilabel.BinaryRelevance.bind(this, {
-		binaryClassifierType: classifiers.Winnow.bind(this, {
-			promotion: 1.5,
-			demotion: 0.5,
-			//margin: 1,
-			retrain_count: 10,
+var BinaryRelevanceBayes = classifiers.multilabel.BinaryRelevance.bind(this, {
+		binaryClassifierType: classifiers.Bayesian.bind(this, {
 		}),
 });
 
 describe('Multi-Label BR Classifier Trained on Single-class inputs', function() {
-	var classifier = new BinaryRelevanceWinnow();
+	var classifier = new BinaryRelevanceBayes();
+	console.dir(classifier.classify({I:1 , want:1 , aa:1 , and:1 , bb:1 }, 4));
+
 	classifier.trainBatch([
 		{input: {I:1 , want:1 , aa:1 }, output: 'A'},      // train on single class
 		{input: {I:1 , want:1 , bb:1 }, output: ['B']},    // train on array with single class (same effect)
@@ -50,7 +48,7 @@ describe('Multi-Label BR Classifier Trained on Single-class inputs', function() 
 })
 
 describe('Multi-Label BR Classifier Trained on two-class inputs', function() {
-	var classifier = new BinaryRelevanceWinnow();
+	var classifier = new BinaryRelevanceBayes();
 	classifier.trainBatch([
 		{input: {I:1 , want:1 , aa:1 , bb:1 }, output: ['A','B']},      // train on array with classes
 		{input: {I:1 , want:1 , bb:1 , cc:1 }, output: ['B','C']},      // train on array with classes

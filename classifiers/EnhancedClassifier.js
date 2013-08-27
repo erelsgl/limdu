@@ -7,7 +7,6 @@ var _ = require('underscore')._;
  * @param opts
  * Obligatory option: 'classifierType', which is the base type of the classifier.
  * Optional:
- * * 'classifierOptions' - options that will be sent to the base classifier.
  * * 'normalizer' - a function that normalizes the input samples, before they are sent to feature extraction.
  * * 'featureExtractor' - a single feature-extractor (see the "features" folder), or an array of extractors, for extracting features from training and classification samples.
  * * 'featureExtractorForClassification' - additional feature extractor[s], for extracting features from samples during classification. Used for domain adaptation.
@@ -25,7 +24,6 @@ var EnhancedClassifier = function(opts) {
 	this.setNormalizer(opts.normalizer);
 	this.setFeatureExtractor(opts.featureExtractor);
 	this.setFeatureExtractorForClassification(opts.featureExtractorForClassification);
-	this.classifierOptions = opts.classifierOptions;
 	this.featureLookupTable = opts.featureLookupTable;
 	this.pastTrainingSamples = opts.pastTrainingSamples;
 	this.inputSplitter = opts.inputSplitter;
@@ -34,7 +32,7 @@ var EnhancedClassifier = function(opts) {
 		this.spellChecker = opts.spellChecker;
 	}
 	
-	this.classifier = new this.classifierType(this.classifierOptions);
+	this.classifier = new this.classifierType();
 }
 
 EnhancedClassifier.prototype = {
@@ -180,7 +178,7 @@ EnhancedClassifier.prototype = {
 			if (featureLookupTable)
 				datum.input = featureLookupTable.hashToArray(datum.input);
 		});
-		this.classifier.trainBatch(dataset, this.classifierOptions);
+		this.classifier.trainBatch(dataset);
 	},
 
 	/**
@@ -260,7 +258,7 @@ EnhancedClassifier.prototype = {
 				datum.input = featureLookupTable.hashToArray(datum.input);
 			return datum;
 		});
-		this.classifier.trainBatch(dataset, this.classifierOptions);
+		this.classifier.trainBatch(dataset);
 	},
 	
 	/**

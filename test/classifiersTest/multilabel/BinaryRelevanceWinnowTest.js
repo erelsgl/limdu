@@ -10,13 +10,12 @@ var classifiers = require('../../../classifiers');
 
 var createNewClassifier = function() {
 	return new classifiers.multilabel.BinaryRelevance({
-		binaryClassifierType: classifiers.Winnow,
-		binaryClassifierOptions: {
+		binaryClassifierType: classifiers.Winnow.bind(this, {
 			promotion: 1.5,
 			demotion: 0.5,
 			//margin: 1,
 			retrain_count: 10,
-		},
+		}),
 	});
 }
 

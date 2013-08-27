@@ -13,13 +13,12 @@ var classifiers = require('../classifiers');
 var FeaturesUnit = require('../features');
 
 var spamClassifier = new classifiers.EnhancedClassifier({
-	classifierType:   classifiers.Winnow,
-	classifierOptions: {
-					retrain_count: 25,
-					do_averaging: false,
-					margin: 1,
-					continuous_output: true,
-	},
+	classifierType:  classifiers.Winnow.bind(this, 	{
+		retrain_count: 25,
+		do_averaging: false,
+		margin: 1,
+		continuous_output: true,
+	}),
 	featureExtractor: FeaturesUnit.WordsFromText(1)
 });
 

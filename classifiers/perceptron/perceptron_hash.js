@@ -138,7 +138,7 @@ PerceptronHash.prototype = {
 		if (explain) {
 			result = {
 				classification: result,
-				explanation: "Perceptron does not support explanations yet",
+				explanation: ["Perceptron does not support explanations yet"],
 				net_score: score, 
 			}
 		}

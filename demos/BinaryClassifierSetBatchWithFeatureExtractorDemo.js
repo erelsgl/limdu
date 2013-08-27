@@ -6,16 +6,15 @@
  * @since 2013-06
  */
  
-console.log("BinaryClassifierSet with feature extractor batch demo start");
+console.log("multilabel.BinaryRelevance with feature extractor batch demo start");
 
 var classifiers = require('../classifiers');
 
-var bcs = new classifiers.BinaryClassifierSet({
-	binaryClassifierType: classifiers.EnhancedClassifier,
-	binaryClassifierOptions: {
+var bcs = new classifiers.multilabel.BinaryRelevance({
+	binaryClassifierType: classifiers.EnhancedClassifier.bind(this, {
 		classifierType:   classifiers.NeuralNetwork,
 		featureExtractor: require('../features').WordsFromText(1)
-	}
+	})
 });
 bcs.trainBatch([
 	{input: "cheap replica watch es", output: ['spam', 'clocks']},
@@ -33,4 +32,4 @@ console.log("'"+newDocument+"' is "+bcs.classify(newDocument));
 newDocument = "I don't know if this is a replica of windows";
 console.log("'"+newDocument+"' is "+bcs.classify(newDocument));  
 
-console.log("BinaryClassifierSet with feature extractor batch demo end");
+console.log("multilabel.BinaryRelevance with feature extractor batch demo end");

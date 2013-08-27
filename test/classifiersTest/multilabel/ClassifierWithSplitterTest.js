@@ -12,13 +12,11 @@ var FeaturesUnit = require('../../../features');
 describe('baseline - classifier without a splitter', function() {
 	it('should not classify long sentencs', function() {
 		var classifier = new classifiers.EnhancedClassifier({
-			classifierType:   classifiers.multilabel.BinaryRelevance,
-			classifierOptions: {
-				binaryClassifierType: classifiers.Winnow,
-				binaryClassifierOptions: {
+			classifierType:   classifiers.multilabel.BinaryRelevance.bind(this, {
+				binaryClassifierType: classifiers.Winnow.bind(this, {
 					retrain_count: 3
-				}
-			},
+				}),
+			}),
 			featureExtractor: FeaturesUnit.WordsFromText(1),
 			inputSplitter: null,
 		});
@@ -39,13 +37,11 @@ describe('baseline - classifier without a splitter', function() {
 describe('classifier with a splitter', function() {
 	it('should classify long sentencs', function() {
 		var classifier = new classifiers.EnhancedClassifier({
-			classifierType:   classifiers.multilabel.BinaryRelevance,
-			classifierOptions: {
-				binaryClassifierType: classifiers.Winnow,
-				binaryClassifierOptions: {
+			classifierType:   classifiers.multilabel.BinaryRelevance.bind(this, {
+				binaryClassifierType: classifiers.Winnow.bind(this, {
 					retrain_count: 3
-				}
-			},
+				}),
+			}),
 			featureExtractor: FeaturesUnit.WordsFromText(1),
 			inputSplitter: FeaturesUnit.RegexpSplitter(/[.,;?!]|and/i),
 		});

@@ -15,12 +15,11 @@ var fs = require('fs');
 var _ = require('underscore')._;
 
 var classifier = new classifiers.multilabel.BinarySegmentation({
-	binaryClassifierType: classifiers.Winnow,
-	binaryClassifierOptions: {
+	binaryClassifierType: classifiers.Winnow.bind(this, {
 		promotion: 1.5,
 		demotion: 0.5,
 		retrain_count: 10,
-	},
+	}),
 	featureExtractor: FeaturesUnit.WordsFromText(1)
 });
 

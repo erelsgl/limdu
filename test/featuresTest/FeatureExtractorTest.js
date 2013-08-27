@@ -19,13 +19,13 @@ describe('word bigram feature extractor', function() {
 	it('should create word bigram features', function() {
 		var fe = FeaturesUnit.WordsFromText(2);
 		fe("This is a demo, you know?").should.eql({
-			'<start> this': 1,
+			'[start] this': 1,
 			'this is': 1,
 			'is a': 1,
 			'a demo': 1,
 			'demo you': 1,
 			'you know': 1,
-			'know <end>': 1 });
+			'know [end]': 1 });
 	});
 })
 
@@ -72,12 +72,12 @@ describe('collection of extractors', function() {
 				 FeaturesUnit.WordsFromText(2)])
 		fe("This is a demo, you know?").should.eql({
 			'this': 1, is: 1, a: 1, demo: 1, you: 1, know: 1 ,
-			'<start> this': 1,
+			'[start] this': 1,
 			'this is': 1,
 			'is a': 1,
 			'a demo': 1,
 			'demo you': 1,
 			'you know': 1,
-			'know <end>': 1 });
+			'know [end]': 1 });
 	})
 })

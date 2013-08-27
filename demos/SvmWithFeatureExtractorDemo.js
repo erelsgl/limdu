@@ -13,10 +13,9 @@ var serialize = require('../utils/serialize');
 
 
 var classifier = new classifiers.EnhancedClassifier({
-	classifierType:   classifiers.SVM,
-	classifierOptions: {
+	classifierType:   classifiers.SVM.bind(this, {
 		C: 1.0,
-	},
+	}),
 	featureExtractor: [
 	    FeaturesUnit.WordsFromText(1),
 	    FeaturesUnit.WordsFromText(2),

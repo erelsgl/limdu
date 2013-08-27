@@ -7,7 +7,6 @@ var _ = require("underscore")._;
  * 
  * @param opts
  *            binaryClassifierType (mandatory) - the type of the base binary classifier. 
- *            binaryClassifierOptions (optional) - options that will be sent to the binary classifier constructor.
  */
 var BinaryRelevance = function(opts) {
 	if (!('binaryClassifierType' in opts)) {
@@ -19,7 +18,6 @@ var BinaryRelevance = function(opts) {
 		throw new Error("opts.binaryClassifierType is null");
 	}
 	this.binaryClassifierType = opts.binaryClassifierType;
-	this.binaryClassifierOptions = opts.binaryClassifierOptions;
 	this.mapClassnameToClassifier = {};
 }
 
@@ -38,8 +36,7 @@ BinaryRelevance.prototype = {
 		classes = hash.normalized(classes);
 		for (var aClass in classes) {
 			if (!this.mapClassnameToClassifier[aClass]) {
-				this.mapClassnameToClassifier[aClass] = new this.binaryClassifierType(
-					this.binaryClassifierOptions);
+				this.mapClassnameToClassifier[aClass] = new this.binaryClassifierType();
 			}
 		}
 	},
@@ -181,8 +178,7 @@ BinaryRelevance.prototype = {
 
 	fromJSON : function(json, callback) {
 		for ( var aClass in json) {
-			this.mapClassnameToClassifier[aClass] = new this.binaryClassifierType(
-					this.binaryClassifierOptions);
+			this.mapClassnameToClassifier[aClass] = new this.binaryClassifierType();
 			this.mapClassnameToClassifier[aClass].fromJSON(json[aClass]);
 		}
 		return this;
@@ -191,8 +187,7 @@ BinaryRelevance.prototype = {
 	// private function: 
 	makeSureClassifierExists: function(aClass) {
 		if (!this.mapClassnameToClassifier[aClass]) { // make sure classifier exists
-			this.mapClassnameToClassifier[aClass] = new this.binaryClassifierType(
-					this.binaryClassifierOptions);
+			this.mapClassnameToClassifier[aClass] = new this.binaryClassifierType();
 		}
 	},
 }

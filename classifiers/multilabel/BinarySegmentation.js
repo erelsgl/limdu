@@ -15,7 +15,6 @@ var _ = require("underscore")._;
  * 
  * @param opts
  *            binaryClassifierType (mandatory) - the type of the base binary classifier. 
- *            binaryClassifierOptions (optional) - options that will be sent to the binary classifier constructor.
  *            featureExtractor (optional) - a single feature-extractor (see the "features" folder), or an array of extractors, for extracting features from the text segments during classification.
  */
 var BinarySegmentation = function(opts) {
@@ -28,7 +27,6 @@ var BinarySegmentation = function(opts) {
 		throw new Error("opts.binaryClassifierType is null");
 	}
 	this.binaryClassifierType = opts.binaryClassifierType;
-	this.binaryClassifierOptions = opts.binaryClassifierOptions;
 	this.featureExtractor = FeaturesUnit.normalize(opts.featureExtractor);
 	
 	switch (opts.segmentSplitStrategy) {
@@ -56,8 +54,7 @@ BinarySegmentation.prototype = {
 		classes = hash.normalized(classes);
 		for ( var aClass in classes) {
 			if (!this.mapClassnameToClassifier[aClass]) {
-				this.mapClassnameToClassifier[aClass] = new this.binaryClassifierType(
-					this.binaryClassifierOptions);
+				this.mapClassnameToClassifier[aClass] = new this.binaryClassifierType();
 			}
 		}
 	},
@@ -362,8 +359,7 @@ BinarySegmentation.prototype = {
 
 	fromJSON : function(json, callback) {
 		for ( var aClass in json) {
-			this.mapClassnameToClassifier[aClass] = new this.binaryClassifierType(
-					this.binaryClassifierOptions);
+			this.mapClassnameToClassifier[aClass] = new this.binaryClassifierType();
 			this.mapClassnameToClassifier[aClass].fromJSON(json[aClass]);
 		}
 		return this;
@@ -372,8 +368,7 @@ BinarySegmentation.prototype = {
 	// private function: 
 	makeSureClassifierExists: function(aClass) {
 		if (!this.mapClassnameToClassifier[aClass]) { // make sure classifier exists
-			this.mapClassnameToClassifier[aClass] = new this.binaryClassifierType(
-					this.binaryClassifierOptions);
+			this.mapClassnameToClassifier[aClass] = new this.binaryClassifierType();
 		}
 	},
 	

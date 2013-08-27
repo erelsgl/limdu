@@ -28,16 +28,14 @@ var createPerceptronClassifier = function() {
 	var FeaturesUnit = require(__dirname+'/../features');
 	
 	return new classifiers.EnhancedClassifier({
-		classifierType: classifiers.BinaryClassifierSet,
-		classifierOptions: {
-				binaryClassifierType: classifiers.Perceptron,
-				binaryClassifierOptions: {
+		classifierType: classifiers.multilabel.BinaryRelevance.bind(this, {
+				binaryClassifierType: classifiers.Perceptron.bind(this, {
 					learning_rate: 1,
 					retrain_count: 5,
 					do_averaging: true,      // common practice in perceptrons
 					do_normalization: false, 
-				},
-		},
+				}),
+		}),
 		featureExtractor: [
 					FeaturesUnit.WordsFromText(1),
 					//FeaturesUnit.WordsFromText(2),
@@ -52,15 +50,13 @@ var createWinnowClassifier = function() {
 	var FeaturesUnit = require(__dirname+'/../features');
 
 	return new classifiers.EnhancedClassifier({
-		classifierType: classifiers.BinaryClassifierSet,
-		classifierOptions: {
-				binaryClassifierType: classifiers.Winnow,
-				binaryClassifierOptions: {
+		classifierType: classifiers.multilabel.BinaryRelevance.bind(this, {
+				binaryClassifierType: classifiers.Winnow.bind(this, {
 					retrain_count: 25,
 					do_averaging: false,
 					margin: 1,
-				},
-		},
+				}),
+		}),
 		featureExtractor: [
 					FeaturesUnit.WordsFromText(1),
 					FeaturesUnit.WordsFromText(2),
@@ -75,13 +71,11 @@ var createSvmClassifier = function() {
 	var FeaturesUnit = require(__dirname+'/../features');
 	
 	return new classifiers.EnhancedClassifier({
-		classifierType: classifiers.BinaryClassifierSet,
-		classifierOptions: {
-				binaryClassifierType: classifiers.SVM,
-				binaryClassifierOptions: {
+		classifierType: classifiers.multilabel.BinaryRelevance.bind(this, {
+				binaryClassifierType: classifiers.SVM.bind(this, {
 					C: 1.0,
-				},
-		},
+				}),
+		}),
 		featureExtractor: [
 					FeaturesUnit.WordsFromText(1),
 					FeaturesUnit.WordsFromText(2),

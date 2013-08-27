@@ -1,8 +1,15 @@
 var assert = require('should'),
-    classifier = require("../../lib/bayesian");
+     classifiers = require("../../../classifiers");
+
+var wordcounts = function(sentence) {
+	return sentence.split(' ').reduce(function(counts, word) {
+	    counts[word] = (counts[word] || 0) + 1;
+	    return counts;
+	 }, {});
+}
 
 describe('thresholds', function() {
-  var bayes = new classifier.Bayesian({
+  var bayes = new classifiers.Bayesian({
     thresholds: {
       spam: 3,
       notspam: 1
@@ -11,29 +18,29 @@ describe('thresholds', function() {
 
   var spam = ["a c", "b a", "c e"];
   spam.forEach(function(text) {
-    bayes.train(text, 'spam');
+    bayes.trainOnline(wordcounts(text), 'spam');
   });
 
   var not = ["d e", "e f", "f b"];
   not.forEach(function(text) {
-    bayes.train(text, 'notspam');
+    bayes.trainOnline(wordcounts(text), 'notspam');
   });
 
   it('categorize with default thresholds', function() {
-    assert.equal(bayes.classify("a"), "spam");
-    assert.equal(bayes.classify("b"), "notspam");
-    assert.equal(bayes.classify("c"), "spam");
-    assert.equal(bayes.classify("d"), "notspam");
-    assert.equal(bayes.classify("e"), "notspam");
+    assert.equal(bayes.classify(wordcounts("a")), "spam");
+    assert.equal(bayes.classify(wordcounts("b")), "notspam");
+    assert.equal(bayes.classify(wordcounts("c")), "spam");
+    assert.equal(bayes.classify(wordcounts("d")), "notspam");
+    assert.equal(bayes.classify(wordcounts("e")), "notspam");
   })
 
   it('categorize with really high thresholds', function() {
     bayes.setThresholds({spam: 4, notspam: 4});
 
-    assert.equal(bayes.classify("a"), "unclassified");
-    assert.equal(bayes.classify("b"), "unclassified");
-    assert.equal(bayes.classify("c"), "unclassified");
-    assert.equal(bayes.classify("d"), "unclassified");
-    assert.equal(bayes.classify("e"), "unclassified");
+    assert.equal(bayes.classify(wordcounts("a")), "unclassified");
+    assert.equal(bayes.classify(wordcounts("b")), "unclassified");
+    assert.equal(bayes.classify(wordcounts("c")), "unclassified");
+    assert.equal(bayes.classify(wordcounts("d")), "unclassified");
+    assert.equal(bayes.classify(wordcounts("e")), "unclassified");
   })
 })

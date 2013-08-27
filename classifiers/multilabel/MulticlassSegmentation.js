@@ -123,7 +123,7 @@ MulticlassSegmentation.prototype = {
 			}
 		}
 		//console.log(words+":  ");		console.log("segmentClassificationCosts");		console.dir(segmentClassificationCosts);
-		var cheapest_paths = require("../../../graph-paths/graph-paths").cheapest_paths;
+		var cheapest_paths = require("graph-paths").cheapest_paths;
 		cheapestSegmentClassificationCosts = cheapest_paths(segmentClassificationCosts, 0);
 		cheapestSentenceClassificationCost = cheapestSegmentClassificationCosts[words.length];
 		if (!cheapestSentenceClassificationCost)

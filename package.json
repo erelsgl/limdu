@@ -10,7 +10,8 @@
     "dependencies" : {
         "underscore" : ">=1.1.0",
         "sprintf": "*",
-        "wordsworth": "*"
+        "wordsworth": "*",
+        "graph-paths": "*"
     },
     "devDependencies" : {
         "mocha"  : ">=1.0.0",

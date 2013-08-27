@@ -66,7 +66,9 @@ Bayesian.prototype = {
 		
 		var max = this.bestMatch(probs);
 		if (explain>0) {
-			max.explanation = probs;
+			max.explanation = probs.map(function(pair) {
+				return pair[0]+": "+pair[1]
+			});
 			return max;
 		} else {
 			return max.category;
@@ -90,14 +92,6 @@ Bayesian.prototype = {
 				probs[cat] = probs[cat]/sum;
 		}
 		
-		return probs;
-	},
-
-	/**
-	 * Used for classification.
-	 * @return{category: most-probable-category, probability: its-probability}
-	 */
-	bestMatch: function(probs) {
 		var pairs = _.pairs(probs);   // [cat,prob]
 		//console.dir(pairs);
 		if (pairs.length==0) {
@@ -106,7 +100,16 @@ Bayesian.prototype = {
 		pairs.sort(function(a,b) {   // sort by decreasing prob 
 			return b[1]-a[1];
 		});
+		
+		return pairs;
+	},
 
+	/**
+	 * Used for classification.
+	 * @param pairs [[category,probability],...]
+	 * @return{category: most-probable-category, probability: its-probability}
+	 */
+	bestMatch: function(pairs) {
 		var maxCategory = pairs[0][0];
 		var maxProbability = pairs[0][1];
 		

@@ -4,6 +4,3 @@
 [submodule "classifiers/brain"]
 	path = classifiers/brain
 	url = https://github.com/erelsgl/brain.git
-[submodule "classifiers/apparatus"]
-	path = classifiers/apparatus
-	url = https://github.com/erelsgl/apparatus.git

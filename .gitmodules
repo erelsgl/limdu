@@ -1,6 +1,3 @@
-[submodule "classifiers/bayesian"]
-	path = classifiers/bayesian
-	url = https://github.com/erelsgl/classifier.git
 [submodule "classifiers/svmjs"]
 	path = classifiers/svmjs
 	url = https://github.com/erelsgl/svmjs.git

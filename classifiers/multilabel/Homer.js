@@ -47,6 +47,28 @@ var Homer = function(opts) {
 }
 
 Homer.prototype = {
+		
+	/**
+	 *  Recursive internal subroutine of trainOnline.
+	 */
+	trainOnlineRecursive: function(sample, labels, treeNode, depth) {
+		var superlabels = {};
+		for (var label in labels) {
+			var superlabel = this.getSuperlabel(label, depth);
+			superlabels[superlabel] = true;
+		}
+
+		treeNode.superlabelClassifier.trainOnline(sample, superlabels);
+		for (var superlabel in superlabels) {
+			if (!(superlabel in treeNode.mapSuperlabelToBranch)) {
+				treeNode.mapSuperlabelToBranch[superlabel] = {
+					superlabelClassifier: new this.multilabelClassifierType(),
+					mapSuperlabelToBranch: {}
+				}
+			}
+			this.trainOnlineRecursive(sample, labels, treeNode.mapSuperlabelToBranch[superlabel], depth+1);
+		}
+	},
 
 	/**
 	 * Tell the classifier that the given sample belongs to the given classes.
@@ -58,16 +80,32 @@ Homer.prototype = {
 	 */
 	trainOnline: function(sample, classes) {
 		classes = hash.normalized(classes);
-		for (var positiveClass in classes) {
-			this.makeSureClassifierExists(positiveClass);
-			this.mapClassnameToClassifier[positiveClass].trainOnline(sample, 1);
-		}
-		for (var negativeClass in this.mapClassnameToClassifier) {
-			if (!classes[negativeClass])
-				this.mapClassnameToClassifier[negativeClass].trainOnline(sample, 0);
-		}
+		return this.trainOnlineRecursive(sample, classes, this.root, /*depth=*/1);
 	},
 
+	
+	/**
+	 *  Recursive internal subroutine of trainBatch.
+	 */
+	trainBatchRecursive: function(dataset, treeNode, depth) {
+		var superlabels = {};
+		for (var label in labels) {
+			var superlabel = this.getSuperlabel(label, depth);
+			superlabels[superlabel] = true;
+		}
+		
+		treeNode.superlabelClassifier.trainOnline(sample, superlabels);
+		for (var superlabel in superlabels) {
+			if (!(superlabel in treeNode.mapSuperlabelToBranch)) {
+				treeNode.mapSuperlabelToBranch[superlabel] = {
+					superlabelClassifier: new this.multilabelClassifierType(),
+					mapSuperlabelToBranch: {}
+				}
+			}
+			this.trainBatchRecursive(sample, labels, treeNode.mapSuperlabelToBranch[superlabel], depth+1);
+		}
+	},
+	
 	/**
 	 * Train the classifier with all the given documents.
 	 * 
@@ -76,48 +114,7 @@ Homer.prototype = {
 	 *            {input: sample1, output: [class11, class12...]}
 	 */
 	trainBatch : function(dataset) {
-		// this variable will hold a dataset for each binary classifier:
-		var mapClassnameToDataset = {}; 
-
-		// create positive samples for each class:
-		for ( var i = 0; i < dataset.length; ++i) {
-			var sample = dataset[i].input;
-			//console.dir(dataset[i]);
-			dataset[i].output = hash.normalized(dataset[i].output);
-
-			var classes = dataset[i].output;
-			for ( var positiveClass in classes) {
-				this.makeSureClassifierExists(positiveClass);
-				if (!(positiveClass in mapClassnameToDataset)) // make sure dataset for this class exists
-					mapClassnameToDataset[positiveClass] = [];
-				mapClassnameToDataset[positiveClass].push({
-					input : sample,
-					output : 1
-				})
-			}
-		}
-
-		// create negative samples for each class (after all classes are in the  array):
-		for ( var i = 0; i < dataset.length; ++i) {
-			var sample = dataset[i].input;
-			var classes = dataset[i].output;
-			for ( var negativeClass in this.mapClassnameToClassifier) {
-				if (!(negativeClass in mapClassnameToDataset)) // make sure dataset for this class exists
-					mapClassnameToDataset[negativeClass] = [];
-				if (!classes[negativeClass])
-					mapClassnameToDataset[negativeClass].push({
-						input : sample,
-						output : 0
-					})
-			}
-		}
-
-		// train all classifiers:
-		for (var aClass in mapClassnameToDataset) {
-			//console.dir("TRAIN class="+aClass);
-			this.mapClassnameToClassifier[aClass]
-					.trainBatch(mapClassnameToDataset[aClass]);
-		}
+		return this.trainBatchRecursive(dataset, this.root, /*depth=*/1);
 	},
 
 	/**

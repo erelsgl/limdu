@@ -23,7 +23,22 @@ function shallowJson(json, depth) {
 }
 
 
+/**
+ * @param json a JSON object, such as: {Offer: {Salary: 20000}}
+ * @return an array of the parts of the json.
+ * -- For example: ["Offer", "Salary", "20000"]
+ */
+function splitJson(json) {
+	if (!_.isObject(json))
+		return [json];
+	var firstKey = Object.keys(json)[0];
+	var rest = splitJson(json[firstKey]);
+	rest.unshift(firstKey);
+	return rest;
+}
+
 module.exports = {
 	shallowJson: shallowJson,
+	splitJson: splitJson,
 }
 

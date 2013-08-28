@@ -155,19 +155,20 @@ WinnowHash.prototype = {
 		 */
 		perceive_features: function(features, continuous_output, positive_weights_for_classification, negative_weights_for_classification, explain) {
 			var score = 0;
-			if (explain) var explanations = [];
+			if (explain>0) var explanations = [];
 			for (var feature in features) {
 				if (feature in positive_weights_for_classification) {
 					var positive_weight = positive_weights_for_classification[feature];
 					var negative_weight = negative_weights_for_classification[feature];
 					var net_weight = positive_weight-negative_weight;
-					var add_to_score = features[feature] * net_weight;
-					score += add_to_score;
-					if (explain) explanations.push({
+					var relevance = features[feature] * net_weight;
+					score += relevance;
+					if (explain>0) explanations.push({
 						feature: feature,
 						value: features[feature],
 						weight: sprintf("+%1.3f-%1.3f=%1.3f",positive_weight,negative_weight,net_weight),
-						relevance: add_to_score
+						relevance: relevance,
+						toString: function() { return sprintf("%s%+1.2f",feature,relevance); }
 					});
 				}
 			}

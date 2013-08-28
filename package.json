@@ -17,5 +17,8 @@
         "mocha"  : ">=1.0.0",
         "should" : ">=0.6.0"
     },
-    "keywords": ["classifier", "machine learning"]
+    "scripts": {
+        "test": "mocha"
+   	}, 
+    "keywords": ["classifier", "classification", "categorization", "machine learning", "naive bayes", "winnow", "perceptron", "multi label", "binary relevance"]
 }

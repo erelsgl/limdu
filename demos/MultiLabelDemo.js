@@ -27,10 +27,11 @@ var BinaryRelevanceClassifier = classifiers.multilabel.BinaryRelevance.bind(this
 });
 
 var HomerClassifier = classifiers.multilabel.Homer.bind(this, {
-	multilabelClassifier: BinaryRelevanceClassifier
+	multilabelClassifierType: BinaryRelevanceClassifier
 });
 
-var classifier = new HomerClassifier();
+//var classifier = new HomerClassifier();
+var classifier = new BinaryRelevanceClassifier();
 
 var explain=0;
 var classes = ['A','B','C','D','E','F','G'];

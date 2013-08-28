@@ -14,7 +14,7 @@ describe('baseline - classifier without a splitter', function() {
 		var classifier = new classifiers.EnhancedClassifier({
 			classifierType:   classifiers.multilabel.BinaryRelevance.bind(this, {
 				binaryClassifierType: classifiers.Winnow.bind(this, {
-					retrain_count: 3
+					retrain_count: 1
 				}),
 			}),
 			featureExtractor: FeaturesUnit.WordsFromText(1),
@@ -30,7 +30,7 @@ describe('baseline - classifier without a splitter', function() {
 		classifier.classify("I want aa").should.eql(['A']);
 		classifier.classify("I want bb").should.eql(['B']);
 		classifier.classify("I want cc").should.eql(['C']);
-		classifier.classify("I want aa, I want bb, and I want cc").should.eql(['A','B']);
+		classifier.classify("I want aa, I want bb, and I want cc").should.not.eql(['A','B','C']);
 	});
 })
 

@@ -38,7 +38,7 @@ exports.fromString = function(string) {
 	}
 	return hash;
 }
- 
+
 /**
  * add one hash to another (target += source)
  * @param target [input and output]
@@ -218,8 +218,8 @@ exports.normalized = function(object) {
 }
 
 
-var stringifyIfNeeded = function (aClass) {
-	return (typeof(aClass)==='string'? aClass: JSON.stringify(aClass));
+var stringifyIfNeeded = function (label) {
+	return (typeof(label)==='string'? label: JSON.stringify(label));
 }
 
 /*

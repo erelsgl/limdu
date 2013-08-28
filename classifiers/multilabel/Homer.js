@@ -25,20 +25,8 @@ var Homer = function(opts) {
 	}
 	this.multilabelClassifierType = opts.multilabelClassifierType;
 	
-	this.getSuperlabel = opts.getSuperlabel || function(label,depth) {
-		var labelJson = null;
-		if (_.isObject(label)) {
-			labelJson = label;
-		} else if (_.isString(label)) {
-			if (label.indexOf("{")>0)  {// assume label is a stringified json object
-				labelJson = JSON.parse(label);
-			} else {
-				return label; // a plain string - just return it
-			}
-		}
-		var shallowJson = require('./Hierarchy').shallowJson;
-		return shallowJson(labelJson, depth);
-	};
+	this.splitLabel = opts.splitLabel || function(label)      {return label.split(/:/);}
+	this.joinLabel  = opts.joinLabel  || function(superlabel) {return superlabel.join(":");}
 	
 	this.root = {
 		superlabelClassifier: new this.multilabelClassifierType(),
@@ -50,11 +38,12 @@ Homer.prototype = {
 		
 	/**
 	 *  Recursive internal subroutine of trainOnline.
+	 *  @param splitLabels an array of arrays: each internal array represents the parts of a single label.
 	 */
-	trainOnlineRecursive: function(sample, labels, treeNode, depth) {
+	trainOnlineRecursive: function(sample, splitLabels, treeNode, depth) {
 		var superlabels = {};
-		for (var label in labels) {
-			var superlabel = this.getSuperlabel(label, depth);
+		for (var i in splitLabels) {
+			var superlabel = splitLabels[i].slice(0,depth).join(":");
 			superlabels[superlabel] = true;
 		}
 
@@ -78,9 +67,9 @@ Homer.prototype = {
 	 * @param classes
 	 *            an object whose KEYS are classes, or an array whose VALUES are classes.
 	 */
-	trainOnline: function(sample, classes) {
-		classes = hash.normalized(classes);
-		return this.trainOnlineRecursive(sample, classes, this.root, /*depth=*/1);
+	trainOnline: function(sample, labels) {
+		var splitLabels = normalizeLabels(labels).map(this.splitLabel);
+		return this.trainOnlineRecursive(sample, splitLabels, this.root, /*depth=*/1);
 	},
 
 	
@@ -192,25 +181,6 @@ Homer.prototype = {
 	},
 
 
-
-	/**
-	 * Tell the classifier that the given classes will be used for the following
-	 * samples, so that it will know to add negative samples to classes that do
-	 * not appear.
-	 * 
-	 * @param classes
-	 *            an object whose KEYS are classes, or an array whose VALUES are
-	 *            classes.
-	 */ 
-	addClasses: function(classes) {
-		classes = hash.normalized(classes);
-		for (var aClass in classes) {
-			if (!this.mapClassnameToClassifier[aClass]) {
-				this.mapClassnameToClassifier[aClass] = new this.binaryClassifierType();
-			}
-		}
-	},
-	
 	getAllClasses: function() {
 		return Object.keys(this.mapClassnameToClassifier);
 	},
@@ -218,5 +188,23 @@ Homer.prototype = {
 }
 
 
+/*
+ * UTILS
+ */
+
+/**
+ * Make sure "labels" is an array of strings
+ */
+function normalizeLabels(labels) {
+	if (labels instanceof Object) {
+		return Object.keys(labels);
+	} else if (Array.isArray(labels)) {
+		return labels.map(function(label) {
+			return (typeof(label)==='string'? label: JSON.stringify(label));
+		});
+	} else  {
+		return [labels];
+	}
+}
 
 module.exports = Homer;

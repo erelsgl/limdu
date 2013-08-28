@@ -59,7 +59,8 @@ WinnowHash.prototype = {
 		},
 		
 		normalized_features: function (features, remove_unknown_features) {
-			features['bias'] = 1;
+			if (!('bias' in features))
+				features['bias'] = 1;
 			if (remove_unknown_features) {
 				for (var feature in features)
 					if (!(feature in this.positive_weights))
@@ -76,6 +77,7 @@ WinnowHash.prototype = {
 		 * @return true if the input sample got its correct classification (i.e. no change made).
 		 */
 		train_features: function(features, expected) {
+			if (this.debug) console.log("train_features "+JSON.stringify(features)+" , "+expected);
 			for (feature in features) {
 				if (!(feature in this.positive_weights)) 
 					this.positive_weights[feature] = this.default_positive_weight;

@@ -25,8 +25,8 @@ var Homer = function(opts) {
 	}
 	this.multilabelClassifierType = opts.multilabelClassifierType;
 	
-	this.splitLabel = opts.splitLabel || function(label)      {return label.split(/:/);}
-	this.joinLabel  = opts.joinLabel  || function(superlabel) {return superlabel.join(":");}
+	this.splitLabel = opts.splitLabel || function(label)      {return label.split(/#/);}
+	this.joinLabel  = opts.joinLabel  || function(superlabel) {return superlabel.join("#");}
 	
 	this.root = {
 		superlabelClassifier: new this.multilabelClassifierType(),
@@ -35,29 +35,6 @@ var Homer = function(opts) {
 }
 
 Homer.prototype = {
-		
-	/**
-	 *  Recursive internal subroutine of trainOnline.
-	 *  @param splitLabels an array of arrays: each internal array represents the parts of a single label.
-	 */
-	trainOnlineRecursive: function(sample, splitLabels, treeNode, depth) {
-		var superlabels = {};
-		for (var i in splitLabels) {
-			var superlabel = splitLabels[i].slice(0,depth).join(":");
-			superlabels[superlabel] = true;
-		}
-
-		treeNode.superlabelClassifier.trainOnline(sample, superlabels);
-		for (var superlabel in superlabels) {
-			if (!(superlabel in treeNode.mapSuperlabelToBranch)) {
-				treeNode.mapSuperlabelToBranch[superlabel] = {
-					superlabelClassifier: new this.multilabelClassifierType(),
-					mapSuperlabelToBranch: {}
-				}
-			}
-			this.trainOnlineRecursive(sample, labels, treeNode.mapSuperlabelToBranch[superlabel], depth+1);
-		}
-	},
 
 	/**
 	 * Tell the classifier that the given sample belongs to the given classes.
@@ -68,15 +45,61 @@ Homer.prototype = {
 	 *            an object whose KEYS are classes, or an array whose VALUES are classes.
 	 */
 	trainOnline: function(sample, labels) {
-		var splitLabels = normalizeLabels(labels).map(this.splitLabel);
+		//console.dir(labels);
+		var normalizedLabels = normalizeLabels(labels); // convert to array of strings
+		//console.dir(normalizedLabels);
+		var splitLabels = normalizedLabels.map(this.splitLabel);
+		//console.dir(splitLabels);
 		return this.trainOnlineRecursive(sample, splitLabels, this.root, /*depth=*/1);
 	},
 
 	
 	/**
+	 *  Recursive internal subroutine of trainOnline.
+	 *  @param splitLabels an array of arrays: each internal array represents the parts of a single label.
+	 */
+	trainOnlineRecursive: function(sample, splitLabels, treeNode) {
+		var superlabels = {};
+		var mapSuperlabelToRest = {};
+		for (var i in splitLabels) {
+			var splitLabel = splitLabels[i];
+			var superlabel = splitLabel[0];
+			superlabels[superlabel] = true;
+			if (splitLabel.length>1) {
+				if (!mapSuperlabelToRest[superlabel]) 
+					mapSuperlabelToRest[superlabel] = [];
+				mapSuperlabelToRest[superlabel].push(splitLabel.slice(1));
+			}
+		}
+
+		//console.log("train the superlabel classifier: sample="+JSON.stringify(sample)+", superlabels="+JSON.stringify(superlabels));
+		treeNode.superlabelClassifier.trainOnline(sample, superlabels);
+		for (var superlabel in mapSuperlabelToRest) {
+			if (!(superlabel in treeNode.mapSuperlabelToBranch)) {
+				treeNode.mapSuperlabelToBranch[superlabel] = {
+					superlabelClassifier: new this.multilabelClassifierType(),
+					mapSuperlabelToBranch: {}
+				}
+			}
+			this.trainOnlineRecursive(sample, mapSuperlabelToRest[superlabel], treeNode.mapSuperlabelToBranch[superlabel]);
+		}
+	},
+	
+	/**
+	 * Train the classifier with all the given documents.
+	 * 
+	 * @param dataset
+	 *            an array with objects of the format: 
+	 *            {input: sample1, output: [class11, class12...]}
+	 */
+	trainBatch : function(dataset) {
+		return this.trainBatchRecursive(dataset, this.root, /*depth=*/1);
+	},
+	
+	/**
 	 *  Recursive internal subroutine of trainBatch.
 	 */
-	trainBatchRecursive: function(dataset, treeNode, depth) {
+	trainBatchRecursive: function(dataset, treeNode) {
 		var superlabels = {};
 		for (var label in labels) {
 			var superlabel = this.getSuperlabel(label, depth);
@@ -94,17 +117,6 @@ Homer.prototype = {
 			this.trainBatchRecursive(sample, labels, treeNode.mapSuperlabelToBranch[superlabel], depth+1);
 		}
 	},
-	
-	/**
-	 * Train the classifier with all the given documents.
-	 * 
-	 * @param dataset
-	 *            an array with objects of the format: 
-	 *            {input: sample1, output: [class11, class12...]}
-	 */
-	trainBatch : function(dataset) {
-		return this.trainBatchRecursive(dataset, this.root, /*depth=*/1);
-	},
 
 	/**
 	 * Use the model trained so far to classify a new sample.
@@ -114,41 +126,34 @@ Homer.prototype = {
 	 *  
 	 * @return an array whose VALUES are classes.
 	 */
-	classify : function(sample, explain) {
-		var classes = {};
-		if (explain>0) {
-			var positive_explanations = {};
-			var negative_explanations = {};
-		}
-		for (var aClass in this.mapClassnameToClassifier) {
-			var classifier = this.mapClassnameToClassifier[aClass];
-			var classification = classifier.classify(sample, explain);
-			if (classification.explanation) {
-				var explanations_string = classification.explanation.reduce(function(a,b) {
-					return a + " " + sprintf("%s%+1.2f",b.feature,b.relevance);
-				}, "");
-				if (classification.classification > 0.5) {
-					classes[aClass] = true;
-					if (explain>0) positive_explanations[aClass]=explanations_string;
-				} else {
-					if (explain>0) negative_explanations[aClass]=explanations_string;
-				}
-			} else {
-				if (classification > 0.5)
-					classes[aClass] = true;
-			}
-		}
-		classes = Object.keys(classes);
-		return (explain>0?
-			{
-				classes: classes, 
-				explanation: {
-					positive: positive_explanations, 
-					negative: negative_explanations,
-				}
-			}:
-			classes);
+	classify: function(sample, explain) {
+		var splitLabels = this.classifyRecursive(sample, explain, this.root);
+		//console.dir(splitLabels);
+		return splitLabels.map(this.joinLabel);
 	},
+	
+	
+	/**
+	 *  Recursive internal subroutine of classify.
+	 *  @return an array of arrays, where each internal array represents a split label.
+	 */
+	classifyRecursive: function(sample, explain, treeNode) {
+		var superlabelsWithExplain = treeNode.superlabelClassifier.classify(sample, explain);
+		var superlabels = (explain>0? superlabelsWithExplain.classes: superlabelsWithExplain);
+		var splitLabels = [];
+		for (var i in superlabels) {
+			var superlabel = superlabels[i];
+			var splitLabel = [superlabel];
+			var branch = treeNode.mapSuperlabelToBranch[superlabel];
+			if (branch) {
+				splitLabel = splitLabel.concat(
+						this.classifyRecursive(sample, explain, branch));
+			}
+			splitLabels.push(splitLabel);
+		}
+		return splitLabels;
+	},
+
 
 	toJSON : function(callback) {
 		var result = {};
@@ -195,15 +200,15 @@ Homer.prototype = {
 /**
  * Make sure "labels" is an array of strings
  */
-function normalizeLabels(labels) {
-	if (labels instanceof Object) {
-		return Object.keys(labels);
-	} else if (Array.isArray(labels)) {
-		return labels.map(function(label) {
+function normalizeLabels(theLabels) {
+	if (Array.isArray(theLabels)) {
+		return theLabels.map(function(label) {
 			return (typeof(label)==='string'? label: JSON.stringify(label));
 		});
+	} else if (theLabels instanceof Object) {
+			return Object.keys(theLabels);
 	} else  {
-		return [labels];
+		return [theLabels];
 	}
 }
 

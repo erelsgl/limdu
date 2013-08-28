@@ -32,6 +32,7 @@ function WinnowHash(opts) {
 	this.margin = opts.margin || 1.0;
 	this.retrain_count = opts.retrain_count || 0;
 	this.continuous_output = opts.continuous_output || false;
+	this.detailed_explanations = opts.detailed_explanations || false;
 		
 	this.positive_weights = {};
 	this.negative_weights = {};
@@ -62,10 +63,12 @@ WinnowHash.prototype = {
 			if (!('bias' in features))
 				features['bias'] = 1;
 			if (remove_unknown_features) {
+				var newFeatures = {};
 				for (var feature in features)
-					if (!(feature in this.positive_weights))
-						delete features[feature];
-			} 
+					if (feature in this.positive_weights)
+						newFeatures[feature]=features[feature];
+				features = newFeatures;
+			}
 			if (this.do_normalization) 
 				hash.normalize_sum_of_values_to_1(features);
 			return features;
@@ -165,13 +168,14 @@ WinnowHash.prototype = {
 					var net_weight = positive_weight-negative_weight;
 					var relevance = features[feature] * net_weight;
 					score += relevance;
-					if (explain>0) explanations.push({
-						feature: feature,
-						value: features[feature],
-						weight: sprintf("+%1.3f-%1.3f=%1.3f",positive_weight,negative_weight,net_weight),
-						relevance: relevance,
-						toString: function() { return sprintf("%s%+1.2f",feature,relevance); }
-					});
+					if (explain>0) explanations.push(
+							{
+								feature: feature,
+								value: features[feature],
+								weight: sprintf("+%1.3f-%1.3f=%1.3f",positive_weight,negative_weight,net_weight),
+								relevance: relevance,
+							}
+					);
 				}
 			}
 			score -= this.threshold;
@@ -182,6 +186,12 @@ WinnowHash.prototype = {
 			if (explain) {
 				explanations.sort(function(a,b){return Math.abs(b.relevance)-Math.abs(a.relevance)});
 				explanations.splice(explain, explanations.length-explain);  // "explain" is the max length of explanation.
+
+				if (!this.detailed_explanations) {
+					explanations = explanations.map(function(explanation) {
+						return sprintf("%s%+1.2f",explanation.feature,explanation.relevance);
+					});
+				}
 				
 				result = {
 					classification: result,

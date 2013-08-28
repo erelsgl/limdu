@@ -25,8 +25,8 @@ var Homer = function(opts) {
 	}
 	this.multilabelClassifierType = opts.multilabelClassifierType;
 	
-	this.splitLabel = opts.splitLabel || function(label)      {return label.split(/#/);}
-	this.joinLabel  = opts.joinLabel  || function(superlabel) {return superlabel.join("#");}
+	this.splitLabel = opts.splitLabel || function(label)      {return label.split(/@/);}
+	this.joinLabel  = opts.joinLabel  || function(superlabel) {return superlabel.join("@");}
 	
 	this.root = {
 		superlabelClassifier: new this.multilabelClassifierType(),
@@ -128,8 +128,13 @@ Homer.prototype = {
 	 */
 	classify: function(sample, explain) {
 		var splitLabels = this.classifyRecursive(sample, explain, this.root);
-		//console.dir(splitLabels);
-		return splitLabels.map(this.joinLabel);
+		//console.log("splitLabels:"+JSON.stringify(splitLabels));
+		if (explain>0) {
+			splitLabels.classes = splitLabels.classes.map(this.joinLabel);
+		} else {
+			splitLabels = splitLabels.map(this.joinLabel);
+		}
+		return splitLabels;
 	},
 	
 	
@@ -137,21 +142,35 @@ Homer.prototype = {
 	 *  Recursive internal subroutine of classify.
 	 *  @return an array of arrays, where each internal array represents a split label.
 	 */
-	classifyRecursive: function(sample, explain, treeNode) {
+	classifyRecursive: function(sample, explain, treeNode, depth) {
+		//console.log("start classifyRecursive "+Object.keys(sample)+", explain="+explain+", depth="+depth);
+		if (!depth) depth = 1;
 		var superlabelsWithExplain = treeNode.superlabelClassifier.classify(sample, explain);
+		//console.log("   sample="+Object.keys(sample));
 		var superlabels = (explain>0? superlabelsWithExplain.classes: superlabelsWithExplain);
 		var splitLabels = [];
+		if (explain>0) {
+			var explanations = ["depth="+depth, superlabelsWithExplain.explanation];
+		}
 		for (var i in superlabels) {
 			var superlabel = superlabels[i];
 			var splitLabel = [superlabel];
 			var branch = treeNode.mapSuperlabelToBranch[superlabel];
 			if (branch) {
-				splitLabel = splitLabel.concat(
-						this.classifyRecursive(sample, explain, branch));
+				var branchLabelsWithExplain = this.classifyRecursive(sample, explain, branch, depth+1);
+				var branchLabels = (explain>0? branchLabelsWithExplain.classes: branchLabelsWithExplain);
+				for (var j in branchLabels)
+					splitLabels.push(splitLabel.concat(branchLabels[j]));
+				if (explain>0) 
+					explanations = explanations.concat(branchLabelsWithExplain.explanation);
+			} else {
+				splitLabels.push(splitLabel);
 			}
-			splitLabels.push(splitLabel);
 		}
-		return splitLabels;
+		//console.log("end   classifyRecursive "+Object.keys(sample)+", explain="+explain+", depth="+depth+" = "+JSON.stringify(splitLabels));
+		return (explain>0? 
+				{classes: splitLabels, explanation: explanations}:
+				splitLabels);
 	},
 
 

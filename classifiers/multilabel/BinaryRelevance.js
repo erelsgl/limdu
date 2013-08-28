@@ -125,7 +125,7 @@ BinaryRelevance.prototype = {
 	 *  
 	 * @return an array whose VALUES are classes.
 	 */
-	classify : function(sample, explain) {
+	classify: function(sample, explain) {
 		var classes = {};
 		if (explain>0) {
 			var positive_explanations = {};
@@ -133,7 +133,9 @@ BinaryRelevance.prototype = {
 		}
 		for (var aClass in this.mapClassnameToClassifier) {
 			var classifier = this.mapClassnameToClassifier[aClass];
+			//console.log("   classify before sample="+Object.keys(sample));
 			var classification = classifier.classify(sample, explain);
+			//console.log("   classify after  sample="+Object.keys(sample));
 			if (classification.explanation) {
 				var explanations_string = classification.explanation.reduce(function(a,b) {
 					return a + " " + b;

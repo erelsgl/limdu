@@ -23,4 +23,7 @@ function shallowJson(json, depth) {
 }
 
 
-module.exports = shallowJson;
+module.exports = {
+	shallowJson: shallowJson,
+}
+

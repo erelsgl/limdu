@@ -25,7 +25,7 @@ var Homer = function(opts) {
 	}
 	this.multilabelClassifierType = opts.multilabelClassifierType;
 	
-	this.getClusterByDepth = opts.getClusterByDepth || function(label,depth) {
+	this.getSuperlabel = opts.getSuperlabel || function(label,depth) {
 		var labelJson = null;
 		if (_.isObject(label)) {
 			labelJson = label;
@@ -36,34 +36,17 @@ var Homer = function(opts) {
 				return label; // a plain string - just return it
 			}
 		}
-		var shallowJson = require('./shallowJson');
+		var shallowJson = require('./Hierarchy').shallowJson;
 		return shallowJson(labelJson, depth);
 	};
+	
+	this.root = {
+		superlabelClassifier: new this.multilabelClassifierType(),
+		mapSuperlabelToBranch: {}
+	}
 }
 
 Homer.prototype = {
-
-	/**
-	 * Tell the classifier that the given classes will be used for the following
-	 * samples, so that it will know to add negative samples to classes that do
-	 * not appear.
-	 * 
-	 * @param classes
-	 *            an object whose KEYS are classes, or an array whose VALUES are
-	 *            classes.
-	 */ 
-	addClasses: function(classes) {
-		classes = hash.normalized(classes);
-		for (var aClass in classes) {
-			if (!this.mapClassnameToClassifier[aClass]) {
-				this.mapClassnameToClassifier[aClass] = new this.binaryClassifierType();
-			}
-		}
-	},
-	
-	getAllClasses: function() {
-		return Object.keys(this.mapClassnameToClassifier);
-	},
 
 	/**
 	 * Tell the classifier that the given sample belongs to the given classes.
@@ -210,31 +193,31 @@ Homer.prototype = {
 			this.mapClassnameToClassifier[aClass] = new this.binaryClassifierType();
 		}
 	},
-}
 
 
 
-/*
- * UTILS
- */
+	/**
+	 * Tell the classifier that the given classes will be used for the following
+	 * samples, so that it will know to add negative samples to classes that do
+	 * not appear.
+	 * 
+	 * @param classes
+	 *            an object whose KEYS are classes, or an array whose VALUES are
+	 *            classes.
+	 */ 
+	addClasses: function(classes) {
+		classes = hash.normalized(classes);
+		for (var aClass in classes) {
+			if (!this.mapClassnameToClassifier[aClass]) {
+				this.mapClassnameToClassifier[aClass] = new this.binaryClassifierType();
+			}
+		}
+	},
+	
+	getAllClasses: function() {
+		return Object.keys(this.mapClassnameToClassifier);
+	},
 
-/**
- * @param json a JSON object, such as: {Offer: {Salary: 20000}}
- * @param depth an integer >= 1.
- * @return a view of the shallow parts of the json object.
- * -- For example, for depth=1: "Offer". For depth=2: "{Offer: Salary}". For depth=3: the entire object, etc.
- */
-function shallowJson(json, depth) {
-	if (!_.isObject(json))
-		return json;
-	var firstKey = Object.keys(json)[0];
-	if (depth<=1) {
-		return firstKey;
-	} else {
-		var shallow = {};
-		shallow[firstKey] = shallowJson(json[firstKey], depth-1);
-		return shallow;
-	}
 }
 
 

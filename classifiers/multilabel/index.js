@@ -2,7 +2,8 @@ module.exports = {
 	BinaryRelevance:        require('./BinaryRelevance'),
 	PassiveAggressive:      require('./PassiveAggressiveHash'),
 	BinarySegmentation:     require('./BinarySegmentation'),
-	MulticlassSegmentation: require('./MulticlassSegmentation')
+	MulticlassSegmentation: require('./MulticlassSegmentation'),
+	Homer: require('./Homer'),
 }
 
 // add a "classify and log" method to all classifiers, for demos:

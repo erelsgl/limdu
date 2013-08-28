@@ -1,12 +1,12 @@
 /**
- * a unit-test for Multi-Label classification in the multiclass segmentation method
+ * a unit-test for utils related to Homer classifier
  * 
  * @author Erel Segal-Halevi
  * @since 2013-08
  */
 
 var should = require('should');
-var shallowJson = require('../../../classifiers/multilabel/shallowJson');
+var shallowJson = require('../../../classifiers/multilabel/Hierarchy').shallowJson;
 
 describe('shallowJson', function() {
 	it('works for strings (depth 1)', function() {

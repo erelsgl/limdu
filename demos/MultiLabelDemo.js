@@ -13,7 +13,12 @@ var mlutils = require('../utils');
 var fs = require('fs');
 var _ = require('underscore')._;
 
-var BinaryRelevanceClassifier = new classifiers.multilabel.BinaryRelevance({
+var PassiveAggressiveClassifier = classifiers.multilabel.PassiveAggressive.bind(this, {
+	Constant: 5.0,
+	retrain_count: 10,
+});
+
+var BinaryRelevanceClassifier = classifiers.multilabel.BinaryRelevance.bind(this, {
 	'binaryClassifierType': classifiers.Winnow.bind(this, {
 		promotion: 1.5,
 		demotion: 0.5,
@@ -21,13 +26,11 @@ var BinaryRelevanceClassifier = new classifiers.multilabel.BinaryRelevance({
 	}),
 });
 
-var PassiveAggressiveClassifier = new classifiers.multilabel.PassiveAggressive({
-	Constant: 5.0,
-	retrain_count: 10,
+var HomerClassifier = classifiers.multilabel.Homer.bind(this, {
+	multilabelClassifier: BinaryRelevanceClassifier
 });
 
-//var classifier = BinaryRelevanceClassifier;
-var classifier = PassiveAggressiveClassifier;
+var classifier = new HomerClassifier();
 
 var explain=0;
 var classes = ['A','B','C','D','E','F','G'];

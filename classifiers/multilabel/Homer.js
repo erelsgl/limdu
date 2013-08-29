@@ -202,40 +202,39 @@ Homer.prototype = {
 	},
 
 
-	toJSON : function(callback) {
-		var result = {};
-		for ( var aClass in this.mapClassnameToClassifier) {
-			var binaryClassifier = this.mapClassnameToClassifier[aClass];
-			if (!binaryClassifier.toJSON) {
-				console.dir(binaryClassifier);
-				console.log("prototype: ");
-				console.dir(binaryClassifier.__proto__);
-				throw new Error("this binary classifier does not have a toJSON function");
-			}
-			result[aClass] = binaryClassifier.toJSON(callback);
+	toJSON: function() {
+		return this.toJSONRecursive(this.root);
+	},
+	
+	toJSONRecursive: function(treeNode) {
+		var treeNodeJson = { 
+			superlabelClassifier: treeNode.superlabelClassifier.toJSON(),
+			mapSuperlabelToBranch: []
+		};
+		for (var superlabel in treeNode.mapSuperlabelToBranch) {
+			treeNodeJson.mapSuperlabelToBranch[superlabel] = this.toJSONRecursive(treeNode.mapSuperlabelToBranch[superlabel]);
 		}
-		return result;
+		return treeNodeJson;
 	},
 
-	fromJSON : function(json, callback) {
-		for ( var aClass in json) {
-			this.mapClassnameToClassifier[aClass] = new this.binaryClassifierType();
-			this.mapClassnameToClassifier[aClass].fromJSON(json[aClass]);
-		}
+	fromJSON: function(json) {
+		this.root = this.fromJSONRecursive(json);
 		return this;
 	},
 	
-	// private function: 
-	makeSureClassifierExists: function(aClass) {
-		if (!this.mapClassnameToClassifier[aClass]) { // make sure classifier exists
-			this.mapClassnameToClassifier[aClass] = new this.binaryClassifierType();
+	fromJSONRecursive: function(treeNodeJson) {
+		var treeNode = {
+			superlabelClassifier: treeNodeJson.superlabelClassifier.fromJSON(),
+			mapSuperlabelToBranch: []
+		}; 
+		for (var superlabel in treeNodeJson.mapSuperlabelToBranch) {
+			treeNode.mapSuperlabelToBranch[superlabel] = this.fromJSONRecursive(treeNodeJson.mapSuperlabelToBranch[superlabel]);
 		}
 	},
 
-
-	getAllClasses: function() {
-		return Object.keys(this.mapClassnameToClassifier);
-	},
+	//getAllClasses: function() {
+	//	return Object.keys(this.mapClassnameToClassifier);
+	//},
 
 }
 

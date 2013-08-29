@@ -35,6 +35,14 @@ FeatureLookupTable.prototype = {
 		for (var i=0; i<hashes.length; ++i)
 			this.addFeatures(hashes[i]);
 	},
+	
+	/**
+	 * Convert the given feature to a numeric index.
+	 */
+	featureToNumber: function(feature) {
+		this.addFeature(feature);
+		return this.featureNameToFeatureIndex[feature];
+	},
 		
 	/**
 	 * Convert the given hash of features to a numeric array, using 0 for padding.

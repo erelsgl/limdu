@@ -45,12 +45,10 @@ Homer.prototype = {
 	 *            an object whose KEYS are classes, or an array whose VALUES are classes.
 	 */
 	trainOnline: function(sample, labels) {
-		//console.dir(labels);
-		var normalizedLabels = normalizeLabels(labels); // convert to array of strings
-		//console.dir(normalizedLabels);
-		var splitLabels = normalizedLabels.map(this.splitLabel);
-		//console.dir(splitLabels);
-		return this.trainOnlineRecursive(sample, splitLabels, this.root, /*depth=*/1);
+		return this.trainOnlineRecursive(
+				sample, 
+				normalizeLabels(labels).map(this.splitLabel), 
+				this.root);
 	},
 
 	
@@ -59,8 +57,8 @@ Homer.prototype = {
 	 *  @param splitLabels an array of arrays: each internal array represents the parts of a single label.
 	 */
 	trainOnlineRecursive: function(sample, splitLabels, treeNode) {
-		var superlabels = {};
-		var mapSuperlabelToRest = {};
+		var superlabels = {}; // the first parts of each of the splitLabels
+		var mapSuperlabelToRest = {};   // each value is a list of continuations of the key. 
 		for (var i in splitLabels) {
 			var splitLabel = splitLabels[i];
 			var superlabel = splitLabel[0];
@@ -93,28 +91,58 @@ Homer.prototype = {
 	 *            {input: sample1, output: [class11, class12...]}
 	 */
 	trainBatch : function(dataset) {
-		return this.trainBatchRecursive(dataset, this.root, /*depth=*/1);
+		dataset = dataset.map(function(datum) {
+			return {
+				input: datum.input,
+				output: normalizeLabels(datum.output).map(this.splitLabel)
+			}
+		}, this);
+		return this.trainBatchRecursive(dataset, this.root);
 	},
 	
 	/**
 	 *  Recursive internal subroutine of trainBatch.
 	 */
 	trainBatchRecursive: function(dataset, treeNode) {
-		var superlabels = {};
-		for (var label in labels) {
-			var superlabel = this.getSuperlabel(label, depth);
-			superlabels[superlabel] = true;
-		}
-		
-		treeNode.superlabelClassifier.trainOnline(sample, superlabels);
-		for (var superlabel in superlabels) {
+		var superlabelsDataset = [];
+		var mapSuperlabelToRestDataset = {};
+		dataset.forEach(function(datum) {
+			var splitLabels = datum.output;
+			var superlabels = {};           // the first parts of each of the splitLabels
+			var mapSuperlabelToRest = {};   // each value is a list of continuations of the key. 
+			for (var i in splitLabels) {
+				var splitLabel = splitLabels[i];
+				var superlabel = splitLabel[0];
+				superlabels[superlabel] = true;
+				if (splitLabel.length>1) {
+					if (!mapSuperlabelToRest[superlabel]) 
+						mapSuperlabelToRest[superlabel] = [];
+					mapSuperlabelToRest[superlabel].push(splitLabel.slice(1));
+				}
+			}
+			superlabelsDataset.push({
+				input: datum.input,
+				output: superlabels
+			});
+			for (var superlabel in mapSuperlabelToRest) {
+				if (!(superlabel in mapSuperlabelToRestDataset)) 
+					mapSuperlabelToRestDataset[superlabel] = [];
+				mapSuperlabelToRestDataset[superlabel].push({
+					input: datum.input,
+					output: mapSuperlabelToRest[superlabel]
+				});
+			}
+		}, this);
+
+		treeNode.superlabelClassifier.trainBatch(superlabelsDataset);
+		for (var superlabel in mapSuperlabelToRestDataset) {
 			if (!(superlabel in treeNode.mapSuperlabelToBranch)) {
 				treeNode.mapSuperlabelToBranch[superlabel] = {
 					superlabelClassifier: new this.multilabelClassifierType(),
 					mapSuperlabelToBranch: {}
 				}
 			}
-			this.trainBatchRecursive(sample, labels, treeNode.mapSuperlabelToBranch[superlabel], depth+1);
+			this.trainBatchRecursive(mapSuperlabelToRestDataset[superlabel], treeNode.mapSuperlabelToBranch[superlabel]);
 		}
 	},
 

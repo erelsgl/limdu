@@ -1,6 +1,7 @@
 var hash = require("../../utils/hash");
 var sprintf = require("sprintf").sprintf;
 var _ = require("underscore")._;
+var util = require('util');
 
 
 /**
@@ -203,33 +204,40 @@ Homer.prototype = {
 
 
 	toJSON: function() {
+		//console.log("In toJSON: " +util.inspect(this.root, {depth:1}));
 		return this.toJSONRecursive(this.root);
 	},
 	
 	toJSONRecursive: function(treeNode) {
+		//console.log("start toJSONRecursive: " +util.inspect(treeNode, {depth:1}));
 		var treeNodeJson = { 
 			superlabelClassifier: treeNode.superlabelClassifier.toJSON(),
-			mapSuperlabelToBranch: []
+			mapSuperlabelToBranch: {}
 		};
 		for (var superlabel in treeNode.mapSuperlabelToBranch) {
 			treeNodeJson.mapSuperlabelToBranch[superlabel] = this.toJSONRecursive(treeNode.mapSuperlabelToBranch[superlabel]);
 		}
+		//console.log("end   toJSONRecursive: " +util.inspect(treeNodeJson, {depth:1}));
 		return treeNodeJson;
 	},
 
 	fromJSON: function(json) {
+		//console.log("In fromJSON: " +util.inspect(json, {depth:1}));
 		this.root = this.fromJSONRecursive(json);
+		//console.log(util.inspect(this.root, {depth:4}));
 		return this;
 	},
 	
 	fromJSONRecursive: function(treeNodeJson) {
 		var treeNode = {
-			superlabelClassifier: treeNodeJson.superlabelClassifier.fromJSON(),
-			mapSuperlabelToBranch: []
+			mapSuperlabelToBranch: {}
 		}; 
+		treeNode.superlabelClassifier =  new this.multilabelClassifierType();
+		treeNode.superlabelClassifier.fromJSON(treeNodeJson.superlabelClassifier);
 		for (var superlabel in treeNodeJson.mapSuperlabelToBranch) {
 			treeNode.mapSuperlabelToBranch[superlabel] = this.fromJSONRecursive(treeNodeJson.mapSuperlabelToBranch[superlabel]);
 		}
+		return treeNode;
 	},
 
 	//getAllClasses: function() {

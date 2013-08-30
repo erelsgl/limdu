@@ -81,3 +81,33 @@ exports.fromString = function(string, contextFolderForFunction) {
 }
 
 
+/**
+ * Save a trained classifier to a string, then reload the string to a new classifier, and make sure both classifiers return the same results on a test set.
+ * @param trainedClassifier This is the trained classifier itself. It should have "toJSON" and "fromJSON" functions (but if "toJSON" is not present, then the object itself will be saved).
+ * @param createNewClassifierFunction [optional] a function for creating a new (untrained) classifier. This function will be saved verbatim in the file, in order to reproduce the exact type of the classifier.
+ * @param contextFolderForFunction  the base folder for the "require" statements in the create-new-classifier function.
+ * @param testSet an array of {input: ... , output: ...} pairs, for testing the classifier before and after reload.
+ * @return A nicely-formatted string. Can be saved directly to a file. 
+ */
+exports.toStringVerified = function(classifier, createNewClassifierFunction, contextFolderForFunction, testSet) {
+	var should = require("should");
+	var resultsBeforeReload = [];
+	
+	for (var i=0; i<testSet.length; ++i) {
+		var actualClasses = classifier.classify(testSet[i].input);  
+		actualClasses.sort();
+		resultsBeforeReload[i] = actualClasses;
+	}
+	
+	var string = exports.toString(classifier, createNewClassifierFunction);
+	
+	var classifier2 = exports.fromString(string, contextFolderForFunction);
+	
+	for (var i=0; i<testSet.length; ++i) {
+		var actualClasses = classifier2.classify(testSet[i].input);
+		actualClasses.sort();
+		actualClasses.should.eql(resultsBeforeReload[i]);
+	}
+	
+	return string;
+}

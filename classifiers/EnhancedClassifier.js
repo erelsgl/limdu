@@ -7,12 +7,14 @@ var _ = require('underscore')._;
  * @param opts
  * Obligatory option: 'classifierType', which is the base type of the classifier.
  * Optional:
+ * * 'inputSplitter' - a function that splits the input samples into sub-samples, for multi-label classification (useful mainly for sentences). 
  * * 'normalizer' - a function that normalizes the input samples, before they are sent to feature extraction.
  * * 'featureExtractor' - a single feature-extractor (see the "features" folder), or an array of extractors, for extracting features from training and classification samples.
  * * 'featureExtractorForClassification' - additional feature extractor[s], for extracting features from samples during classification. Used for domain adaptation.
  * * 'featureLookupTable' - an instance of FeatureLookupTable for converting features to numeric indices and back.
+ * * 'featureDocumentFrequency' - a hash that counts the number of documents containing each feature, during training
+ * * 'multiplyFeaturesByIDF' - boolean - if true, multiply each feature value by log(documentCount / (1+featureDocumentFrequency))
  * * 'pastTrainingSamples' - an array that keeps all past training samples, to enable retraining.
- * * 'inputSplitter' - a function that splits the input samples into sub-samples, for multi-label classification (useful mainly for sentences). 
  * * 'spellChecker' - an initialized 'wordsworth' spell checker, to spell-check features during classification.
  */
 var EnhancedClassifier = function(opts) {
@@ -21,16 +23,15 @@ var EnhancedClassifier = function(opts) {
 		throw new Error("opts must contain classifierType");
 	}
 	this.classifierType = opts.classifierType;
+	this.inputSplitter = opts.inputSplitter;
 	this.setNormalizer(opts.normalizer);
 	this.setFeatureExtractor(opts.featureExtractor);
 	this.setFeatureExtractorForClassification(opts.featureExtractorForClassification);
 	this.featureLookupTable = opts.featureLookupTable;
+	this.featureDocumentFrequency = opts.featureDocumentFrequency;
+	this.multiplyFeaturesByIDF = opts.multiplyFeaturesByIDF; 
+	this.spellChecker = opts.spellChecker;
 	this.pastTrainingSamples = opts.pastTrainingSamples;
-	this.inputSplitter = opts.inputSplitter;
-	
-	if (opts.spellChecker) {
-		this.spellChecker = opts.spellChecker;
-	}
 	
 	this.classifier = new this.classifierType();
 }
@@ -98,30 +99,24 @@ EnhancedClassifier.prototype = {
 		}
 	},
 	
-	correctSpelling: function(features) {
+	correctFeatureSpelling: function(features) {
 		if (this.spellChecker) {
 			if (!_.isObject(features)) {
 				throw new Error("The spell-checker cannot correct because the 'features' are not organized as a hash");
 			}
 			var correctedFeatures = {};
 			for (var feature in features) {
-				if (!isNaN(parseInt(feature))) { // don't spell-correct numeric features
-					correctedFeatures[feature] = features[feature];
+				if (!isNaN(parseInt(feature)))  // don't spell-correct numeric features
 					continue;
-				}
 				var suggestions = this.spellChecker.suggest(feature); // If feature exists, returns empty. Otherwise, returns ordered list of suggested corrections from the training set.
-				if (suggestions.length==0) {
-					correctedFeatures[feature] = features[feature];
+				if (suggestions.length==0) 
 					continue;
-				}
 				
 				// take the first suggestion; but decrement its value a little:
 				//if (suggestions[0]=='i') {				console.log("spellCheck("+feature+")="+suggestions);				}
-				correctedFeatures[suggestions[0]] = features[feature] * 0.9;
+				features[suggestions[0]] = features[feature] * 0.9;
+				delete features[feature];
 			}
-			return correctedFeatures;
-		} else {
-			return features;
 		}
 	},
 	
@@ -131,6 +126,27 @@ EnhancedClassifier.prototype = {
 			array = this.featureLookupTable.hashToArray(features);
 		}
 		return array;
+	},
+	
+	countFeatures: function(features) {
+		if (this.featureDocumentFrequency) {
+			for (var feature in features)
+				this.featureDocumentFrequency[feature] = (this.featureDocumentFrequency[feature] || 0)+1;
+			this.documentCount = (this.documentCount||0)+1;
+		}
+	},
+	
+	editFeatureValues: function(features) {
+		if (this.multiplyFeaturesByIDF) { 
+			for (var feature in features) { 
+				var DF = this.featureDocumentFrequency[feature];
+				var IDF = Math.log(this.documentCount / (1+DF));
+				if (IDF<=0)
+					console.warn("IDF<=0: documentCount="+this.documentCount+" DF("+feature+")="+DF);
+				else
+					features[feature] *= Math.log(this.documentCount / (1+this.featureDocumentFrequency[feature]));
+			}
+		}
 	},
 	
 
@@ -144,6 +160,8 @@ EnhancedClassifier.prototype = {
 		classes = normalizeClasses(classes);
 		sample = this.normalizedSample(sample);
 		var features = this.sampleToFeatures(sample, this.featureExtractors);
+		this.countFeatures(features);
+		this.editFeatureValues(features);
 		this.trainSpellChecker(features);
 		var array = this.featuresToArray(features);
 		this.classifier.trainOnline(array, classes);
@@ -157,7 +175,6 @@ EnhancedClassifier.prototype = {
 	 * @param dataset an array with objects of the format: {input: sample1, output: [class11, class12...]}
 	 */
 	trainBatch: function(dataset) {
-		var self = this;
 		var featureLookupTable = this.featureLookupTable;
 		var pastTrainingSamples = this.pastTrainingSamples;
 
@@ -167,17 +184,21 @@ EnhancedClassifier.prototype = {
 			if (pastTrainingSamples)
 				pastTrainingSamples.push(datum);
 			datum = _(datum).clone();
-			datum.input = self.normalizedSample(datum.input);
-			datum.input = self.sampleToFeatures(datum.input, self.featureExtractors);
-			self.trainSpellChecker(datum.input);
+			datum.input = this.normalizedSample(datum.input);
+			var features = this.sampleToFeatures(datum.input, this.featureExtractors);
+			this.countFeatures(features);
+			this.trainSpellChecker(features);
 			if (featureLookupTable)
-				featureLookupTable.addFeatures(datum.input);
+				featureLookupTable.addFeatures(features);
+			datum.input = features;
 			return datum;
-		});
+		}, this);
+		//console.dir(this.featureDocumentFrequency);
 		dataset.forEach(function(datum) {
+			this.editFeatureValues(datum.input);
 			if (featureLookupTable)
 				datum.input = featureLookupTable.hashToArray(datum.input);
-		});
+		}, this);
 		this.classifier.trainBatch(dataset);
 	},
 
@@ -188,7 +209,9 @@ EnhancedClassifier.prototype = {
 	 */
 	classifyPart: function(sample, explain) {
 		var features = this.sampleToFeatures(sample, this.featureExtractorsForClassification? this.featureExtractorsForClassification: this.featureExtractors);
-		features = this.correctSpelling(features);
+		this.correctFeatureSpelling(features);
+		this.editFeatureValues(features);
+		//console.dir("sample="+sample+", features="+JSON.stringify(features));
 		var array = this.featuresToArray(features);
 		var classification = this.classifier.classify(array, explain);
 		if (this.spellChecker && classification.explanation) {
@@ -213,9 +236,8 @@ EnhancedClassifier.prototype = {
 			var parts = 	this.inputSplitter(sample);
 			var accumulatedClasses = {};
 			var explanations = [];
-			var self = this;
 			parts.forEach(function(part) {
-				var classesWithExplanation = self.classifyPart(part,explain);
+				var classesWithExplanation = this.classifyPart(part,explain);
 				var classes = (explain>0? classesWithExplanation.classes: classesWithExplanation);
 				for (var i in classes)
 					accumulatedClasses[classes[i]]=true;
@@ -224,7 +246,7 @@ EnhancedClassifier.prototype = {
 					explanations.push(classesWithExplanation.explanation);
 				}
 				//console.log(part+" "+JSON.stringify(accumulatedClasses));
-			});
+			}, this);
 			classes = Object.keys(accumulatedClasses);
 			if (explain>0) 
 				return {
@@ -287,6 +309,8 @@ EnhancedClassifier.prototype = {
 			featureLookupTable: (this.featureLookupTable? this.featureLookupTable.toJSON(): undefined),
 			spellChecker:  (this.spellChecker? this.spellChecker/*.toJSON()*/: undefined),
 			pastTrainingSamples: (this.pastTrainingSamples? this.pastTrainingSamples: undefined),
+			featureDocumentFrequency: this.featureDocumentFrequency,
+			documentCount: this.documentCount,
 			/* Note: the feature extractors are functions - they should be created at initialization - they cannot be serialized! */ 
 		};
 	},
@@ -296,7 +320,9 @@ EnhancedClassifier.prototype = {
 		if (this.featureLookupTable) this.featureLookupTable.fromJSON(json.featureLookupTable);
 		if (this.spellChecker) this.spellChecker = json.spellChecker; 
 		if (this.pastTrainingSamples) this.pastTrainingSamples = json.pastTrainingSamples;
-		
+		this.featureDocumentFrequency = json.featureDocumentFrequency;
+		this.documentCount = json.documentCount;
+
 		/* Note: the feature extractors are functions - they should be created at initialization - they cannot be deserialized! */ 
 		return this;
 	},

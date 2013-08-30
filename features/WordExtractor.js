@@ -5,14 +5,12 @@
 /**
  * Adds word n-gram features to the given feature-vector.
  * @param numOfWords - a positive integer. 
- * @param caseSensitive - boolean. if false, convert all to lower case.
  * @param sample - a string.
  * @param features an initial hash of features (optional).
  * @return a hash with all the different letter n-grams contained in the given sentence.
  */
-module.exports = function(numOfWords, caseSensitive) {
+module.exports = function(numOfWords) {
 	return function(sample, features) {
-		if (!caseSensitive) sample=sample.toLowerCase();
 		
 		var words = sample.split(/[ \t,;.!?]/).filter(function(a){return !!a}); // all non-empty words
 

@@ -153,6 +153,7 @@ module.exports.trainAndTest = function(
 		if (verbosity>0) console.log("\nstart training on "+trainSet.length+" samples, "+(trainSet.allClasses? trainSet.allClasses.length+' classes': ''));
 		var startTime = new Date()
 		classifier.trainBatch(trainSet);
+		//console.log(classifier.featureDocumentFrequency['i']);
 		var elapsedTime = new Date()-startTime;
 		if (verbosity>0) console.log("end training on "+trainSet.length+" samples, "+(trainSet.allClasses? trainSet.allClasses.length+' classes, ': '')+elapsedTime+" [ms]");
 	

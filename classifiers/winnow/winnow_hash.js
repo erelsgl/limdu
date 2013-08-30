@@ -179,7 +179,8 @@ WinnowHash.prototype = {
 				}
 			}
 			score -= this.threshold;
-			if (isNaN(score)) throw new Error("score is NaN! positive_score="+positive_score+" negative_score="+negative_score+" this.threshold="+this.threshold);
+			if (isNaN(score)) 
+				throw new Error("score is NaN! features="+JSON.stringify(features));
 
 			if (this.debug) console.log("> perceive_features ",features," = ",score);
 			var result = (continuous_output? score: (score > 0 ? 1 : 0));

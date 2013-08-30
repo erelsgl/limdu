@@ -52,7 +52,7 @@ var testMultiLabelClassifier = function(classifier) {
 		classifier.getAllClasses().should.eql(['A','B','{"C":"c"}']);
 	})
 	
-	it('serializes and de-serializes', function() {
+	it.skip('serializes and de-serializes', function() {
 		var serialize = require('../../../utils/serialize');
 		//serialize.toStringVerified(classifier, function() {return new BinaryRelevanceWinnow();}, __dirname, dataset);
 	})
@@ -76,20 +76,17 @@ describe('Multi-Label BR Classifier online-trained on Single-class inputs', func
 
 	// COMPARE TO BATCH CLASSIFIER: 
 	// Strangely, there is a slight difference, so this test is disabled:
-	/*
-	var classifierBatch = new BinaryRelevanceWinnow();
-	classifierBatch.trainBatch(dataset);
-	//console.log("batch: "); 	console.dir(classifierBatch.mapClassnameToClassifier);
-	//console.log("online: "); 	console.dir(classifierOnline.mapClassnameToClassifier);
-
-	it('is identical to batch classifier', function() {
+	it.skip('is identical to batch classifier', function() {
+		var classifierBatch = new BinaryRelevanceWinnow();
+		classifierBatch.trainBatch(dataset);
+		//console.log("batch: "); 	console.dir(classifierBatch.mapClassnameToClassifier);
+		//console.log("online: "); 	console.dir(classifierOnline.mapClassnameToClassifier);
 		classifierOnline.should.eql(classifierBatch);
 	});
-	*/
 })
 
 
-describe('Multi-Label BR Classifier batch-trained on two-class inputs', function() {
+describe.skip('Multi-Label BR Classifier batch-trained on two-class inputs', function() {
 	var classifier = new BinaryRelevanceWinnow();
 	classifier.trainBatch([
 		{input: {I:1 , want:1 , aa:1 , bb:1 }, output: ['A','B']},      // train on array with classes
@@ -99,17 +96,17 @@ describe('Multi-Label BR Classifier batch-trained on two-class inputs', function
 	]);
 
 	it('classifies 1-class samples', function() {
-		//classifier.classify({I:1 , want:1 , aa:1 }).should.eql(['A']);
-		//classifier.classify({I:1 , want:1 , bb:1 }).should.eql(['B']);
-		//classifier.classify({I:1 , want:1 , cc:1 }).should.eql(['C']);
-		//classifier.classify({I:1 , want:1 , dd:1 }).should.eql(['D']);
+		classifier.classify({I:1 , want:1 , aa:1 }).should.eql(['A']);
+		classifier.classify({I:1 , want:1 , bb:1 }).should.eql(['B']);
+		classifier.classify({I:1 , want:1 , cc:1 }).should.eql(['C']);
+		classifier.classify({I:1 , want:1 , dd:1 }).should.eql(['D']);
 	});
 
 	it('classifies 2-class samples', function() {
 		classifier.classify({I:1 , want:1 , aa:1 , and:1 , bb:1 }).should.eql(['A','B']);
 		classifier.classify({I:1 , want:1 , bb:1 , and:1 , cc:1 }).should.eql(['B','C']);
-		//classifier.classify({I:1 , want:1 , cc:1 , and:1 , dd:1 }).should.eql(['C','D']);
-		//classifier.classify({I:1 , want:1 , dd:1 , and:1 , aa:1 }).should.eql(['D','A']);
+		classifier.classify({I:1 , want:1 , cc:1 , and:1 , dd:1 }).should.eql(['C','D']);
+		classifier.classify({I:1 , want:1 , dd:1 , and:1 , aa:1 }).should.eql(['D','A']);
 	});
 });
 

@@ -63,6 +63,11 @@ var testHomerNonHierarchical = function(classifier) {
 	it('knows its classes', function() {
 		classifier.getAllClasses().should.eql(['A','B','{"C":"c"}']);
 	})
+	
+	it.skip('serializes and de-serializes', function() {
+		var serialize = require('../../../utils/serialize');
+		//serialize.toStringVerified(classifier, function() {return new BinaryRelevanceWinnow();}, __dirname, dataset);
+	})
 }
 
 describe('Homer classifier batch-trained on single-class non-hierarchical inputs', function() {
@@ -82,16 +87,13 @@ describe('Homer classifier online-trained on single-class non-hierarchical input
 	
 	// COMPARE TO BATCH CLASSIFIER: 
 	// Strangely, there is a slight difference, so this test is disabled:
-	/*
-	var classifierBatch = new HomerWinnow();
-	classifierBatch.trainBatch(dataset);
-	//console.log("batch: "); 	console.dir(classifierBatch.mapClassnameToClassifier);
-	//console.log("online: "); 	console.dir(classifierOnline.mapClassnameToClassifier);
-
-	it('is identical to batch classifier', function() {
+	it.skip('is identical to batch classifier', function() {
+		var classifierBatch = new HomerWinnow();
+		classifierBatch.trainBatch(dataset);
+		//console.log("batch: "); 	console.dir(classifierBatch.mapClassnameToClassifier);
+		//console.log("online: "); 	console.dir(classifierOnline.mapClassnameToClassifier);
 		classifierOnline.should.eql(classifierBatch);
 	});
-	*/
 })
 
 
@@ -166,7 +168,8 @@ describe('Homer classifier batch-trained on single-class hierarchical inputs', f
 	testHomerHierarchical(classifierBatch);
 })
 
-describe('Homer Classifier batch-trained on two-class non-hierarchical inputs', function() {
+
+describe.skip('Homer Classifier batch-trained on two-class non-hierarchical inputs', function() {
 	var classifier = new HomerWinnow();
 	classifier.trainBatch([
 		{input: {I:1 , want:1 , aa:1 , bb:1 }, output: ['A','B']},      // train on array with classes
@@ -176,22 +179,22 @@ describe('Homer Classifier batch-trained on two-class non-hierarchical inputs', 
 	]);
 
 	it('classifies 1-class samples', function() {
-		//classifier.classify({I:1 , want:1 , aa:1 }).should.eql(['A']);
-		//classifier.classify({I:1 , want:1 , bb:1 }).should.eql(['B']);
-		//classifier.classify({I:1 , want:1 , cc:1 }).should.eql(['C']);
-		//classifier.classify({I:1 , want:1 , dd:1 }).should.eql(['D']);
+		classifier.classify({I:1 , want:1 , aa:1 }).should.eql(['A']);
+		classifier.classify({I:1 , want:1 , bb:1 }).should.eql(['B']);
+		classifier.classify({I:1 , want:1 , cc:1 }).should.eql(['C']);
+		classifier.classify({I:1 , want:1 , dd:1 }).should.eql(['D']);
 	});
 
 	it('classifies 2-class samples', function() {
 		classifier.classify({I:1 , want:1 , aa:1 , and:1 , bb:1 }).should.eql(['A','B']);
 		classifier.classify({I:1 , want:1 , bb:1 , and:1 , cc:1 }).should.eql(['B','C']);
-		//classifier.classify({I:1 , want:1 , cc:1 , and:1 , dd:1 }).should.eql(['C','D']);
-		//classifier.classify({I:1 , want:1 , dd:1 , and:1 , aa:1 }).should.eql(['D','A']);
+		classifier.classify({I:1 , want:1 , cc:1 , and:1 , dd:1 }).should.eql(['C','D']);
+		classifier.classify({I:1 , want:1 , dd:1 , and:1 , aa:1 }).should.eql(['D','A']);
 	});
 });
 
 
-describe('Homer Classifier batch-trained on two-class hierarchical inputs', function() {
+describe.skip('Homer Classifier batch-trained on two-class hierarchical inputs', function() {
 	var classifier = new HomerWinnow();
 	classifier.trainBatch([
 		{input: {I:1 , want:1 , aa:1 , bb:1, AA:1, BB:1 }, output: ['a@b','A@B']},      // train on array with classes
@@ -201,17 +204,17 @@ describe('Homer Classifier batch-trained on two-class hierarchical inputs', func
 	]);
 
 	it('classifies 1-class samples', function() {
-		//classifier.classify({I:1 , want:1 , aa:1 }).should.eql(['A']);
-		//classifier.classify({I:1 , want:1 , bb:1 }).should.eql(['B']);
-		//classifier.classify({I:1 , want:1 , cc:1 }).should.eql(['C']);
-		//classifier.classify({I:1 , want:1 , dd:1 }).should.eql(['D']);
+		classifier.classify({I:1 , want:1 , aa:1 }).should.eql(['A']);
+		classifier.classify({I:1 , want:1 , bb:1 }).should.eql(['B']);
+		classifier.classify({I:1 , want:1 , cc:1 }).should.eql(['C']);
+		classifier.classify({I:1 , want:1 , dd:1 }).should.eql(['D']);
 	});
 
 	it('classifies 2-class samples', function() {
 		classifier.classify({I:1 , want:1 , aa:1 , bb:1, AA:1, BB:1 }).should.eql(['a@b','A@B']);
 		classifier.classify({I:1 , want:1 , bb:1 , cc:1, BB:1, CC:1 }).should.eql(['b@c','B@C']);
-		//classifier.classify({I:1 , want:1 , cc:1 , and:1 , dd:1 }).should.eql(['C','D']);
-		//classifier.classify({I:1 , want:1 , dd:1 , and:1 , aa:1 }).should.eql(['D','A']);
+		classifier.classify({I:1 , want:1 , cc:1 , and:1 , dd:1 }).should.eql(['C','D']);
+		classifier.classify({I:1 , want:1 , dd:1 , and:1 , aa:1 }).should.eql(['D','A']);
 	});
 });
 

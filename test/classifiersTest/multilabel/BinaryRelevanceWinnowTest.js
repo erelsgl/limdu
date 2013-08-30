@@ -25,30 +25,40 @@ var dataset = [
     		{input: {I:1 , want:1 , cc:1 }, output: [{C:"c"}]},// train on structured class, that will be stringified to "{C:c}".
     	];
 
-describe('Multi-Label BR Classifier batch-trained on Single-class inputs', function() {
-	var classifierBatch = new BinaryRelevanceWinnow();
-	classifierBatch.trainBatch(dataset);
-	//console.log("batch: "); 	console.dir(classifierOnline.mapClassnameToClassifier);
 
+
+var testMultiLabelClassifier = function(classifier) {
 	it('classifies 1-class samples', function() {
-		classifierBatch.classify({I:1 , want:1 , aa:1 }).should.eql(['A']);
-		classifierBatch.classify({I:1 , want:1 , bb:1 }).should.eql(['B']);
-		classifierBatch.classify({I:1 , want:1 , cc:1 }).should.eql(['{"C":"c"}']);
+		classifier.classify({I:1 , want:1 , aa:1 }).should.eql(['A']);
+		classifier.classify({I:1 , want:1 , bb:1 }).should.eql(['B']);
+		classifier.classify({I:1 , want:1 , cc:1 }).should.eql(['{"C":"c"}']);
 	});
 
 	it('classifies 2-class samples', function() {
-		classifierBatch.classify({I:1 , want:1 , aa:1 , and:1 , bb:1 }).should.eql(['A','B']);
-		classifierBatch.classify({I:1 , want:1 , bb:1 , and:1 , cc:1 }).should.eql(['B','{"C":"c"}']);
-		classifierBatch.classify({I:1 , want:1 , cc:1 , and:1 , aa:1 }).should.eql(['A','{"C":"c"}']);
+		classifier.classify({I:1 , want:1 , aa:1 , and:1 , bb:1 }).should.eql(['A','B']);
+		classifier.classify({I:1 , want:1 , bb:1 , and:1 , cc:1 }).should.eql(['B','{"C":"c"}']);
+		classifier.classify({I:1 , want:1 , cc:1 , and:1 , aa:1 }).should.eql(['A','{"C":"c"}']);
 	});
 
 	it('classifies 3-class samples', function() {
-		classifierBatch.classify({I:1 , want:1 , aa:1 , and:1 , bb:1 , "'": true, cc:1 }).should.eql(['A','B','{"C":"c"}']);
+		classifier.classify({I:1 , want:1 , aa:1 , and:1 , bb:1 , "'": true, cc:1 }).should.eql(['A','B','{"C":"c"}']);
 	});
 
 	it('classifies 0-class samples', function() {
-		classifierBatch.classify({I:1 , want:1 , nothing:1 }).should.eql([]);
+		classifier.classify({I:1 , want:1 , nothing:1 }).should.eql([]);
 	});
+	
+	it('knows its classes', function() {
+		classifier.getAllClasses().should.eql(['A','B','{"C":"c"}']);
+	})
+}
+
+
+
+describe('Multi-Label BR Classifier batch-trained on Single-class inputs', function() {
+	var classifierBatch = new BinaryRelevanceWinnow();
+	classifierBatch.trainBatch(dataset);
+	testMultiLabelClassifier(classifierBatch);
 })
 
 
@@ -57,34 +67,20 @@ describe('Multi-Label BR Classifier online-trained on Single-class inputs', func
 	for (var i=0; i<=retrain_count; ++i) 
 		for (var d=0; d<dataset.length; ++d)
 			classifierOnline.trainOnline(dataset[d].input, dataset[d].output);
-	
+	testMultiLabelClassifier(classifierOnline);
+
+	// COMPARE TO BATCH CLASSIFIER: 
+	// Strangely, there is a slight difference, so this test is disabled:
+	/*
 	var classifierBatch = new BinaryRelevanceWinnow();
 	classifierBatch.trainBatch(dataset);
+	//console.log("batch: "); 	console.dir(classifierBatch.mapClassnameToClassifier);
+	//console.log("online: "); 	console.dir(classifierOnline.mapClassnameToClassifier);
 
-	// Strangely, there is a slight difference, so this test is disabled:
-//	it('is identical to batch classifier', function() {
-//		classifierOnline.should.eql(classifierBatch);
-//	});
-
-	it('classifies 1-class samples', function() {
-		classifierOnline.classify({I:1 , want:1 , aa:1 }).should.eql(['A']);
-		classifierOnline.classify({I:1 , want:1 , bb:1 }).should.eql(['B']);
-		classifierOnline.classify({I:1 , want:1 , cc:1 }).should.eql(['{"C":"c"}']);
+	it('is identical to batch classifier', function() {
+		classifierOnline.should.eql(classifierBatch);
 	});
-
-	it('classifies 2-class samples', function() {
-		classifierOnline.classify({I:1 , want:1 , aa:1 , and:1 , bb:1 }).should.eql(['A','B']);
-		classifierOnline.classify({I:1 , want:1 , bb:1 , and:1 , cc:1 }).should.eql(['B','{"C":"c"}']);
-		classifierOnline.classify({I:1 , want:1 , cc:1 , and:1 , aa:1 }).should.eql(['A','{"C":"c"}']);
-	});
-
-	it('classifies 3-class samples', function() {
-		classifierOnline.classify({I:1 , want:1 , aa:1 , and:1 , bb:1 , "'": true, cc:1 }).should.eql(['A','B','{"C":"c"}']);
-	});
-
-	it('classifies 0-class samples', function() {
-		classifierOnline.classify({I:1 , want:1 , nothing:1 }).should.eql([]);
-	});
+	*/
 })
 
 

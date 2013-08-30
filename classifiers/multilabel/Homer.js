@@ -33,6 +33,8 @@ var Homer = function(opts) {
 		superlabelClassifier: new this.multilabelClassifierType(),
 		mapSuperlabelToBranch: {}
 	}
+	
+	this.allClasses = {};
 }
 
 Homer.prototype = {
@@ -46,9 +48,14 @@ Homer.prototype = {
 	 *            an object whose KEYS are classes, or an array whose VALUES are classes.
 	 */
 	trainOnline: function(sample, labels) {
+		var normalizedLabels = normalizeLabels(labels); // make sure it is an array of strings
+		
+		for (var i in normalizedLabels)
+			this.allClasses[normalizedLabels[i]]=true;
+		
 		return this.trainOnlineRecursive(
 				sample, 
-				normalizeLabels(labels).map(this.splitLabel), 
+				normalizedLabels.map(this.splitLabel), 
 				this.root);
 	},
 
@@ -93,9 +100,12 @@ Homer.prototype = {
 	 */
 	trainBatch : function(dataset) {
 		dataset = dataset.map(function(datum) {
+			var normalizedLabels = normalizeLabels(datum.output);
+			for (var i in normalizedLabels)
+				this.allClasses[normalizedLabels[i]]=true;
 			return {
 				input: datum.input,
-				output: normalizeLabels(datum.output).map(this.splitLabel)
+				output: normalizedLabels.map(this.splitLabel)
 			}
 		}, this);
 		return this.trainBatchRecursive(dataset, this.root);
@@ -240,10 +250,9 @@ Homer.prototype = {
 		return treeNode;
 	},
 
-	//getAllClasses: function() {
-	//	return Object.keys(this.mapClassnameToClassifier);
-	//},
-
+	getAllClasses: function() {
+		return Object.keys(this.allClasses);
+	},
 }
 
 

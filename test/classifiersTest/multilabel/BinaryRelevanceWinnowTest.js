@@ -51,6 +51,11 @@ var testMultiLabelClassifier = function(classifier) {
 	it('knows its classes', function() {
 		classifier.getAllClasses().should.eql(['A','B','{"C":"c"}']);
 	})
+	
+	it('serializes and de-serializes', function() {
+		var serialize = require('../../../utils/serialize');
+		//serialize.toStringVerified(classifier, function() {return new BinaryRelevanceWinnow();}, __dirname, dataset);
+	})
 }
 
 

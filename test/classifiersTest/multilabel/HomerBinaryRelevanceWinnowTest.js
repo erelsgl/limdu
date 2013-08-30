@@ -26,13 +26,20 @@ var HomerWinnow = classifiers.multilabel.Homer.bind(this, {
 	multilabelClassifierType: BinaryRelevanceWinnow
 })
 
+
+
+
+/*
+ * SIMPLE (NON HIERARCHICAL) LABELS
+ */
+
 var trainsetSimple = [  // a simple trainset, with no hierarchy, to use as a baseline:
 	{input: {I:1 , want:1 , aa:1 }, output: 'A'},      // train on single class
 	{input: {I:1 , want:1 , bb:1 }, output: ['B']},    // train on array with single class (same effect)
 	{input: {I:1 , want:1 , cc:1 }, output: [{C:"c"}]},// train on structured class, that will be stringified to "{C:c}".
 ];
 
-var testMultiLabelClassifier = function(classifier) {
+var testHomerNonHierarchical = function(classifier) {
 	it('classifies 1-class samples', function() {
 		classifier.classify({I:1 , want:1 , aa:1 }).should.eql(['A']);
 		classifier.classify({I:1 , want:1 , bb:1 }).should.eql(['B']);
@@ -61,7 +68,7 @@ var testMultiLabelClassifier = function(classifier) {
 describe('Homer classifier batch-trained on single-class non-hierarchical inputs', function() {
 	var classifierBatch = new HomerWinnow();
 	classifierBatch.trainBatch(trainsetSimple);
-	testMultiLabelClassifier(classifierBatch);
+	testHomerNonHierarchical(classifierBatch);
 })
 
 
@@ -70,7 +77,7 @@ describe('Homer classifier online-trained on single-class non-hierarchical input
 	for (var i=0; i<=retrain_count; ++i) 
 		for (var d=0; d<trainsetSimple.length; ++d)
 			classifierOnline.trainOnline(trainsetSimple[d].input, trainsetSimple[d].output);
-	testMultiLabelClassifier(classifierOnline);
+	testHomerNonHierarchical(classifierOnline);
 
 	
 	// COMPARE TO BATCH CLASSIFIER: 
@@ -90,6 +97,10 @@ describe('Homer classifier online-trained on single-class non-hierarchical input
 
 
 
+/*
+ * HIERARCHICAL LABELS
+ */
+
 var trainsetHierarchical = [
 	{input: {I:1 , want:1 , to:1, AA:1, AAA:1}, output: 'A'},
 	{input: {I:1 , want:1 , to:1, BB:1, the:1, bb:1 }, output: 'B@b'},
@@ -101,6 +112,28 @@ var trainsetHierarchical = [
 	{input: {I:1 , want:1 , to:1, EE:1, the:1, gg:1, of:1, xx:1 }, output: 'E@g@x'},
 	{input: {I:1 , want:1 , to:1, EE:1, the:1, gg:1, of:1, yy:1 }, output: 'E@g@y'},
 ];
+
+
+var testHomerHierarchical = function(classifier) {
+	it('classifies 1-class samples', function() {
+		for (var d=0; d<trainsetHierarchical.length; ++d)
+			classifier.classify(trainsetHierarchical[d].input).should.eql([trainsetHierarchical[d].output]);
+	});
+
+	it('classifies 2-class samples', function() {
+		for (var d=0; d<testsetHierarchical.length; ++d) {
+			classifier.classify(testsetHierarchical[d].input).should.eql(testsetHierarchical[d].output);
+		}
+	});
+	
+	it('classifies 0-class samples', function() {
+		classifier.classify({I:1 , want:1 , nothing:1 }).should.eql([]);
+	});
+	
+	it('knows its classes', function() {
+		classifier.getAllClasses().should.eql(trainsetHierarchical.map(function(datum){return datum.output}));
+	})
+}
 
 var testsetHierarchical = [
 	{input: {I:1 , want:1 , to:1, AA:1, AAA:1, BB:1, cc:1}, output: ['A','B@c']},  // two classes
@@ -115,22 +148,7 @@ describe('Baseline: BR classifier online-trained on single-class hierarchical in
 	for (var i=0; i<=retrain_count; ++i) 
 		for (var d=0; d<trainsetHierarchical.length; ++d)
 			classifierBaseline.trainOnline(trainsetHierarchical[d].input, trainsetHierarchical[d].output);
-
-	it('classifies 1-class samples', function() {
-		for (var d=0; d<trainsetHierarchical.length; ++d)
-			classifierBaseline.classify(trainsetHierarchical[d].input).should.eql([trainsetHierarchical[d].output]);
-	});
-
-	it('classifies 2-class samples', function() {
-		for (var d=0; d<testsetHierarchical.length; ++d) {
-			//if (d==testsetHierarchical.length-1) console.log("baseline: "+util.inspect(classifierBaseline.classify(testsetHierarchical[d].input, 4), {depth:5}));
-			classifierBaseline.classify(testsetHierarchical[d].input).should.eql(testsetHierarchical[d].output);
-		}
-	});
-	
-	it('classifies 0-class samples', function() {
-		classifierBaseline.classify({I:1 , want:1 , nothing:1 }).should.eql([]);
-	});
+	testHomerHierarchical(classifierBaseline);
 })
 
 describe('Homer classifier online-trained on single-class hierarchical inputs', function() {
@@ -138,42 +156,14 @@ describe('Homer classifier online-trained on single-class hierarchical inputs', 
 	for (var i=0; i<=retrain_count; ++i) 
 		for (var d=0; d<trainsetHierarchical.length; ++d)
 			classifierOnline.trainOnline(trainsetHierarchical[d].input, trainsetHierarchical[d].output);
-
-	it('classifies 1-class samples', function() {
-		for (var d=0; d<trainsetHierarchical.length; ++d)
-			classifierOnline.classify(trainsetHierarchical[d].input).should.eql([trainsetHierarchical[d].output]);
-	});
-
-	it('classifies 2-class samples', function() {
-		for (var d=0; d<testsetHierarchical.length; ++d) {
-			classifierOnline.classify(testsetHierarchical[d].input).should.eql(testsetHierarchical[d].output);
-		}
-	});
-
-	it('classifies 0-class samples', function() {
-		classifierOnline.classify({I:1 , want:1 , nothing:1 }).should.eql([]);
-	});
+	testHomerHierarchical(classifierOnline);
 })
 
 
 describe('Homer classifier batch-trained on single-class hierarchical inputs', function() {
 	var classifierBatch = new HomerWinnow();
 	classifierBatch.trainBatch(trainsetHierarchical);
-
-	it('classifies 1-class samples', function() {
-		for (var d=0; d<trainsetHierarchical.length; ++d)
-			classifierBatch.classify(trainsetHierarchical[d].input).should.eql([trainsetHierarchical[d].output]);
-	});
-
-	it('classifies 2-class samples', function() {
-		for (var d=0; d<testsetHierarchical.length; ++d) {
-			classifierBatch.classify(testsetHierarchical[d].input).should.eql(testsetHierarchical[d].output);
-		}
-	});
-
-	it('classifies 0-class samples', function() {
-		classifierBatch.classify({I:1 , want:1 , nothing:1 }).should.eql([]);
-	});
+	testHomerHierarchical(classifierBatch);
 })
 
 describe('Homer Classifier batch-trained on two-class non-hierarchical inputs', function() {

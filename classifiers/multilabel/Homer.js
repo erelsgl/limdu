@@ -214,8 +214,9 @@ Homer.prototype = {
 
 
 	toJSON: function() {
-		//console.log("In toJSON: " +util.inspect(this.root, {depth:1}));
-		return this.toJSONRecursive(this.root);
+		var json = this.toJSONRecursive(this.root);
+		json.allClasses = this.allClasses;
+		return json;
 	},
 	
 	toJSONRecursive: function(treeNode) {
@@ -232,9 +233,8 @@ Homer.prototype = {
 	},
 
 	fromJSON: function(json) {
-		//console.log("In fromJSON: " +util.inspect(json, {depth:1}));
+		this.allClasses = json.allClasses;
 		this.root = this.fromJSONRecursive(json);
-		//console.log(util.inspect(this.root, {depth:4}));
 		return this;
 	},
 	

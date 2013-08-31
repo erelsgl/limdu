@@ -9,18 +9,18 @@ var should = require('should');
 var FeaturesUnit = require('../../features');
 
 describe('word unigram feature extractor', function() {
-	it('should create word unigram features', function() {
+	it('creates word unigram features', function() {
 		var fe = FeaturesUnit.WordsFromText(1);
-		fe("This is a demo, you know?").should.eql({ 'this': 1, is: 1, a: 1, demo: 1, you: 1, know: 1 });
+		fe("This is a demo, you know?").should.eql({ 'This': 1, is: 1, a: 1, demo: 1, you: 1, know: 1 });
 	})
 })
 
 describe('word bigram feature extractor', function() {
-	it('should create word bigram features', function() {
+	it('creates word bigram features', function() {
 		var fe = FeaturesUnit.WordsFromText(2);
 		fe("This is a demo, you know?").should.eql({
-			'[start] this': 1,
-			'this is': 1,
+			'[start] This': 1,
+			'This is': 1,
 			'is a': 1,
 			'a demo': 1,
 			'demo you': 1,
@@ -29,8 +29,21 @@ describe('word bigram feature extractor', function() {
 	});
 })
 
+describe('word trigram-with-gap feature extractor', function() {
+	it('creates word bigram features', function() {
+		var fe = FeaturesUnit.WordsFromText(3, true);
+		fe("This is a demo, you know?").should.eql({
+			'[start] - is': 1,
+			'This - a': 1,
+			'is - demo': 1,
+			'a - you': 1,
+			'demo - know': 1,
+			'you - [end]': 1});
+	});
+})
+
 describe('hypernym extractor', function() {
-	it('should create hypernym features', function() {
+	it('creates hypernym features', function() {
 		var hypernyms = [
 			{regexp: /demo/g, feature: "demonstration", confidence: 0.9}
 		];
@@ -41,7 +54,7 @@ describe('hypernym extractor', function() {
 
 
 describe('letter unigram feature extractor', function() {
-	it('should create letter unigram features', function() {
+	it('creates letter unigram features', function() {
 		var fe = FeaturesUnit.LettersFromText(1);
 		fe("This is a demo, you know?").should.eql({ t: 1,
 		  h: 1,
@@ -66,14 +79,14 @@ describe('letter unigram feature extractor', function() {
 
 
 describe('collection of extractors', function() {
-	it('should create collection of features', function() {
+	it('creates collection of features', function() {
 		var fe = FeaturesUnit.CollectionOfExtractors(
 				[FeaturesUnit.WordsFromText(1), 
 				 FeaturesUnit.WordsFromText(2)])
 		fe("This is a demo, you know?").should.eql({
-			'this': 1, is: 1, a: 1, demo: 1, you: 1, know: 1 ,
-			'[start] this': 1,
-			'this is': 1,
+			'This': 1, is: 1, a: 1, demo: 1, you: 1, know: 1 ,
+			'[start] This': 1,
+			'This is': 1,
 			'is a': 1,
 			'a demo': 1,
 			'demo you': 1,

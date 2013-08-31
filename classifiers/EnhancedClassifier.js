@@ -13,9 +13,9 @@ var hash = require('../utils/hash');
  * * 'featureExtractor' - a single feature-extractor (see the "features" folder), or an array of extractors, for extracting features from training and classification samples.
  * * 'featureExtractorForClassification' - additional feature extractor[s], for extracting features from samples during classification. Used for domain adaptation.
  * * 'featureLookupTable' - an instance of FeatureLookupTable for converting features to numeric indices and back.
- * * 'featureDocumentFrequency' - a hash that counts the number of documents containing each feature, during training
- * * 'normalize_features' - boolean - if true, add a 'bias' feature, and normalize the sum of feature values to 1.
  * * 'multiplyFeaturesByIDF' - boolean - if true, multiply each feature value by log(documentCount / (1+featureDocumentFrequency))
+ * * 'normalize_features' - boolean - if true, add a 'bias' feature, and normalize the sum of feature values to 1.
+ * * 'minFeatureDocumentFrequency' - int - if positive, ignore features that appeared less than this number in the training set.
  * * 'pastTrainingSamples' - an array that keeps all past training samples, to enable retraining.
  * * 'spellChecker' - an initialized 'wordsworth' spell checker, to spell-check features during classification.
  */
@@ -30,9 +30,13 @@ var EnhancedClassifier = function(opts) {
 	this.setFeatureExtractor(opts.featureExtractor);
 	this.setFeatureExtractorForClassification(opts.featureExtractorForClassification);
 	this.featureLookupTable = opts.featureLookupTable;
-	this.featureDocumentFrequency = opts.featureDocumentFrequency;
+	
 	this.multiplyFeaturesByIDF = opts.multiplyFeaturesByIDF;
 	this.normalize_features = opts.normalize_features;
+	this.minFeatureDocumentFrequency = opts.minFeatureDocumentFrequency;
+	if (opts.multiplyFeaturesByIDF||opts.normalize_features||opts.minFeatureDocumentFrequency) 
+		this.featureDocumentFrequency = {};
+	
 	this.spellChecker = opts.spellChecker;
 	this.pastTrainingSamples = opts.pastTrainingSamples;
 	
@@ -154,13 +158,16 @@ EnhancedClassifier.prototype = {
 		if (this.normalize_features) {
 			if (!('bias' in features))
 				features['bias'] = 1;
-			if (remove_unknown_features) {
+			if (remove_unknown_features) 
 				for (var feature in features)
 					if (!(feature in this.featureDocumentFrequency))
 						delete features[feature];
-			}
 			hash.normalize_sum_of_values_to_1(features);
 		}
+		if (remove_unknown_features && this.minFeatureDocumentFrequency>0)
+			for (var feature in features)
+				if ((this.featureDocumentFrequency[feature]||0)<this.minFeatureDocumentFrequency)
+					delete features[feature];
 	},
 	
 

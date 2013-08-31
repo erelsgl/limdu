@@ -38,14 +38,30 @@ MultiLabelPassiveAggressive.prototype = {
 	 * @param averaging boolean 
 	 * @return an array of pairs [category,score], sorted by decreasing score
 	 */
-	predict: function(sample, averaging) {
-		var scores = (averaging? 
-			hash.multiply_scalar(
-				hash.inner_product_matrix(sample, this.weights_sum), 
-				1.0 / this.num_iterations):
-			hash.inner_product_matrix(sample, this.weights)
-			);  // scores is a map: category=>score
+	predict: function(features, averaging, explain) {
+		var weights_for_classification = (averaging? this.weights_sum: this.weights);
+		var scores = {};
+		if (explain>0) var explanations = [];
 		
+//		for (var feature in features) {
+//			if (feature in weights_for_classification) {
+//				var weight = weights_for_classification[feature];
+//				var value = features[feature];
+//				var relevance = value * weight;
+//				score += relevance;
+//				if (explain>0) explanations.push(this.detailed_explanations?
+//						{
+//							feature: feature,
+//							value: value,
+//							weight: weight,
+//							relevance: relevance,
+//						}:
+//						sprintf("%s%+1.2f*%+1.2f=%+1.2f", feature, value, weight, relevance);
+//				);
+//			}
+//		}
+		
+		scores = hash.inner_product_matrix(features, weights_for_classification); // scores is a map: category=>score
 		var scores_vector = _.pairs(scores); // scores_vector is an array of pairs [category,score]
 		scores_vector.sort(function(a,b) {return b[1]-a[1]}); // sort by decreasing score
 		return scores_vector; 
@@ -131,21 +147,23 @@ MultiLabelPassiveAggressive.prototype = {
 	/**
 	 * Use the model trained so far to classify a new sample.
 	 * 
-	 * @param sample a document.
+	 * @param sample a hash {feature1: value1, feature2: value2, ...}.
 	 * @param explain - int - if positive, an "explanation" field, with the given length, should be added to the result.
 	 *  
 	 * @return an array whose VALUES are classes.
 	 */
 	classify : function(sample, explain) {
-		var ranks = this.predict(sample, /*averaging=*/true);
+		var ranks = this.predict(sample, /*averaging=*/true, explain);
 		var results = [];
 		ranks.forEach(function(pair) {
 			if (pair[1]>0)
 				results.push(pair[0]);
 		});
-		return explain?
-			{classification: results, explanation: "no explanation yet"}: 
-			results; 
+		return explain? 	{
+			classes: results, 
+			explanation: ranks.map(function(pair) {return pair[0]+": "+pair[1];})
+		}: 
+		results; 
 	},
 
 	/**
@@ -153,16 +171,16 @@ MultiLabelPassiveAggressive.prototype = {
 	 * samples, so that it will know to add negative samples to classes that do
 	 * not appear.
 	 * 
-	 * @param classes an array whose VALUES are classes.
+	 * @param classes an object whose KEYS are classes, or an array whose VALUES are classes.
 	 */
 	addClasses: function(classes) {
-		var self=this;
-		classes.forEach(function(theClass) {
-			if (!(theClass in self.weights)) {
-				self.weights[theClass]={};
-				self.weights_sum[theClass]={};
+		classes = hash.normalized(classes);
+		for (var aClass in classes) {
+			if (!(aClass in this.weights)) {
+				this.weights[aClass]={};
+				this.weights_sum[aClass]={};
 			}
-		});
+		}
 	},
 
 	getAllClasses: function() {

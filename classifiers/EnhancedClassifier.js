@@ -1,5 +1,6 @@
-var FeaturesUnit = require('../features');
+var ftrs = require('../features');
 var _ = require('underscore')._;
+var hash = require('../utils/hash');
 
 /**
  * EnhancedClassifier - wraps any classifier with feature-extractors and feature-lookup-tables.
@@ -13,6 +14,7 @@ var _ = require('underscore')._;
  * * 'featureExtractorForClassification' - additional feature extractor[s], for extracting features from samples during classification. Used for domain adaptation.
  * * 'featureLookupTable' - an instance of FeatureLookupTable for converting features to numeric indices and back.
  * * 'featureDocumentFrequency' - a hash that counts the number of documents containing each feature, during training
+ * * 'normalize_features' - boolean - if true, add a 'bias' feature, and normalize the sum of feature values to 1.
  * * 'multiplyFeaturesByIDF' - boolean - if true, multiply each feature value by log(documentCount / (1+featureDocumentFrequency))
  * * 'pastTrainingSamples' - an array that keeps all past training samples, to enable retraining.
  * * 'spellChecker' - an initialized 'wordsworth' spell checker, to spell-check features during classification.
@@ -29,7 +31,8 @@ var EnhancedClassifier = function(opts) {
 	this.setFeatureExtractorForClassification(opts.featureExtractorForClassification);
 	this.featureLookupTable = opts.featureLookupTable;
 	this.featureDocumentFrequency = opts.featureDocumentFrequency;
-	this.multiplyFeaturesByIDF = opts.multiplyFeaturesByIDF; 
+	this.multiplyFeaturesByIDF = opts.multiplyFeaturesByIDF;
+	this.normalize_features = opts.normalize_features;
 	this.spellChecker = opts.spellChecker;
 	this.pastTrainingSamples = opts.pastTrainingSamples;
 	
@@ -40,7 +43,7 @@ EnhancedClassifier.prototype = {
 
 	/** Set the main feature extactor, used for both training and classification. */
 	setFeatureExtractor: function (featureExtractor) {
-		this.featureExtractors = FeaturesUnit.normalize(featureExtractor);
+		this.featureExtractors = ftrs.normalize(featureExtractor);
 	},
 	
 	/** Set the main feature extactor, used for both training and classification. */
@@ -57,7 +60,7 @@ EnhancedClassifier.prototype = {
 			} else {
 				featureExtractorForClassification = [this.featureExtractors, featureExtractorForClassification];
 			}
-			this.featureExtractorsForClassification = new FeaturesUnit.CollectionOfExtractors(featureExtractorForClassification);
+			this.featureExtractorsForClassification = new ftrs.CollectionOfExtractors(featureExtractorForClassification);
 		}
 	},
 	
@@ -136,7 +139,7 @@ EnhancedClassifier.prototype = {
 		}
 	},
 	
-	editFeatureValues: function(features) {
+	editFeatureValues: function(features, remove_unknown_features) {
 		if (this.multiplyFeaturesByIDF) { 
 			for (var feature in features) { 
 				var DF = this.featureDocumentFrequency[feature];
@@ -146,6 +149,17 @@ EnhancedClassifier.prototype = {
 				else
 					features[feature] *= Math.log(this.documentCount / (1+this.featureDocumentFrequency[feature]));
 			}
+		}
+		
+		if (this.normalize_features) {
+			if (!('bias' in features))
+				features['bias'] = 1;
+			if (remove_unknown_features) {
+				for (var feature in features)
+					if (!(feature in this.featureDocumentFrequency))
+						delete features[feature];
+			}
+			hash.normalize_sum_of_values_to_1(features);
 		}
 	},
 	
@@ -161,8 +175,8 @@ EnhancedClassifier.prototype = {
 		sample = this.normalizedSample(sample);
 		var features = this.sampleToFeatures(sample, this.featureExtractors);
 		this.countFeatures(features);
-		this.editFeatureValues(features);
 		this.trainSpellChecker(features);
+		this.editFeatureValues(features, /*remove_unknown_features=*/false);
 		var array = this.featuresToArray(features);
 		this.classifier.trainOnline(array, classes);
 		if (this.pastTrainingSamples)
@@ -195,7 +209,7 @@ EnhancedClassifier.prototype = {
 		}, this);
 		//console.dir(this.featureDocumentFrequency);
 		dataset.forEach(function(datum) {
-			this.editFeatureValues(datum.input);
+			this.editFeatureValues(datum.input, /*remove_unknown_features=*/false);
 			if (featureLookupTable)
 				datum.input = featureLookupTable.hashToArray(datum.input);
 		}, this);
@@ -210,8 +224,7 @@ EnhancedClassifier.prototype = {
 	classifyPart: function(sample, explain) {
 		var features = this.sampleToFeatures(sample, this.featureExtractorsForClassification? this.featureExtractorsForClassification: this.featureExtractors);
 		this.correctFeatureSpelling(features);
-		this.editFeatureValues(features);
-		//console.dir("sample="+sample+", features="+JSON.stringify(features));
+		this.editFeatureValues(features, /*remove_unknown_features=*/true);
 		var array = this.featuresToArray(features);
 		var classification = this.classifier.classify(array, explain);
 		if (this.spellChecker && classification.explanation) {

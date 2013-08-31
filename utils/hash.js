@@ -122,7 +122,7 @@ exports.inner_product = function(features, weights) {
  * calculate the vector dot product of the given two hashes.
  * @param features [input] - a hash representing a 1-dimensional vector.
  * @param weights [input] - a hash of hashes, representing a 2-dimensional matrix.
- * @return a hash - for each key of weights, return the dot product of the given row with features.
+ * @return a hash - for each key of weights, return the dot product of the given row with the features vector.
  * @note Usually, there are much less features than weights.
  */
 exports.inner_product_matrix = function(features, weights) {

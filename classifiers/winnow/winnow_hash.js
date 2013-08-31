@@ -25,7 +25,6 @@ function WinnowHash(opts) {
 	this.default_positive_weight = opts.default_positive_weight || 2.0;
 	this.default_negative_weight = opts.default_negative_weight || 1.0;
 	this.do_averaging = opts.do_averaging || false;
-	this.do_normalization = opts.do_normalization || true;
 	this.threshold = opts.threshold || 1;
 	this.promotion = opts.promotion || 1.5;
 	this.demotion = opts.demotion || 0.5;
@@ -59,19 +58,15 @@ WinnowHash.prototype = {
 			this.negative_weights_sum = json.negative_weights_sum;
 		},
 		
-		normalized_features: function (features, remove_unknown_features) {
+		editFeatureValues: function (features, remove_unknown_features) {
 			if (!('bias' in features))
 				features['bias'] = 1;
 			if (remove_unknown_features) {
-				var newFeatures = {};
 				for (var feature in features)
-					if (feature in this.positive_weights)
-						newFeatures[feature]=features[feature];
-				features = newFeatures;
+					if (!(feature in this.positive_weights))
+						delete features[feature];
 			}
-			if (this.do_normalization) 
-				hash.normalize_sum_of_values_to_1(features);
-			return features;
+			hash.normalize_sum_of_values_to_1(features);
 		},
 
 		/**
@@ -80,7 +75,8 @@ WinnowHash.prototype = {
 		 * @return true if the input sample got its correct classification (i.e. no change made).
 		 */
 		train_features: function(features, expected) {
-			if (this.debug) console.log("train_features "+JSON.stringify(features)+" , "+expected);
+			if (this.debug) 
+				console.log("train_features "+JSON.stringify(features)+" , "+expected);
 			for (feature in features) {
 				if (!(feature in this.positive_weights)) 
 					this.positive_weights[feature] = this.default_positive_weight;
@@ -130,8 +126,9 @@ WinnowHash.prototype = {
 		 * @return true if the input sample got its correct classification (i.e. no change made).
 		 */
 		trainOnline: function(features, expected) {
-			return this.train_features(
-				this.normalized_features(features, /*remove_unknown_features=*/false), expected);
+			this.editFeatureValues(features, /*remove_unknown_features=*/false);
+			return this.train_features(features, expected);
+				//this.normalized_features(features, /*remove_unknown_features=*/false), expected);
 		},
 
 		/**
@@ -140,13 +137,14 @@ WinnowHash.prototype = {
 		 * @param dataset an array of samples of the form {input: {feature1: value1...} , output: 0/1} 
 		 */
 		trainBatch: function(dataset) {
-			var normalized_inputs = [];
+//			var normalized_inputs = [];
 			for (var i=0; i<dataset.length; ++i)
-				normalized_inputs[i] = this.normalized_features(dataset[i].input, /*remove_unknown_features=*/false);
+				this.editFeatureValues(dataset[i].input, /*remove_unknown_features=*/false);
+//				normalized_inputs[i] = this.normalized_features(dataset[i].input, /*remove_unknown_features=*/false);
 	
 			for (var r=0; r<=this.retrain_count; ++r)
-				for (var i=0; i<normalized_inputs.length; ++i) 
-					this.train_features(normalized_inputs[i], dataset[i].output);
+				for (var i=0; i<dataset.length; ++i) 
+					this.train_features(dataset[i].input, dataset[i].output);
 		},
 		
 
@@ -164,35 +162,40 @@ WinnowHash.prototype = {
 			for (var feature in features) {
 				if (feature in positive_weights_for_classification) {
 					var positive_weight = positive_weights_for_classification[feature];
+					if (!isFinite(positive_weight)) {
+						console.dir(positive_weights_for_classification);
+						throw new Error("positive_weight["+feature+"]="+positive_weight);
+					}
 					var negative_weight = negative_weights_for_classification[feature];
+					if (!isFinite(negative_weight)) {
+						console.dir(negative_weights_for_classification);
+						throw new Error("negative_weight["+feature+"]="+negative_weight);
+					}
 					var net_weight = positive_weight-negative_weight;
 					var relevance = features[feature] * net_weight;
 					score += relevance;
-					if (explain>0) explanations.push(
+					if (isNaN(score)) 
+						throw new Error("score is NaN! features["+feature+"]="+features[feature]+" net_weight="+positive_weight+"-"+negative_weight+"="+net_weight);
+					if (explain>0) explanations.push(this.detailed_explanations?
 							{
 								feature: feature,
 								value: features[feature],
 								weight: sprintf("+%1.3f-%1.3f=%1.3f",positive_weight,negative_weight,net_weight),
 								relevance: relevance,
-							}
+							}:
+							sprintf("%s%+1.2f", feature, relevance)
 					);
 				}
 			}
-			score -= this.threshold;
 			if (isNaN(score)) 
 				throw new Error("score is NaN! features="+JSON.stringify(features));
+			score -= this.threshold;
 
 			if (this.debug) console.log("> perceive_features ",features," = ",score);
 			var result = (continuous_output? score: (score > 0 ? 1 : 0));
 			if (explain) {
 				explanations.sort(function(a,b){return Math.abs(b.relevance)-Math.abs(a.relevance)});
 				explanations.splice(explain, explanations.length-explain);  // "explain" is the max length of explanation.
-
-				if (!this.detailed_explanations) {
-					explanations = explanations.map(function(explanation) {
-						return sprintf("%s%+1.2f",explanation.feature,explanation.relevance);
-					});
-				}
 				
 				result = {
 					classification: result,
@@ -211,7 +214,11 @@ WinnowHash.prototype = {
 		 * @return the classification of the sample.
 		 */
 		perceive: function(features, continuous_output, explain) {
-			return this.perceive_features(this.normalized_features(features, /*remove_unknown_features=*/true), continuous_output,
+			this.editFeatureValues(features, /*remove_unknown_features=*/true);
+			return this.perceive_features(
+				//this.normalized_features(features, /*remove_unknown_features=*/true),
+				features, 
+				continuous_output,
 				(this.do_averaging? this.positive_weights_sum: this.positive_weights),
 				(this.do_averaging? this.negative_weights_sum: this.negative_weights),
 				explain );

@@ -28,9 +28,7 @@ BinaryRelevance.prototype = {
 	 * samples, so that it will know to add negative samples to classes that do
 	 * not appear.
 	 * 
-	 * @param classes
-	 *            an object whose KEYS are classes, or an array whose VALUES are
-	 *            classes.
+	 * @param classes an object whose KEYS are classes, or an array whose VALUES are classes.
 	 */
 	addClasses: function(classes) {
 		classes = hash.normalized(classes);

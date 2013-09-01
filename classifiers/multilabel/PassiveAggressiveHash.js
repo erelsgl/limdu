@@ -1,11 +1,12 @@
 var hash = require("../../utils/hash");
 var sprintf = require("sprintf").sprintf;
 var _ = require("underscore")._;
+var util = require("util");
 
 
 
 /**
- * MultiLabelPassiveAggressive - Multilabel online classifier based on Perceptron and Passive-Aggressive.
+ * Multilabel online classifier based on Perceptron and Passive-Aggressive.
  *
  * features and categories are strings; samples are hashes.
  *
@@ -28,6 +29,7 @@ var MultiLabelPassiveAggressive = function(opts) {
 	this.weights_sum = {
 		//DUMMY_CLASS:{}
 	};
+	this.seenFeatures = {};
 	this.num_iterations = 0
 }
 
@@ -116,6 +118,8 @@ MultiLabelPassiveAggressive.prototype = {
 		// this.weights_sum = (this.weights + this.weights_sum);
 		for (category in this.weights)
 			hash.add(this.weights_sum[category], this.weights[category]);
+		
+		hash.add(this.seenFeatures, sample);
 		this.num_iterations += 1;
 	},
 
@@ -128,20 +132,21 @@ MultiLabelPassiveAggressive.prototype = {
 	 */
 	trainBatch : function(dataset) {
 		// preprocessing: add all the classes in the dataset to the weights vector;
-		var self=this;
 		dataset.forEach(function(datum) {
-			self.addClasses(datum.output);
-		});
+			this.addClasses(datum.output);
+			this.editFeatureValues(datum.input, /*remove_unknown_features=*/false);
+		}, this);
 
 		for (var i=0; i<this.retrain_count; ++i)
 			dataset.forEach(function(datum) {
-				self.update(datum.input, datum.output);
-			});
+				this.update(datum.input, datum.output);
+			}, this);
 	},
 	
-	trainOnline: function(sample, classes) {
+	trainOnline: function(features, classes) {
 		this.addClasses(classes);
-		this.update(sample, classes);
+		this.editFeatureValues(features, /*remove_unknown_features=*/false);
+		this.update(features, classes);
 	},
 
 	/**
@@ -152,8 +157,9 @@ MultiLabelPassiveAggressive.prototype = {
 	 *  
 	 * @return an array whose VALUES are classes.
 	 */
-	classify : function(sample, explain) {
-		var ranks = this.predict(sample, /*averaging=*/true, explain);
+	classify : function(features, explain) {
+		this.editFeatureValues(features, /*remove_unknown_features=*/true);
+		var ranks = this.predict(features, /*averaging=*/true, explain);
 		var results = [];
 		ranks.forEach(function(pair) {
 			if (pair[1]>0)
@@ -166,6 +172,25 @@ MultiLabelPassiveAggressive.prototype = {
 		results; 
 	},
 
+	
+	/**
+	 * Copied from Modified Balanced Winnow (see winnow/winnow_hash.js).
+	 * Commented out, because it is unuseful here.
+	 */
+	editFeatureValues: function (features, remove_unknown_features) {
+//		console.log("before: "+util.inspect(features));
+//		if (!('bias' in features))
+//			features['bias'] = 1.0;
+//		if (remove_unknown_features) {
+//			for (var feature in features)
+//				if (!(feature in this.seenFeatures))
+//					delete features[feature];
+//		}
+//		hash.normalize_sum_of_values_to_1(features);
+//		console.log("after: "+util.inspect(features));
+	},
+
+	
 	/**
 	 * Tell the classifier that the given classes will be used for the following
 	 * samples, so that it will know to add negative samples to classes that do

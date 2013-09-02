@@ -7,7 +7,7 @@
 
 var should = require('should');
 var classifiers = require('../../../classifiers');
-var FeaturesUnit = require('../../../features');
+var ftrs = require('../../../features');
 
 describe('baseline - classifier without a splitter', function() {
 	it('should not classify long sentencs', function() {
@@ -17,7 +17,7 @@ describe('baseline - classifier without a splitter', function() {
 					retrain_count: 1
 				}),
 			}),
-			featureExtractor: FeaturesUnit.WordsFromText(1),
+			featureExtractor: ftrs.WordsFromText(1),
 			inputSplitter: null,
 		});
 		
@@ -42,8 +42,8 @@ describe('classifier with a splitter', function() {
 					retrain_count: 3
 				}),
 			}),
-			featureExtractor: FeaturesUnit.WordsFromText(1),
-			inputSplitter: FeaturesUnit.RegexpSplitter(/[.,;?!]|and/i),
+			featureExtractor: ftrs.WordsFromText(1),
+			inputSplitter: ftrs.RegexpSplitter("[.,;?!]|and"),
 		});
 		
 		classifier.trainBatch([

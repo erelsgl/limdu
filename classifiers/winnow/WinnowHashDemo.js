@@ -6,7 +6,7 @@
  */
 
 console.log("Winnow demo start");
-var Winnow = require('./winnow_hash');
+var Winnow = require('./WinnowHash');
 
 var classifier = new Winnow({
 	retrain_count: 0,

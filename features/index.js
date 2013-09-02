@@ -8,6 +8,7 @@ module.exports = {
 	RegexpNormalizer: require("./RegexpNormalizer"),
 	LowerCaseNormalizer: require("./LowerCaseNormalizer"),
 	RegexpSplitter: require("./RegexpSplitter"),
+	LastLetterExtractor: require("./LastLetterExtractor"),
 }
 
 

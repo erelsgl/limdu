@@ -8,9 +8,10 @@
         "url": "https://github.com/erelsgl/machine-learning.git"
     },
     "dependencies" : {
-        "underscore" : ">=1.1.0",
+        "underscore" : "*",
         "sprintf": "*",
         "wordsworth": "*",
+        "temp": "*",
         "graph-paths": "*"
     },
     "devDependencies" : {

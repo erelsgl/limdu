@@ -5,8 +5,8 @@ module.exports = {
 	SVM: require('./svmjs/lib/svm').SVM,
 	//BayesClassifier: require('./apparatus/lib/apparatus/classifier/bayes_classifier'),
 	//LogisticRegressionClassifier: require('./apparatus/lib/apparatus/classifier/logistic_regression_classifier'),
-	Perceptron: require('./perceptron/perceptron_hash'),
-	Winnow: require('./winnow/winnow_hash'),
+	Perceptron: require('./perceptron/PerceptronHash'),
+	Winnow: require('./winnow/WinnowHash'),
 
 	multilabel: require('./multilabel'),
 	

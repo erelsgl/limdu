@@ -1,5 +1,5 @@
 /**
- * a unit-test for Multi-Label classification
+ * a unit-test for feature lookup tables
  * 
  * @author Erel Segal-Halevi
  * @since 2013-08

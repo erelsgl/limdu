@@ -13,17 +13,23 @@
  * @param opts options: <ul>
  *	<li>learn_args - a string with arguments for svm_perf_learn 
  *  <li>classify_args - a string with arguments for svm_perf_classify
+ *  <li>model_file_prefix - prefix to path to model file.
+ *  <li>continuous_output - if true, classify returns a numeric output; if false, it returns 0/1
  */
 
 function SvmPerf(opts) {
-	opts.learn_args = opts.learn_args || "";
-	opts.classify_args = opts.classify_args || "";
+	this.learn_args = opts.learn_args || "";
+	this.classify_args = opts.classify_args || "";
+	this.model_file_prefix = opts.model_file_prefix || "svmperf-temp";
+	this.continuous_output = opts.continuous_output || false;
 }
 
-var temp = require('temp'),
-    fs   = require('fs'),
-    util  = require('util'),
-    exec = require('child_process').exec;
+var temp = require('temp')
+  , fs   = require('fs')
+  , util  = require('util')
+  , execSync = require('execSync').exec
+  , exec = require('child_process').exec
+  ;
 
 SvmPerf.prototype = {
 		trainOnline: function(features, expected) {
@@ -36,18 +42,43 @@ SvmPerf.prototype = {
 		 * @param dataset an array of samples of the form {input: [value1, value2, ...] , output: 0/1} 
 		 */
 		trainBatch: function(dataset) {
-			temp.open({prefix:'svmperf',suffix:".learn"}, function(err, tempFile) {
-				for (var i=0; i<dataset.length; ++i) { 
-					if (i>0) fs.write("\n");
-					fs.write(tempFile.fd, dataset[i].output>0? "1": "-1"); // in svm-perf, the output comes first:
-					fs.write(tempFile.fd, featureArrayToFeatureString(dataset[i].input));
-				};
+			var self = this;
+			if (this.model_file_prefix) {
+				var learnFile = this.model_file_prefix+".learn";
+				var fd = fs.openSync(learnFile, 'w');
+			} else {
+				var tempFile = temp.openSync({prefix:'svmperf-',suffix:".learn"});
+				var learnFile = tempFile.path;
+				var fd = tempFile.fd;
+			}
+			
+			var lines = "";
+			for (var i=0; i<dataset.length; ++i) {
+				var line = (i>0? "\n": "") + 
+					(dataset[i].output>0? "1": "-1") +  // in svm-perf, the output comes first:
+					featureArrayToFeatureString(dataset[i].input)
+					;
+				fs.writeSync(fd, line);
+			};
+			fs.closeSync(fd);
+
+			self.modelFile = learnFile.replace(/[.]learn/,".model");
+			var command = "svm_perf_learn "+self.learn_args+" "+learnFile + " "+self.modelFile;
+			//console.log("running "+command);
+	
+			var result = execSync(command);
+			if (result.code>0) {
+				console.dir(result);
+				throw new Error("cannot execute "+command);
+			}
 				
-				fs.close(tempFile.fd, function(err) {
-					this.modelFile = tempFile.path+".model";
-					exec("svm_perf_learn "+this.learn_args+" "+tempFile.path + " "+this.modelFile);
-				});
-			});
+//			exec(command, function (error, stdout, stderr) {
+//				if (error)
+//					throw new Error("cannot execute "+command+": "+error);
+//				console.log(stdout);
+//				console.error(stderr);
+//				//console.log(fs.readFileSync(self.modelFile, "utf-8"));
+//			});
 		},
 		
 		
@@ -58,14 +89,36 @@ SvmPerf.prototype = {
 		 * @return the binary classification - 0 or 1.
 		 */
 		classify: function(features, explain) {
-			temp.open({prefix:'svmperf',suffix:".classify"}, function(err, tempFile) {
-				fs.write(tempFile.fd, "0");
-				fs.write(tempFile.fd, featureArrayToFeatureString(features));
-				
-				fs.close(tempFile.fd, function(err) {
-					exec("svm_perf_classify "+this.classify_args+" "+tempFile.path + " "+this.modelFile);
-				});
-			});
+			var self = this;
+			
+			if (this.model_file_prefix) {
+				var classifyFile = this.model_file_prefix+".classify";
+				var fd = fs.openSync(classifyFile, 'w');
+			} else {
+				var tempFile = temp.openSync({prefix:'svmperf-',suffix:".classify"});
+				var classifyFile = tempFile.path;
+				var fd = tempFile.fd;
+			}
+
+			fs.writeSync(fd, "0"+featureArrayToFeatureString(features)+"\n");
+			fs.closeSync(fd);
+
+			var predictionsFile = classifyFile.replace(/[.]classify/,".predictions");
+			var command = "svm_perf_classify "+self.classify_args+" "+classifyFile + " "+self.modelFile+" "+predictionsFile;
+			//console.log("running "+command);
+			
+			var result = execSync(command);
+			if (result.code>0) {
+				console.dir(result);
+				throw new Error("cannot execute "+command);
+			}
+			
+			var predictionString = fs.readFileSync(predictionsFile, "utf-8");
+			var prediction = parseFloat(predictionString);
+			//console.log(predictionString+" "+prediction)
+			if (isNaN(prediction))
+				throw new Error("Cannot parse '"+predictionString+"'")
+			return this.continuous_output? prediction: (prediction>0? 1: 0);
 		},
 };
 
@@ -79,10 +132,10 @@ SvmPerf.prototype = {
  */
 function featureArrayToFeatureString(features) {
 	var line = "";
-	for (var feature=0; feature<datum.input.length; ++feature) {
-		var value = datum.input[feature];
+	for (var feature=0; feature<features.length; ++feature) {
+		var value = features[feature];
 		if (value)
-			line += (" "+feature+":"+value);
+			line += (" "+(feature+1)+":"+value);
 	}
 	return line;
 }

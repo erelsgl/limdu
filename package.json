@@ -12,6 +12,7 @@
         "sprintf": "*",
         "wordsworth": "*",
         "temp": "*",
+        "execSync": "*",
         "graph-paths": "*"
     },
     "devDependencies" : {

@@ -13,7 +13,7 @@
 module.exports = function(numOfWords, gap) {
 	return function(sample, features) {
 		
-		var words = sample.split(/[ \t,;.!?]/).filter(function(a){return !!a}); // all non-empty words
+		var words = sample.split(/[ \t,;:.!?]/).filter(function(a){return !!a}); // all non-empty words
 
 		for (var i=0; i<numOfWords-1-(gap?1:0); ++i) {
 			words.unshift("[start]");

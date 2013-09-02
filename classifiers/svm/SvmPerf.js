@@ -22,6 +22,7 @@ function SvmPerf(opts) {
 	this.classify_args = opts.classify_args || "";
 	this.model_file_prefix = opts.model_file_prefix || "svmperf-temp";
 	this.continuous_output = opts.continuous_output || false;
+	this.debug = opts.debug||false;
 }
 
 var temp = require('temp')
@@ -30,6 +31,8 @@ var temp = require('temp')
   , execSync = require('execSync').exec
   , exec = require('child_process').exec
   ;
+
+
 
 SvmPerf.prototype = {
 		trainOnline: function(features, expected) {
@@ -42,6 +45,7 @@ SvmPerf.prototype = {
 		 * @param dataset an array of samples of the form {input: [value1, value2, ...] , output: 0/1} 
 		 */
 		trainBatch: function(dataset) {
+			if (this.debug) console.log("trainBatch start");
 			var self = this;
 			if (this.model_file_prefix) {
 				var learnFile = this.model_file_prefix+".learn";
@@ -58,27 +62,27 @@ SvmPerf.prototype = {
 					(dataset[i].output>0? "1": "-1") +  // in svm-perf, the output comes first:
 					featureArrayToFeatureString(dataset[i].input)
 					;
+				if (dataset.length==1)
+					line += "\n";
 				fs.writeSync(fd, line);
 			};
 			fs.closeSync(fd);
 
 			self.modelFile = learnFile.replace(/[.]learn/,".model");
 			var command = "svm_perf_learn "+self.learn_args+" "+learnFile + " "+self.modelFile;
-			//console.log("running "+command);
+			if (this.debug) console.log("running "+command);
 	
 			var result = execSync(command);
 			if (result.code>0) {
 				console.dir(result);
 				throw new Error("cannot execute "+command);
 			}
-				
-//			exec(command, function (error, stdout, stderr) {
-//				if (error)
-//					throw new Error("cannot execute "+command+": "+error);
-//				console.log(stdout);
-//				console.error(stderr);
-//				//console.log(fs.readFileSync(self.modelFile, "utf-8"));
-//			});
+			
+			var modelString = fs.readFileSync(self.modelFile, "utf-8");
+			this.modelMap = modelStringToModelMap(modelString);
+			console.dir(this.modelMap);
+			
+			if (this.debug) console.log("trainBatch end");
 		},
 		
 		
@@ -105,7 +109,7 @@ SvmPerf.prototype = {
 
 			var predictionsFile = classifyFile.replace(/[.]classify/,".predictions");
 			var command = "svm_perf_classify "+self.classify_args+" "+classifyFile + " "+self.modelFile+" "+predictionsFile;
-			//console.log("running "+command);
+			//if (this.debug) console.log("running "+command);
 			
 			var result = execSync(command);
 			if (result.code>0) {
@@ -139,6 +143,41 @@ function featureArrayToFeatureString(features) {
 	}
 	return line;
 }
+
+
+var SVM_PERF_MODEL_PATTERN = new RegExp(
+		//"(?s)"+  // single string option (. matches newline)
+		//"(?m)"+  // multiline option (^ matches at start of line)
+		"[\\S\\s]*"+    // skip the beginning of string
+		"^([\\S\\s]*) # threshold b[\\S\\s]*"+  // parse the threshold line
+		"^([\\S\\s]*) #[\\S\\s]*" + // parse the weights line
+		"", "m");
+
+function modelStringToModelMap(modelString) {
+	var matches = SVM_PERF_MODEL_PATTERN.exec(modelString);
+	if (!matches) {
+		console.log(modelString);
+		throw new Error("Model does not match SVM-perf format");
+	};
+	var threshold = parseFloat(matches[1]);
+	var featuresAndWeights = matches[2].split(" ");
+	var mapFeatureToWeight = {};
+	mapFeatureToWeight[0] = threshold;
+	//String alphaTimesY = featuresAndWeights[0]; // always 1 in svmperf
+	for (var i=1; i<featuresAndWeights.length; ++i) {
+		var featureAndWeight = featuresAndWeights[i];
+		var featureWeight = featureAndWeight.split(":");
+		if (featureWeight.length!=2)
+			throw new Error("Model featureAndWeight doesn't match svm-perf pattern: featureAndWeight="+featureAndWeight);
+		var feature = parseInt(featureWeight[0]);
+		if (feature<=0)
+			throw new IllegalArgumentException("Non-positive feature id: featureAndWeight="+featureAndWeight);
+		var weight = parseFloat(featureWeight[1]);
+		mapFeatureToWeight[feature]=weight;
+	}
+	return mapFeatureToWeight;
+}
+
 
 module.exports = SvmPerf;
 

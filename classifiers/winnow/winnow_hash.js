@@ -202,6 +202,12 @@ WinnowHash.prototype = {
 				explanations.sort(function(a,b){return Math.abs(b.relevance)-Math.abs(a.relevance)});
 				explanations.splice(explain, explanations.length-explain);  // "explain" is the max length of explanation.
 				
+				if (!this.detailed_explanations) {
+					explanations = explanations.map(function(e) {
+						return sprintf("%s%+1.2f", e.feature, e.relevance);
+					});
+				}
+				
 				result = {
 					classification: result,
 					explanation: explanations,

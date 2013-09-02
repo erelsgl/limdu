@@ -181,14 +181,13 @@ WinnowHash.prototype = {
 					score += relevance;
 					if (isNaN(score)) 
 						throw new Error("score is NaN! features["+feature+"]="+value+" net_weight="+positive_weight+"-"+negative_weight+"="+net_weight);
-					if (explain>0) explanations.push(this.detailed_explanations?
+					if (explain>0) explanations.push(
 							{
 								feature: feature,
 								value: value,
 								weight: sprintf("+%1.3f-%1.3f=%1.3f",positive_weight,negative_weight,net_weight),
 								relevance: relevance,
-							}:
-							sprintf("%s%+1.2f", feature, relevance)
+							}
 					);
 				}
 			}

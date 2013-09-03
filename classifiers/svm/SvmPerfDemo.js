@@ -15,7 +15,8 @@ var svm = new SvmPerf(
 		learn_args: "-c 20.0", 
 		classify_args: "", 
 		model_file_prefix: "demofiles/SvmPerfDemo",
-		continuous_output:false}
+		continuous_output:false,
+		debug:false}
 );
 svm.trainBatch(trainSet);
 

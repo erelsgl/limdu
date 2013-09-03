@@ -62,10 +62,10 @@ SvmPerf.prototype = {
 					(dataset[i].output>0? "1": "-1") +  // in svm-perf, the output comes first:
 					featureArrayToFeatureString(dataset[i].input)
 					;
-				if (dataset.length==1)
-					line += "\n";
 				fs.writeSync(fd, line);
 			};
+			if (dataset.length==1)
+				fs.writeSync(fd, "\n");
 			fs.closeSync(fd);
 
 			self.modelFile = learnFile.replace(/[.]learn/,".model");
@@ -80,8 +80,8 @@ SvmPerf.prototype = {
 			
 			var modelString = fs.readFileSync(self.modelFile, "utf-8");
 			this.modelMap = modelStringToModelMap(modelString);
-			console.dir(this.modelMap);
 			
+			if (this.debug) console.dir(this.modelMap);
 			if (this.debug) console.log("trainBatch end");
 		},
 		
@@ -93,36 +93,8 @@ SvmPerf.prototype = {
 		 * @return the binary classification - 0 or 1.
 		 */
 		classify: function(features, explain) {
-			var self = this;
-			
-			if (this.model_file_prefix) {
-				var classifyFile = this.model_file_prefix+".classify";
-				var fd = fs.openSync(classifyFile, 'w');
-			} else {
-				var tempFile = temp.openSync({prefix:'svmperf-',suffix:".classify"});
-				var classifyFile = tempFile.path;
-				var fd = tempFile.fd;
-			}
-
-			fs.writeSync(fd, "0"+featureArrayToFeatureString(features)+"\n");
-			fs.closeSync(fd);
-
-			var predictionsFile = classifyFile.replace(/[.]classify/,".predictions");
-			var command = "svm_perf_classify "+self.classify_args+" "+classifyFile + " "+self.modelFile+" "+predictionsFile;
-			//if (this.debug) console.log("running "+command);
-			
-			var result = execSync(command);
-			if (result.code>0) {
-				console.dir(result);
-				throw new Error("cannot execute "+command);
-			}
-			
-			var predictionString = fs.readFileSync(predictionsFile, "utf-8");
-			var prediction = parseFloat(predictionString);
-			//console.log(predictionString+" "+prediction)
-			if (isNaN(prediction))
-				throw new Error("Cannot parse '"+predictionString+"'")
-			return this.continuous_output? prediction: (prediction>0? 1: 0);
+			var score = classifyWithModelMap(features, this.modelMap);
+			return this.continuous_output? score: (score>0? 1: 0);
 		},
 };
 
@@ -153,6 +125,11 @@ var SVM_PERF_MODEL_PATTERN = new RegExp(
 		"^([\\S\\s]*) #[\\S\\s]*" + // parse the weights line
 		"", "m");
 
+/**
+ * A utility that converts a model in the SVMPerf format to a map of feature weights.
+ * @param modelString a string.
+ * @returns a map.
+ */
 function modelStringToModelMap(modelString) {
 	var matches = SVM_PERF_MODEL_PATTERN.exec(modelString);
 	if (!matches) {
@@ -162,7 +139,7 @@ function modelStringToModelMap(modelString) {
 	var threshold = parseFloat(matches[1]);
 	var featuresAndWeights = matches[2].split(" ");
 	var mapFeatureToWeight = {};
-	mapFeatureToWeight[0] = threshold;
+	mapFeatureToWeight.threshold = threshold;
 	//String alphaTimesY = featuresAndWeights[0]; // always 1 in svmperf
 	for (var i=1; i<featuresAndWeights.length; ++i) {
 		var featureAndWeight = featuresAndWeights[i];
@@ -173,9 +150,28 @@ function modelStringToModelMap(modelString) {
 		if (feature<=0)
 			throw new IllegalArgumentException("Non-positive feature id: featureAndWeight="+featureAndWeight);
 		var weight = parseFloat(featureWeight[1]);
-		mapFeatureToWeight[feature]=weight;
+		mapFeatureToWeight[feature-1]=weight;   // start feature values from 0
 	}
 	return mapFeatureToWeight;
+}
+
+/**
+ * A utility that classifies a given sample (given as a feature-value map) using a model (given as a feature-weight map).
+ * @param features a map {feature_i: value_i, ....} (i >= 1)
+ * @param modelMap a map {threshold: threshold, feature_i: weight_i, ....} (i >= 1)
+ * @returns a classification value.
+ */
+function classifyWithModelMap(features, modelMap) {
+	if (!('threshold' in modelMap))
+		throw new IllegalArgumentException("Model doesn't contain the thershold value! "+JSON.stringify(modelMap));
+	
+	var result = -modelMap.threshold;
+	for (var feature in features) {
+		if (feature in modelMap)
+			result += modelMap[feature]*features[feature];
+	}
+
+	return result;
 }
 
 

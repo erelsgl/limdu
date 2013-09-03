@@ -20,7 +20,7 @@
 function SvmPerf(opts) {
 	this.learn_args = opts.learn_args || "";
 	this.classify_args = opts.classify_args || "";
-	this.model_file_prefix = opts.model_file_prefix || "svmperf-temp";
+	this.model_file_prefix = opts.model_file_prefix || null; //"svmperf-temp";
 	this.continuous_output = opts.continuous_output || false;
 	this.debug = opts.debug||false;
 }

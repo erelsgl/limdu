@@ -224,12 +224,3 @@ var normalizeClasses = function (expectedClasses) {
 	expectedClasses.sort();
 	return expectedClasses;
 }
-
-/**
- * Write the dataset, one sample per line, with the given separator between sample and output. 
- */
-module.exports.writeDataset = function(dataset, separator) {
-	dataset.forEach(function(sample) {
-		console.log(JSON.stringify(sample.input)+separator+"["+sample.output+"]");
-	});
-}

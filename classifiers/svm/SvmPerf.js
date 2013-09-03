@@ -11,7 +11,7 @@
  * @since 2013-09-02
  * 
  * @param opts options: <ul>
- *	<li>learn_args - a string with arguments for svm_perf_learn 
+ *	<li>learn_args - a string with arguments for svm_perf_learn  (see http://www.cs.cornell.edu/people/tj/svm_light/svm_perf.html )
  *  <li>classify_args - a string with arguments for svm_perf_classify
  *  <li>model_file_prefix - prefix to path to model file.
  *  <li>continuous_output - if true, classify returns a numeric output; if false, it returns 0/1
@@ -30,6 +30,7 @@ var temp = require('temp')
   , util  = require('util')
   , execSync = require('execSync').exec
   , exec = require('child_process').exec
+  , svmlight = require('../../formats/svmlight')
   ;
 
 
@@ -55,17 +56,7 @@ SvmPerf.prototype = {
 				var learnFile = tempFile.path;
 				var fd = tempFile.fd;
 			}
-			
-			var lines = "";
-			for (var i=0; i<dataset.length; ++i) {
-				var line = (i>0? "\n": "") + 
-					(dataset[i].output>0? "1": "-1") +  // in svm-perf, the output comes first:
-					featureArrayToFeatureString(dataset[i].input)
-					;
-				fs.writeSync(fd, line);
-			};
-			if (dataset.length==1)
-				fs.writeSync(fd, "\n");
+			fs.writeSync(fd, svmlight.toSvmLight(dataset));
 			fs.closeSync(fd);
 
 			self.modelFile = learnFile.replace(/[.]learn/,".model");
@@ -75,7 +66,8 @@ SvmPerf.prototype = {
 			var result = execSync(command);
 			if (result.code>0) {
 				console.dir(result);
-				throw new Error("cannot execute "+command);
+				console.log(fs.readFileSync(learnFile, 'utf-8'));
+				throw new Error("cannot execute: "+command);
 			}
 			
 			var modelString = fs.readFileSync(self.modelFile, "utf-8");
@@ -102,19 +94,6 @@ SvmPerf.prototype = {
 /*
  * UTILS
  */
-
-/**
- * convert an array of features to a single line in SVM-perf format. The line starts with a space.
- */
-function featureArrayToFeatureString(features) {
-	var line = "";
-	for (var feature=0; feature<features.length; ++feature) {
-		var value = features[feature];
-		if (value)
-			line += (" "+(feature+1)+":"+value);
-	}
-	return line;
-}
 
 
 var SVM_PERF_MODEL_PATTERN = new RegExp(

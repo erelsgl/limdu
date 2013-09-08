@@ -11,9 +11,10 @@
         "underscore" : "*",
         "sprintf": "*",
         "wordsworth": "*",
+        "graph-paths": "*",
         "temp": "*",
         "execSync": "*",
-        "graph-paths": "*"
+        "svm": "*"
     },
     "devDependencies" : {
         "mocha"  : ">=1.0.0",

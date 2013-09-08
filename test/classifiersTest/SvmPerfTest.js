@@ -1,5 +1,5 @@
 /**
- * a unit-test for winnow classifier
+ * a unit-test for SvmPerf classifier
  * 
  * @author Erel Segal-Halevi
  * @since 2013-08

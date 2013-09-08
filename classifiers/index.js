@@ -2,8 +2,10 @@ module.exports = {
 	// basic classifiers:
 	NeuralNetwork: require('./brain/lib/neuralnetwork').NeuralNetwork,
 	Bayesian: require('./bayesian/bayesian'),
-	SVM: require('./svmjs/lib/svm').SVM,
+
 	SvmPerf: require('./svm/SvmPerf'),
+	SvmJs: require('./svm/SvmJs'),
+	
 	//BayesClassifier: require('./apparatus/lib/apparatus/classifier/bayes_classifier'),
 	//LogisticRegressionClassifier: require('./apparatus/lib/apparatus/classifier/logistic_regression_classifier'),
 	Perceptron: require('./perceptron/PerceptronHash'),

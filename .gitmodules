@@ -1,6 +1,3 @@
-[submodule "classifiers/svmjs"]
-	path = classifiers/svmjs
-	url = git://github.com/erelsgl/svmjs.git
 [submodule "classifiers/brain"]
 	path = classifiers/brain
 	url = git://github.com/erelsgl/brain.git

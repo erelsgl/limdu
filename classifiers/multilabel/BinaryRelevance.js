@@ -24,41 +24,21 @@ var BinaryRelevance = function(opts) {
 BinaryRelevance.prototype = {
 
 	/**
-	 * Tell the classifier that the given classes will be used for the following
-	 * samples, so that it will know to add negative samples to classes that do
-	 * not appear.
-	 * 
-	 * @param classes an object whose KEYS are classes, or an array whose VALUES are classes.
-	 */
-	addClasses: function(classes) {
-		classes = hash.normalized(classes);
-		for (var aClass in classes) {
-			if (!this.mapClassnameToClassifier[aClass]) {
-				this.mapClassnameToClassifier[aClass] = new this.binaryClassifierType();
-			}
-		}
-	},
-	
-	getAllClasses: function() {
-		return Object.keys(this.mapClassnameToClassifier);
-	},
-
-	/**
-	 * Tell the classifier that the given sample belongs to the given classes.
+	 * Tell the classifier that the given sample belongs to the given labels.
 	 * 
 	 * @param sample
 	 *            a document.
-	 * @param classes
-	 *            an object whose KEYS are classes, or an array whose VALUES are classes.
+	 * @param labels
+	 *            an object whose KEYS are labels, or an array whose VALUES are labels.
 	 */
-	trainOnline: function(sample, classes) {
-		classes = hash.normalized(classes);
-		for ( var positiveClass in classes) {
+	trainOnline: function(sample, labels) {
+		labels = hash.normalized(labels);
+		for ( var positiveClass in labels) {
 			this.makeSureClassifierExists(positiveClass);
 			this.mapClassnameToClassifier[positiveClass].trainOnline(sample, 1);
 		}
 		for ( var negativeClass in this.mapClassnameToClassifier) {
-			if (!classes[negativeClass])
+			if (!labels[negativeClass])
 				this.mapClassnameToClassifier[negativeClass].trainOnline(sample, 0);
 		}
 	},
@@ -80,8 +60,8 @@ BinaryRelevance.prototype = {
 			//console.dir(dataset[i]);
 			dataset[i].output = hash.normalized(dataset[i].output);
 
-			var classes = dataset[i].output;
-			for ( var positiveClass in classes) {
+			var labels = dataset[i].output;
+			for ( var positiveClass in labels) {
 				this.makeSureClassifierExists(positiveClass);
 				if (!(positiveClass in mapClassnameToDataset)) // make sure dataset for this class exists
 					mapClassnameToDataset[positiveClass] = [];
@@ -92,14 +72,14 @@ BinaryRelevance.prototype = {
 			}
 		}
 
-		// create negative samples for each class (after all classes are in the  array):
+		// create negative samples for each class (after all labels are in the  array):
 		for ( var i = 0; i < dataset.length; ++i) {
 			var sample = dataset[i].input;
-			var classes = dataset[i].output;
+			var labels = dataset[i].output;
 			for ( var negativeClass in this.mapClassnameToClassifier) {
 				if (!(negativeClass in mapClassnameToDataset)) // make sure dataset for this class exists
 					mapClassnameToDataset[negativeClass] = [];
-				if (!classes[negativeClass])
+				if (!labels[negativeClass])
 					mapClassnameToDataset[negativeClass].push({
 						input : sample,
 						output : 0
@@ -108,10 +88,10 @@ BinaryRelevance.prototype = {
 		}
 
 		// train all classifiers:
-		for (var aClass in mapClassnameToDataset) {
-			//console.dir("TRAIN class="+aClass);
-			this.mapClassnameToClassifier[aClass]
-					.trainBatch(mapClassnameToDataset[aClass]);
+		for (var label in mapClassnameToDataset) {
+			//console.dir("TRAIN class="+label);
+			this.mapClassnameToClassifier[label]
+					.trainBatch(mapClassnameToDataset[label]);
 		}
 	},
 
@@ -120,74 +100,97 @@ BinaryRelevance.prototype = {
 	 * 
 	 * @param sample a document.
 	 * @param explain - int - if positive, an "explanation" field, with the given length, will be added to the result.
+	 * @param withScores - boolean - if true, return an array of [class,score], ordered by decreasing order of score.
 	 *  
-	 * @return an array whose VALUES are classes.
+	 * @return an array whose VALUES are the labels.
 	 */
-	classify: function(sample, explain) {
-		var classes = {};
+	classify: function(sample, explain, withScores) {
+		var labels = [];
 		if (explain>0) {
 			var positive_explanations = {};
 			var negative_explanations = {};
 		}
-		for (var aClass in this.mapClassnameToClassifier) {
-			var classifier = this.mapClassnameToClassifier[aClass];
-			//console.log("   classify before sample="+Object.keys(sample));
+		for (var label in this.mapClassnameToClassifier) {
+			var classifier = this.mapClassnameToClassifier[label];
 			var classification = classifier.classify(sample, explain);
-			//console.log("   classify after  sample="+Object.keys(sample));
-			if (classification.explanation) {
+			var score = classification.classification || classification;
+			if (withScores) {
+				labels.push([label, score]);
+			} else if (score>0.5) {
+				labels.push(label);
+			}
+			if (classification.explanation && explain>0) {
 				var explanations_string = classification.explanation.reduce(function(a,b) {
 					return a + " " + b;
 				}, "");
 				if (classification.classification > 0.5) {
-					classes[aClass] = true;
-					if (explain>0) positive_explanations[aClass]=explanations_string;
+					positive_explanations[label]=explanations_string;
 				} else {
-					if (explain>0) negative_explanations[aClass]=explanations_string;
+					negative_explanations[label]=explanations_string;
 				}
-			} else {
-				if (classification > 0.5)
-					classes[aClass] = true;
 			}
 		}
-		classes = Object.keys(classes);
+		if (withScores) {
+			labels.sort(function(pair1, pair2) {return pair2[1]-pair1[1]});
+		}
 		return (explain>0?
 			{
-				classes: classes, 
+				classes: labels, 
 				explanation: {
 					positive: positive_explanations, 
 					negative: negative_explanations,
 				}
 			}:
-			classes);
+			labels);
+	},
+
+	/**
+	 * Tell the classifier that the given labels will be used for the following
+	 * samples, so that it will know to add negative samples to labels that do
+	 * not appear.
+	 * 
+	 * @param labels an object whose KEYS are labels, or an array whose VALUES are labels.
+	 */
+	addClasses: function(labels) {
+		labels = hash.normalized(labels);
+		for (var label in labels) {
+			if (!this.mapClassnameToClassifier[label]) {
+				this.mapClassnameToClassifier[label] = new this.binaryClassifierType();
+			}
+		}
+	},
+	
+	getAllClasses: function() {
+		return Object.keys(this.mapClassnameToClassifier);
 	},
 
 	toJSON : function(callback) {
 		var result = {};
-		for ( var aClass in this.mapClassnameToClassifier) {
-			var binaryClassifier = this.mapClassnameToClassifier[aClass];
+		for ( var label in this.mapClassnameToClassifier) {
+			var binaryClassifier = this.mapClassnameToClassifier[label];
 			if (!binaryClassifier.toJSON) {
 				console.dir(binaryClassifier);
 				console.log("prototype: ");
 				console.dir(binaryClassifier.__proto__);
 				throw new Error("this binary classifier does not have a toJSON function");
 			}
-			result[aClass] = binaryClassifier.toJSON(callback);
+			result[label] = binaryClassifier.toJSON(callback);
 		}
 		return result;
 	},
 
 	fromJSON : function(json, callback) {
-		for ( var aClass in json) {
-			this.mapClassnameToClassifier[aClass] = new this.binaryClassifierType();
-			this.mapClassnameToClassifier[aClass].fromJSON(json[aClass]);
+		for ( var label in json) {
+			this.mapClassnameToClassifier[label] = new this.binaryClassifierType();
+			this.mapClassnameToClassifier[label].fromJSON(json[label]);
 		}
 		return this;
 	},
 	
 	// private function: 
-	makeSureClassifierExists: function(aClass) {
-		if (!this.mapClassnameToClassifier[aClass]) { // make sure classifier exists
-			this.mapClassnameToClassifier[aClass] = new this.binaryClassifierType();
+	makeSureClassifierExists: function(label) {
+		if (!this.mapClassnameToClassifier[label]) { // make sure classifier exists
+			this.mapClassnameToClassifier[label] = new this.binaryClassifierType();
 		}
 	},
 }

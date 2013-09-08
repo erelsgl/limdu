@@ -51,6 +51,11 @@ var testMultiLabelClassifier = function(classifier) {
 	it('knows its classes', function() {
 		classifier.getAllClasses().should.eql(['A','B','{"C":"c"}']);
 	})
+
+	it('explains its decisions', function() {
+		classifier.classify({I:1 , want:1 , aa:1 , and:1 , bb:1 }, /*explain=*/1).should.have.property('explanation').with.property('positive');
+		classifier.classify({I:1 , want:1 , aa:1 , and:1 , bb:1 }, /*explain=*/3).should.have.property('explanation').with.property('negative');
+	})
 	
 	it.skip('serializes and de-serializes', function() {
 		var serialize = require('../../../utils/serialize');
@@ -109,4 +114,33 @@ describe.skip('Multi-Label BR Classifier batch-trained on two-class inputs', fun
 		classifier.classify({I:1 , want:1 , dd:1 , and:1 , aa:1 }).should.eql(['D','A']);
 	});
 });
+
+
+var BinaryRelevanceWinnowContinuousOutput = classifiers.multilabel.BinaryRelevance.bind(this, {
+	binaryClassifierType: classifiers.Winnow.bind(this, {
+		promotion: 1.5,
+		demotion: 0.5,
+		margin: 1,
+		retrain_count: retrain_count,
+		continuous_output: true,
+	}),
+});
+
+
+describe('Multi-Label BR Classifier with scores', function() {
+	var classifier = new BinaryRelevanceWinnowContinuousOutput();
+	classifier.trainBatch(dataset);
+	it('classifies 1-class samples', function() {
+		var a = classifier.classify({I:1 , want:1 , aa:1 }, /*explain=*/0, /*withScores=*/1);
+		a.should.have.lengthOf(3);
+		a[0][0].should.eql('A');
+		var b = classifier.classify({I:1 , want:1 , bb:1 }, /*explain=*/0, /*withScores=*/1)
+		b.should.have.lengthOf(3);
+		b[0][0].should.eql('B');
+		var c = classifier.classify({I:1 , want:1 , cc:1 }, /*explain=*/0, /*withScores=*/1);
+		c.should.have.lengthOf(3);
+		c[0][0].should.eql('{"C":"c"}');
+	});
+})
+
 

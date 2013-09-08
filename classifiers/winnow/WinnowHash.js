@@ -32,7 +32,7 @@ function WinnowHash(opts) {
 	this.retrain_count = opts.retrain_count || 0;
 	this.continuous_output = opts.continuous_output || false;
 	this.detailed_explanations = opts.detailed_explanations || false;
-		
+
 	this.positive_weights = {};
 	this.negative_weights = {};
 	this.positive_weights_sum = {};   // for averaging; count only weight vectors with successful predictions (Carvalho and Cohen, 2006).

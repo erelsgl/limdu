@@ -10,7 +10,7 @@
  *  <li>default_positive_weight, default_negative_weight: default weight for a newly discovered feature (default = 2, 1).
  *  <li>promotion, demotion, threshold, margin - explained in the paper.
  *  <li>retrain_count - number of times to retrain in batch mode. Default = 0 (no retrain).
- *  <li>continuous_output (boolean) - if true, return a classification between 0 and 1. I false, return binary output - 0 or 1. 
+ *  <li>bias - constant (bias) factor (default: 1).
  */
  
 var hash = require("../../utils/hash");
@@ -30,8 +30,9 @@ function WinnowHash(opts) {
 	this.demotion = opts.demotion || 0.5;
 	this.margin = opts.margin || 1.0;
 	this.retrain_count = opts.retrain_count || 0;
-	this.continuous_output = opts.continuous_output || false;
 	this.detailed_explanations = opts.detailed_explanations || false;
+	
+	this.bias = opts.bias || 1.0;
 
 	this.positive_weights = {};
 	this.negative_weights = {};
@@ -59,7 +60,7 @@ WinnowHash.prototype = {
 		},
 		
 		editFeatureValues: function (features, remove_unknown_features) {
-			if (!('bias' in features))
+			if (this.bias && !('bias' in features))
 				features['bias'] = 1;
 			if (remove_unknown_features) {
 				for (var feature in features)

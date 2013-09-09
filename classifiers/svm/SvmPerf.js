@@ -1,8 +1,7 @@
 /**
- * A wrapper for Thorsten Joachims' SVM-perf package
+ * A wrapper for Thorsten Joachims' SVM-perf package.
  * 
- * To use this wrapper, you must have SVM-perf installed, 
- * and must have its executables (svm_perf_learn, svm_perf_classify) in your path. 
+ * To use this wrapper, the SVM-perf executable (svm_perf_learn) should be in your path. 
  * 
  * You can download SVM-perf here: http://www.cs.cornell.edu/people/tj/svm_light/svm_perf.html
  * subject to the copyright license.
@@ -12,14 +11,15 @@
  * 
  * @param opts options: <ul>
  *	<li>learn_args - a string with arguments for svm_perf_learn  (see http://www.cs.cornell.edu/people/tj/svm_light/svm_perf.html )
- *  <li>classify_args - a string with arguments for svm_perf_classify
- *  <li>model_file_prefix - prefix to path to model file.
+ *  <li>model_file_prefix - prefix to path to model file (optional; the default is to create a temporary file in the system temp folder).
+ *  <li>bias - constant (bias) factor (default: 1).
  */
 
 function SvmPerf(opts) {
 	this.learn_args = opts.learn_args || "";
-	this.classify_args = opts.classify_args || "";
-	this.model_file_prefix = opts.model_file_prefix || null; //"svmperf-temp";
+	this.learn_args += " --b 0 ";  // we add the bias here, so we don't need SvmPerf to add it
+	this.model_file_prefix = opts.model_file_prefix || null;
+	this.bias = opts.bias || 1.0;
 	this.debug = opts.debug||false;
 }
 
@@ -45,7 +45,7 @@ SvmPerf.prototype = {
 		 */
 		trainBatch: function(dataset) {
 			if (this.debug) console.log("trainBatch start");
-			var self = this;
+
 			if (this.model_file_prefix) {
 				var learnFile = this.model_file_prefix+".learn";
 				var fd = fs.openSync(learnFile, 'w');
@@ -55,13 +55,13 @@ SvmPerf.prototype = {
 				var fd = tempFile.fd;
 			}
 //			console.dir(dataset);
-			var datasetSvmlight = svmlight.toSvmLight(dataset);
+			var datasetSvmlight = svmlight.toSvmLight(dataset, this.bias);
 //			console.dir(datasetSvmlight);
 			fs.writeSync(fd, datasetSvmlight);
 			fs.closeSync(fd);
 
-			self.modelFile = learnFile.replace(/[.]learn/,".model");
-			var command = "svm_perf_learn "+self.learn_args+" "+learnFile + " "+self.modelFile;
+			var modelFile = learnFile.replace(/[.]learn/,".model");
+			var command = "svm_perf_learn "+this.learn_args+" "+learnFile + " "+modelFile;
 			if (this.debug) console.log("running "+command);
 	
 			var result = execSync(command);
@@ -71,13 +71,13 @@ SvmPerf.prototype = {
 				throw new Error("cannot execute: "+command);
 			}
 			
-			var modelString = fs.readFileSync(self.modelFile, "utf-8");
-			this.modelMap = modelStringToModelMap(modelString);
+			var modelString = fs.readFileSync(modelFile, "utf-8");
+			this.modelMap = modelStringToModelMap(modelString, this.bias);
 			
 			if (this.debug) console.dir(this.modelMap);
 			if (this.debug) console.log("trainBatch end");
 		},
-		
+	
 		
 
 		/**
@@ -87,7 +87,7 @@ SvmPerf.prototype = {
 		 * @return the binary classification - 0 or 1.
 		 */
 		classify: function(features, explain, continuous_output) {
-			return classifyWithModelMap(this.modelMap, features, explain, continuous_output);
+			return classifyWithModelMap(this.modelMap, this.bias, features, explain, continuous_output);
 		},
 };
 
@@ -110,16 +110,17 @@ var SVM_PERF_MODEL_PATTERN = new RegExp(
  * @param modelString a string.
  * @returns a map.
  */
-function modelStringToModelMap(modelString) {
+function modelStringToModelMap(modelString, bias) {
 	var matches = SVM_PERF_MODEL_PATTERN.exec(modelString);
 	if (!matches) {
 		console.log(modelString);
 		throw new Error("Model does not match SVM-perf format");
 	};
-	var threshold = parseFloat(matches[1]);
+	//var threshold = parseFloat(matches[1]);  // not needed - we use our own bias
 	var featuresAndWeights = matches[2].split(" ");
 	var mapFeatureToWeight = {};
-	mapFeatureToWeight.threshold = threshold;
+	//mapFeatureToWeight.threshold = threshold; // not needed - we use our own bias
+	
 	//String alphaTimesY = featuresAndWeights[0]; // always 1 in svmperf
 	for (var i=1; i<featuresAndWeights.length; ++i) {
 		var featureAndWeight = featuresAndWeights[i];
@@ -138,15 +139,14 @@ function modelStringToModelMap(modelString) {
 /**
  * A utility that classifies a given sample (given as a feature-value map) using a model (given as a feature-weight map).
  * @param features a map {feature_i: value_i, ....} (i >= 1)
- * @param modelMap a map {threshold: threshold, feature_i: weight_i, ....} (i >= 1)
+ * @param modelMap a map {feature_i: weight_i, ....} (i >= 1)
  * @returns a classification value.
  */
-function classifyWithModelMap(modelMap, features, explain, continuous_output) {
-	if (!('threshold' in modelMap))
-		throw new IllegalArgumentException("Model doesn't contain the thershold value! "+JSON.stringify(modelMap));
-	
+function classifyWithModelMap(modelMap, bias, features, explain, continuous_output) {
 	if (explain>0) var explanations = [];
-	var result = -modelMap.threshold;
+	if (bias)
+		features.unshift(bias);
+	var result = 0;
 	for (var feature in features) {
 		if (feature in modelMap) {
 			var weight = modelMap[feature];

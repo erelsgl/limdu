@@ -25,6 +25,14 @@ describe('SVM-Perf classifier with numeric features', function() {
 	var classifier = new SvmClassifier();
 	classifier.trainBatch(trainSet);
 	
+	it('finds the maximal margin separator', function() {
+		// the max-margin separating line goes through [0,0.5] and [1,1.5]. It is:
+		//        0.5+x-y = 0
+		//  or:   2y-2x-1 = 0
+		classifier.modelMap.should.eql({ '0': -1, '1': -2, '2': 2 });
+	})
+	
+	
 	it('supports binary output', function() {
 		classifier.classify([0,2]).should.eql(1);
 		classifier.classify([1,0]).should.eql(0);
@@ -38,6 +46,9 @@ describe('SVM-Perf classifier with numeric features', function() {
 	it('supports continuous output', function() {
 		classifier.classify([0,2], 0, true).should.be.above(0);
 		classifier.classify([1,0], 0, true).should.be.below(0);
+
+		classifier.classify([0,2], 0, true).should.equal(3);
+		classifier.classify([1,0], 0, true).should.equal(-3);
 	})
 })
 

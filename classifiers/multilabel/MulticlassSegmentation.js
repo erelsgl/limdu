@@ -18,13 +18,9 @@ var _ = require("underscore")._;
  *            featureExtractor (optional) - a single feature-extractor (see the "features" folder), or an array of extractors, for extracting features from the text segments during classification.
  */
 var MulticlassSegmentation = function(opts) {
-	if (!('multiclassClassifierType' in opts)) {
-		console.dir(opts);
-		throw new Error("opts does not contain multiclassClassifierType");
-	}
 	if (!opts.multiclassClassifierType) {
 		console.dir(opts);
-		throw new Error("opts.multiclassClassifierType is null");
+		throw new Error("opts.multiclassClassifierType not found");
 	}
 	this.multiclassClassifierType = opts.multiclassClassifierType;
 	this.featureExtractor = FeaturesUnit.normalize(opts.featureExtractor);

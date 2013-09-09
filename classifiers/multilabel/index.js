@@ -3,7 +3,8 @@ module.exports = {
 	PassiveAggressive:      require('./PassiveAggressiveHash'),
 	BinarySegmentation:     require('./BinarySegmentation'),
 	MulticlassSegmentation: require('./MulticlassSegmentation'),
-	Homer: require('./Homer'),
+	Homer:                  require('./Homer'),
+	MetaLabeler:            require('./MetaLabeler'),
 }
 
 // add a "classify and log" method to all classifiers, for demos:

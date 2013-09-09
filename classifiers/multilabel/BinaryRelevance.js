@@ -9,13 +9,9 @@ var _ = require("underscore")._;
  *            binaryClassifierType (mandatory) - the type of the base binary classifier. 
  */
 var BinaryRelevance = function(opts) {
-	if (!('binaryClassifierType' in opts)) {
-		console.dir(opts);
-		throw new Error("opts must contain binaryClassifierType");
-	}
 	if (!opts.binaryClassifierType) {
 		console.dir(opts);
-		throw new Error("opts.binaryClassifierType is null");
+		throw new Error("opts.binaryClassifierType not found");
 	}
 	this.binaryClassifierType = opts.binaryClassifierType;
 	this.mapClassnameToClassifier = {};

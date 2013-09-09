@@ -30,8 +30,13 @@ var HomerClassifier = classifiers.multilabel.Homer.bind(this, {
 	multilabelClassifierType: BinaryRelevanceClassifier
 });
 
+var MetaLabelerClassifier = classifiers.multilabel.MetaLabeler.bind(this, {
+	rankerType: BinaryRelevanceClassifier,
+	counterType: BinaryRelevanceClassifier,
+});
+
 var classifier = new HomerClassifier();
-//var classifier = new BinaryRelevanceClassifier();
+//var classifier = new MetaLabelerClassifier();
 
 var explain=0;
 var classes = ['A','B','C','D','E','F','G'];
@@ -66,7 +71,7 @@ for (var numClasses=2; numClasses<classes.length; ++numClasses) {
 	}
 }
 
-var explain = 0;
+var explain = 4;
 //classifier.trainBatch(oneClassPerSample);
 //mlutils.testLite(classifier, oneClassPerSample.concat(twoOrMoreClassesPerSample).concat(zeroClassesPerSample), explain);
 

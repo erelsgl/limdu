@@ -7,6 +7,7 @@
 
 var should = require('should');
 var classifiers = require('../../../classifiers');
+require('../../sorted');
 
 var explain = 0;
 
@@ -14,11 +15,6 @@ var classifier = new classifiers.multilabel.PassiveAggressive({
 	Constant: 5.0,
 	retrain_count: 10,
 });
-
-Array.prototype.sorted = function() {
-	this.sort();
-	return this;
-}
 
 describe('Multi-Label PA Classifier Trained on Single-class inputs', function() {
 	classifier.trainBatch([

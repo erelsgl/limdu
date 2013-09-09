@@ -13,13 +13,33 @@ var mlutils = require('../utils');
 var fs = require('fs');
 var _ = require('underscore')._;
 
+/*
+ * BINARY CLASSIFIERS (used as basis to other classifiers):
+ */
+
+var WinnowBinaryClassifier = classifiers.Winnow.bind(this, {
+	retrain_count: 15,  /* 15 is much better than 5, better than 10 */
+	promotion: 1.5,
+	demotion: 0.5,
+	do_averaging: false,
+	continuous_output: false,
+	margin: 1,
+});
+
+var SvmPerfBinaryClassifier = classifiers.SvmPerf.bind(this, {
+	learn_args: "-c 100 --i 1",   // see http://www.cs.cornell.edu/people/tj/svm_light/svm_perf.html 
+	classify_args: "", 
+	continuous_output: false,
+	debug:false,
+});
+
 var PassiveAggressiveClassifier = classifiers.multilabel.PassiveAggressive.bind(this, {
 	Constant: 5.0,
 	retrain_count: 10,
 });
 
 var BinaryRelevanceClassifier = classifiers.multilabel.BinaryRelevance.bind(this, {
-	'binaryClassifierType': classifiers.Winnow.bind(this, {
+	binaryClassifierType: classifiers.Winnow.bind(this, {
 		promotion: 1.5,
 		demotion: 0.5,
 		retrain_count: 10,
@@ -31,12 +51,12 @@ var HomerClassifier = classifiers.multilabel.Homer.bind(this, {
 });
 
 var MetaLabelerClassifier = classifiers.multilabel.MetaLabeler.bind(this, {
-	rankerType: BinaryRelevanceClassifier,
+	rankerType:  BinaryRelevanceClassifier,
 	counterType: BinaryRelevanceClassifier,
 });
 
-var classifier = new HomerClassifier();
-//var classifier = new MetaLabelerClassifier();
+//var classifier = new HomerClassifier();
+var classifier = new MetaLabelerClassifier();
 
 var explain=0;
 var classes = ['A','B','C','D','E','F','G'];

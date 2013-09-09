@@ -54,7 +54,10 @@ SvmPerf.prototype = {
 				var learnFile = tempFile.path;
 				var fd = tempFile.fd;
 			}
-			fs.writeSync(fd, svmlight.toSvmLight(dataset));
+//			console.dir(dataset);
+			var datasetSvmlight = svmlight.toSvmLight(dataset);
+//			console.dir(datasetSvmlight);
+			fs.writeSync(fd, datasetSvmlight);
 			fs.closeSync(fd);
 
 			self.modelFile = learnFile.replace(/[.]learn/,".model");

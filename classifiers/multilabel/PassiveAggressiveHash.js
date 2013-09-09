@@ -154,18 +154,24 @@ MultiLabelPassiveAggressive.prototype = {
 	 * 
 	 * @param sample a hash {feature1: value1, feature2: value2, ...}.
 	 * @param explain - int - if positive, an "explanation" field, with the given length, should be added to the result.
+	 * @param withScores - boolean - if true, return an array of [class,score], ordered by decreasing order of score.
 	 *  
 	 * @return an array whose VALUES are classes.
 	 */
-	classify : function(features, explain) {
+	classify : function(features, explain, withScores) {
 		this.editFeatureValues(features, /*remove_unknown_features=*/true);
 		var ranks = this.predict(features, /*averaging=*/true, explain);
-		var results = [];
-		ranks.forEach(function(pair) {
-			if (pair[1]>0)
-				results.push(pair[0]);
-		});
-		return explain? 	{
+		var results;
+		if (withScores) {
+			results = ranks;
+		} else {
+			results = [];
+			ranks.forEach(function(pair) {
+				if (pair[1]>0)
+					results.push(pair[0]);
+			});
+		}
+		return explain>0? 	{
 			classes: results, 
 			explanation: ranks.map(function(pair) {return pair[0]+": "+pair[1];})
 		}: 

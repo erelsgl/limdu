@@ -8,7 +8,7 @@
 
 /**
  * convert a single dataset to compact JSON format.
- * @param dataset an array of samples in the format {input: [value1, value2, ...], output: [1,2,3]}
+ * @param dataset an array of samples in the format {input: [value1, value2, ...], output: (0|1)}
  */
 exports.toSvmLight = function(dataset) {
 	var lines = "";
@@ -29,6 +29,8 @@ exports.toSvmLight = function(dataset) {
  * convert an array of features to a single line in SVM-light format. The line starts with a space.
  */
 function featureArrayToFeatureString(features) {
+	if (!Array.isArray(features))
+		throw new Error("Expected an array, but got "+JSON.stringify(features))
 	var line = "";
 	for (var feature=0; feature<features.length; ++feature) {
 		var value = features[feature];

@@ -216,12 +216,12 @@ EnhancedClassifier.prototype = {
 	 * @param sample a document.
 	 * @return an array whose VALUES are classes.
 	 */
-	classifyPart: function(sample, explain) {
+	classifyPart: function(sample, explain, continuous_output) {
 		var features = this.sampleToFeatures(sample, this.featureExtractorsForClassification? this.featureExtractorsForClassification: this.featureExtractors);
 		this.correctFeatureSpelling(features);
 		this.editFeatureValues(features, /*remove_unknown_features=*/true);
 		var array = this.featuresToArray(features);
-		var classification = this.classifier.classify(array, explain);
+		var classification = this.classifier.classify(array, explain, continuous_output);
 		if (this.spellChecker && classification.explanation) {
 			if (Array.isArray(classification.explanation))
 				classification.explanation.unshift({SpellCorrectedFeatures: JSON.stringify(features)});
@@ -236,17 +236,17 @@ EnhancedClassifier.prototype = {
 	 * @param sample a document.
 	 * @return an array whose VALUES are classes.
 	 */
-	classify: function(sample, explain) {
+	classify: function(sample, explain, continuous_output) {
 		sample = this.normalizedSample(sample);
 		if (!this.inputSplitter) {
-			return this.classifyPart(sample, explain);
+			return this.classifyPart(sample, explain, continuous_output);
 		} else {
 			var parts = 	this.inputSplitter(sample);
 			var accumulatedClasses = {};
 			var explanations = [];
 			parts.forEach(function(part) {
 				if (part.length==0) return;
-				var classesWithExplanation = this.classifyPart(part,explain);
+				var classesWithExplanation = this.classifyPart(part, explain, continuous_output);
 				var classes = (explain>0? classesWithExplanation.classes: classesWithExplanation);
 				for (var i in classes)
 					accumulatedClasses[classes[i]]=true;

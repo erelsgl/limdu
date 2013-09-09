@@ -221,7 +221,7 @@ WinnowHash.prototype = {
 		 * @param explain - int - if positive, an "explanation" field, with the given length, will be added to the result.  
 		 * @return the classification of the sample.
 		 */
-		perceive: function(features, continuous_output, explain) {
+		classify: function(features, explain, continuous_output) {
 			this.editFeatureValues(features, /*remove_unknown_features=*/true);
 			return this.perceive_features(
 				//this.normalized_features(features, /*remove_unknown_features=*/true),
@@ -230,16 +230,6 @@ WinnowHash.prototype = {
 				(this.do_averaging? this.positive_weights_sum: this.positive_weights),
 				(this.do_averaging? this.negative_weights_sum: this.negative_weights),
 				explain );
-		},
-		
-
-		/**
-		 * @param inputs - a feature-value hash.
-		 * @param explain - int - if positive, an "explanation" field, with the given length, will be added to the result.  
-		 * @return the binary classification - 0 or 1.
-		 */
-		classify: function(features, explain) {
-			return this.perceive(features, this.continuous_output, explain);
 		},
 }
 

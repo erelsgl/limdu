@@ -12,7 +12,6 @@ var ftrs = require('../../features');
 
 var SvmClassifier = classifiers.SvmJs.bind(this, 	{
 	C: 20.0, 
-	continuous_output: false
 });
 
 describe('svm.js classifier with numeric features', function() {

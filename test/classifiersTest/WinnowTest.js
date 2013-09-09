@@ -48,32 +48,18 @@ describe('winnow classifier', function() {
 		classifierOnline.should.eql(classifierBatch);
 	})
 
+	it('supports continuous output', function() {
+		var classifier = new WinnowClassifier();
+		classifier.trainOnline({'a': 1, 'b': 0}, 0);
+		classifier.trainOnline({'a': 0, 'b': 1}, 1);
+		classifier.classify({'a': 1, 'b': 0}, 0, true).should.be.below(0);
+		classifier.classify({'a': 0, 'b': 1}, 0, true).should.be.above(0);
+	})
+
 	it('explains its decisions', function() {
 		var classifier = new WinnowClassifier();
 		classifier.trainOnline({'a': 1, 'b': 0}, 0);
 		classifier.classify({'a': 0, 'b': 0}, /*explain=*/1).should.have.property('explanation').with.lengthOf(1);
 		classifier.classify({'a': 0, 'b': 0}, /*explain=*/3).should.have.property('explanation').with.lengthOf(3);
-	})
-})
-
-var WinnowClassifierWithContinuousOutput = classifiers.Winnow.bind(this, {
-	retrain_count: 10,
-	do_averaging: false,
-	margin: 1,
-	continuous_output: true,
-});
-
-describe('winnow classifier with continuous output', function() {
-	it('supports online training', function() {
-		var classifier = new WinnowClassifierWithContinuousOutput();
-		classifier.trainOnline({'a': 1, 'b': 0}, 0);
-		classifier.classify({'a': 1, 'b': 0}).should.be.below(0);
-		classifier.classify({'a': 0, 'b': 0}).should.be.below(0);
-		classifier.classify({'a': 0, 'b': 1}).should.be.below(0);
-		classifier.classify({'a': 1, 'b': 1}).should.be.below(0);
-
-		classifier.trainOnline({'a': 0, 'b': 1}, 1);
-		classifier.classify({'a': 1, 'b': 0}).should.be.below(0);
-		classifier.classify({'a': 0, 'b': 1}).should.be.above(0);
 	})
 })

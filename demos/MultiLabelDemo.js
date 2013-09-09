@@ -22,14 +22,12 @@ var WinnowBinaryClassifier = classifiers.Winnow.bind(this, {
 	promotion: 1.5,
 	demotion: 0.5,
 	do_averaging: false,
-	continuous_output: false,
 	margin: 1,
 });
 
 var SvmPerfBinaryClassifier = classifiers.SvmPerf.bind(this, {
 	learn_args: "-c 100 --i 1",   // see http://www.cs.cornell.edu/people/tj/svm_light/svm_perf.html 
 	classify_args: "", 
-	continuous_output: false,
 	debug:false,
 });
 

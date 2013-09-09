@@ -112,7 +112,7 @@ BinaryRelevance.prototype = {
 		}
 		for (var label in this.mapClassnameToClassifier) {
 			var classifier = this.mapClassnameToClassifier[label];
-			var classification = classifier.classify(sample, explain);
+			var classification = classifier.classify(sample, explain, withScores);
 			var score = classification.explanation?  classification.classification: classification;
 
 			var explanations_string = ((classification.explanation && explain>0)?

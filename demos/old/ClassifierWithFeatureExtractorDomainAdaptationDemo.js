@@ -17,7 +17,6 @@ var spamClassifier = new classifiers.EnhancedClassifier({
 		retrain_count: 25,
 		do_averaging: false,
 		margin: 1,
-		continuous_output: true,
 	}),
 	featureExtractor: FeaturesUnit.WordsFromText(1)
 });

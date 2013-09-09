@@ -16,18 +16,28 @@ var SvmClassifier = classifiers.SvmPerf.bind(this, 	{
 });
 
 describe('SVM-Perf classifier with numeric features', function() {
-	it('supports training and classification', function() {
-		var trainSet = [
-		        		{input: [0,0], output: 0},
-		        		{input: [1,1], output: 0},
-		        		{input: [0,1], output: 1},
-		        		{input: [1,2], output: 1} ];
+	var trainSet = [
+	        		{input: [0,0], output: 0},
+	        		{input: [1,1], output: 0},
+	        		{input: [0,1], output: 1},
+	        		{input: [1,2], output: 1} ];
 
-		var classifier = new SvmClassifier();
-		classifier.trainBatch(trainSet);
-		
+	var classifier = new SvmClassifier();
+	classifier.trainBatch(trainSet);
+	
+	it('supports binary output', function() {
 		classifier.classify([0,2]).should.eql(1);
 		classifier.classify([1,0]).should.eql(0);
+	})
+	
+	it('explains its classifications', function() {
+		classifier.classify([0,2], 2).should.have.property("explanation").with.lengthOf(2);
+		classifier.classify([1,0], 2).should.have.property("explanation").with.lengthOf(2);
+	})
+	
+	it('supports continuous output', function() {
+		classifier.classify([0,2], 0, true).should.be.above(0);
+		classifier.classify([1,0], 0, true).should.be.below(0);
 	})
 })
 
@@ -37,18 +47,27 @@ var SvmClassifierStringFeatures = classifiers.EnhancedClassifier.bind(this, 	{
 });
 	
 describe('SVM-Perf classifier with string features', function() {
+	var trainSet = [
+	        		{input: {a:0, b:0}, output: 0},
+	        		{input: {a:1, b:1}, output: 0},
+	        		{input: {a:0, b:1}, output: 1},
+	        		{input: {a:1, b:2}, output: 1} ];
 
-	it('supports training and classification', function() {
-		var trainSet = [
-		        		{input: {a:0, b:0}, output: 0},
-		        		{input: {a:1, b:1}, output: 0},
-		        		{input: {a:0, b:1}, output: 1},
-		        		{input: {a:1, b:2}, output: 1} ];
+	var classifier = new SvmClassifierStringFeatures();
+	classifier.trainBatch(trainSet);
 
-		var classifier = new SvmClassifierStringFeatures();
-		classifier.trainBatch(trainSet);
-
+	it('supports binary output', function() {
 		classifier.classify({a:0, b:2}).should.eql(1);
 		classifier.classify({a:1, b:0}).should.eql(0);
+	})
+	
+	it('explains its classifications', function() {
+		classifier.classify({a:0, b:2}, 2).should.have.property("explanation").with.lengthOf(2);
+		classifier.classify({a:1, b:0}, 2).should.have.property("explanation").with.lengthOf(2);
+	})
+
+	it('supports continuous output', function() {
+		classifier.classify({a:0, b:2}, 0, true).should.be.above(0);
+		classifier.classify({a:1, b:0}, 0, true).should.be.below(0);
 	})
 })

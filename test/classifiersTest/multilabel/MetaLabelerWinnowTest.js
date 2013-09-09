@@ -73,8 +73,8 @@ describe('Meta-Labeler online-trained on Single-class inputs', function() {
 	})
 
 	it('explains its decisions', function() {
-		classifier.classify({I:1 , want:1 , aa:1 , and:1 , bb:1 }, /*explain=*/1).should.have.property('explanation').with.property('ranking');
-		classifier.classify({I:1 , want:1 , aa:1 , and:1 , bb:1 }, /*explain=*/3).should.have.property('explanation').with.property('counting');
+		classifier.classify({I:1 , want:1 , aa:1 , and:1 , bb:1 }, /*explain=*/1).should.have.property('explanation').with.property('ranking').with.lengthOf(3);
+		classifier.classify({I:1 , want:1 , aa:1 , and:1 , bb:1 }, /*explain=*/3).should.have.property('explanation').with.property('counting').with.lengthOf(1);
 	})
 })
 
@@ -94,4 +94,9 @@ describe('Meta-Labeler batch-trained on two-class inputs', function() {
 		classifier.classify({I:1 , want:1 , cc:1 , and:1 , dd:1 }).sorted().should.eql(['C','D']);
 		classifier.classify({I:1 , want:1 , dd:1 , and:1 , aa:1 }).sorted().should.eql(['A','D']);
 	});
+
+	it('explains its decisions', function() {
+		classifier.classify({I:1 , want:1 , aa:1 , and:1 , bb:1 }, /*explain=*/1).should.have.property('explanation').with.property('ranking').with.lengthOf(4);
+		classifier.classify({I:1 , want:1 , aa:1 , and:1 , bb:1 }, /*explain=*/3).should.have.property('explanation').with.property('counting').with.lengthOf(1);
+	})
 });

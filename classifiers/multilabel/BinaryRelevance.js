@@ -51,7 +51,7 @@ BinaryRelevance.prototype = {
 		var mapClassnameToDataset = {}; 
 
 		// create positive samples for each class:
-		for ( var i = 0; i < dataset.length; ++i) {
+		for (var i=0; i<dataset.length; ++i) {
 			var sample = dataset[i].input;
 			//console.dir(dataset[i]);
 			dataset[i].output = hash.normalized(dataset[i].output);
@@ -69,7 +69,7 @@ BinaryRelevance.prototype = {
 		}
 
 		// create negative samples for each class (after all labels are in the  array):
-		for ( var i = 0; i < dataset.length; ++i) {
+		for (var i=0; i<dataset.length; ++i) {
 			var sample = dataset[i].input;
 			var labels = dataset[i].output;
 			for ( var negativeClass in this.mapClassnameToClassifier) {
@@ -103,36 +103,47 @@ BinaryRelevance.prototype = {
 	classify: function(sample, explain, withScores) {
 		var labels = [];
 		if (explain>0) {
-			var positive_explanations = {};
-			var negative_explanations = {};
+			if (withScores) {
+				var explanations = [];
+			} else {
+				var positive_explanations = {};
+				var negative_explanations = {};
+			}
 		}
 		for (var label in this.mapClassnameToClassifier) {
 			var classifier = this.mapClassnameToClassifier[label];
 			var classification = classifier.classify(sample, explain);
-			var score = classification.classification || classification;
+			var score = classification.explanation?  classification.classification: classification;
+
+			var explanations_string = ((classification.explanation && explain>0)?
+				classification.explanation.reduce(function(a,b) {
+					return a + " " + b;
+				}, ""):
+				null);
+			
 			if (withScores) {
-				labels.push([label, score]);
+				labels.push(explanations_string? [label, score, explanations_string]: [label, score]);
 			} else if (score>0.5) {
 				labels.push(label);
-			}
-			if (classification.explanation && explain>0) {
-				var explanations_string = classification.explanation.reduce(function(a,b) {
-					return a + " " + b;
-				}, "");
-				if (classification.classification > 0.5) {
-					positive_explanations[label]=explanations_string;
-				} else {
-					negative_explanations[label]=explanations_string;
-				}
+				if (explanations_string) positive_explanations[label]=explanations_string;
+			} else {
+				if (explanations_string) negative_explanations[label]=explanations_string;
 			}
 		}
 		if (withScores) {
 			labels.sort(function(pair1, pair2) {return pair2[1]-pair1[1]});
+			if (explain>0) {
+				var explanations = [];
+				labels.forEach(function(datum) {
+					explanations.push(datum[0]+": score="+JSON.stringify(datum[1])+" features="+datum[2]);
+					datum.pop();
+				});
+			}
 		}
 		return (explain>0?
 			{
 				classes: labels, 
-				explanation: {
+				explanation: withScores? explanations: {
 					positive: positive_explanations, 
 					negative: negative_explanations,
 				}

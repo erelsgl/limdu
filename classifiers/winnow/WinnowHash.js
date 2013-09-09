@@ -197,7 +197,7 @@ WinnowHash.prototype = {
 
 			if (this.debug) console.log("> perceive_features ",features," = ",score);
 			var result = (continuous_output? score: (score > 0 ? 1 : 0));
-			if (explain) {
+			if (explain>0) {
 				explanations.sort(function(a,b){return Math.abs(b.relevance)-Math.abs(a.relevance)});
 				explanations.splice(explain, explanations.length-explain);  // "explain" is the max length of explanation.
 				
@@ -210,8 +210,6 @@ WinnowHash.prototype = {
 				result = {
 					classification: result,
 					explanation: explanations,
-					threshold: -this.threshold,
-					net_score: score, 
 				}
 			}
 			return result;

@@ -14,7 +14,6 @@ var SvmJsBase = require("svm").SVM;
 function SvmJs(opts) {
 	this.base = new SvmJsBase();
 	this.opts = opts;  // options for SvmJsBase.train
-	this.continuous_output = opts.continuous_output;
 }
 
 
@@ -36,11 +35,12 @@ SvmJs.prototype = {
 	/**
 	 * @param features - a feature-value hash.
 	 * @param explain - int - if positive, an "explanation" field, with the given length, will be added to the result.  
+	 * @param continuous_output if true, return the net classification score. If false [default], return 0 or 1.
 	 * @return the binary classification - 0 or 1.
 	 */
-    classify: function(features, explain) {
+    classify: function(features, explain, continuous_output) {
     	var score = this.base.marginOne(features);
-    	var classification = this.continuous_output? score: (score>0? 1: 0);
+    	var classification = continuous_output? score: (score>0? 1: 0);
     	
     	if (explain>0) {
             var f = this.base.b;

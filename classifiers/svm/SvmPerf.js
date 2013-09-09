@@ -14,14 +14,12 @@
  *	<li>learn_args - a string with arguments for svm_perf_learn  (see http://www.cs.cornell.edu/people/tj/svm_light/svm_perf.html )
  *  <li>classify_args - a string with arguments for svm_perf_classify
  *  <li>model_file_prefix - prefix to path to model file.
- *  <li>continuous_output - if true, classify returns a numeric output; if false, it returns 0/1
  */
 
 function SvmPerf(opts) {
 	this.learn_args = opts.learn_args || "";
 	this.classify_args = opts.classify_args || "";
 	this.model_file_prefix = opts.model_file_prefix || null; //"svmperf-temp";
-	this.continuous_output = opts.continuous_output || false;
 	this.debug = opts.debug||false;
 }
 
@@ -80,13 +78,13 @@ SvmPerf.prototype = {
 		
 
 		/**
-		 * @param inputs - a feature-value hash.
+		 * @param features - a feature-value hash.
 		 * @param explain - int - if positive, an "explanation" field, with the given length, will be added to the result.  
+		 * @param continuous_output if true, return the net classification score. If false [default], return 0 or 1.
 		 * @return the binary classification - 0 or 1.
 		 */
-		classify: function(features, explain) {
-			var score = classifyWithModelMap(features, this.modelMap);
-			return this.continuous_output? score: (score>0? 1: 0);
+		classify: function(features, explain, continuous_output) {
+			return classifyWithModelMap(this.modelMap, features, explain, continuous_output);
 		},
 };
 
@@ -140,17 +138,49 @@ function modelStringToModelMap(modelString) {
  * @param modelMap a map {threshold: threshold, feature_i: weight_i, ....} (i >= 1)
  * @returns a classification value.
  */
-function classifyWithModelMap(features, modelMap) {
+function classifyWithModelMap(modelMap, features, explain, continuous_output) {
 	if (!('threshold' in modelMap))
 		throw new IllegalArgumentException("Model doesn't contain the thershold value! "+JSON.stringify(modelMap));
 	
+	if (explain>0) var explanations = [];
 	var result = -modelMap.threshold;
 	for (var feature in features) {
-		if (feature in modelMap)
-			result += modelMap[feature]*features[feature];
-	}
+		if (feature in modelMap) {
+			var weight = modelMap[feature];
+			var value = features[feature];
+			var relevance = weight*value;
+			result += relevance;
 
-	return result;
+			if (explain>0) explanations.push(
+					{
+						feature: feature,
+						value: value,
+						weight: weight,
+						relevance: relevance,
+					}
+			);
+		}
+	}
+	
+	if (!continuous_output)
+		result = (result>0? 1: 0);
+	if (explain>0) {
+		explanations.sort(function(a,b){return Math.abs(b.relevance)-Math.abs(a.relevance)});
+		explanations.splice(explain, explanations.length-explain);  // "explain" is the max length of explanation.
+		
+		if (!this.detailed_explanations) {
+			var sprintf = require('sprintf').sprintf;
+			explanations = explanations.map(function(e) {
+				return sprintf("%s%+1.2f", e.feature, e.relevance);
+			});
+		}
+		return {
+			classification: result,
+			explanation: explanations
+		};
+	} else {
+		return result;
+	}
 }
 
 

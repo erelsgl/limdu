@@ -107,13 +107,13 @@ PerceptronHash.prototype = {
 	 * @param dataset an array of samples of the form {input: {feature1: value1...} , output: 0/1} 
 	 */
 	trainBatch: function(dataset) {
-		var normalized_inputs = [];
+		var normalized_features = [];
 		for (var i=0; i<dataset.length; ++i)
-			normalized_inputs[i] = this.normalized_features(dataset[i].input, /*remove_unknown_features=*/false);
+			normalized_features[i] = this.normalized_features(dataset[i].input, /*remove_unknown_features=*/false);
 
 		for (var r=0; r<=this.retrain_count; ++r)
-			for (var i=0; i<normalized_inputs.length; ++i) 
-				this.train_features(normalized_inputs[i], dataset[i].output);
+			for (var i=0; i<normalized_features.length; ++i) 
+				this.train_features(normalized_features[i], dataset[i].output);
 	},
 
 
@@ -128,7 +128,7 @@ PerceptronHash.prototype = {
 	/**
 	 * @param features a SINGLE sample; a hash (feature => value).
 	 * @param weights_for_classification the weights vector to use (either the running 'weights' or 'weights_sum').  
-	 * @param net if true, return the net classification value. If false [default], return 0 or 1.
+	 * @param continuous_output if true, return the net classification value. If false [default], return 0 or 1.
 	 * @return the classification of the sample.
 	 */
 	perceive_features: function(features, continuous_output, weights_for_classification, explain) {
@@ -146,24 +146,17 @@ PerceptronHash.prototype = {
 	},
 
 	/**
-	 * @param inputs a SINGLE sample.
-	 * @param net if true, return the net classification value. If false [default], return 0 or 1.
+	 * @param features a SINGLE sample, as a hash {feature:value}
+	 * @param explain (int) if positive, add an explanation (currently ignored).
+	 * @param continuous_output if true, return the net classification score. If false [default], return 0 or 1.
 	 * @return the classification of the sample.
 	 */
-	perceive: function(inputs, continuous_output, explain) {
+	classify: function(features, explain, continuous_output) {
 		return this.perceive_features(
-			this.normalized_features(inputs, /*remove_unknown_features=*/true), 
+			this.normalized_features(features, /*remove_unknown_features=*/true), 
 			continuous_output,
 			(this.do_averaging? this.weights_sum: this.weights),
-			explain );
-	},
-
-	/**
-	 * @param inputs a SINGLE sample.
-	 * @return the binary classification - 0 or 1.
-	 */
-	classify: function(inputs, explain) {
-		return this.perceive(inputs, false, explain);
+			explain);
 	},
 }
 

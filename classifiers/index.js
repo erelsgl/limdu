@@ -3,8 +3,9 @@ module.exports = {
 	NeuralNetwork: require('./brain/lib/neuralnetwork').NeuralNetwork,
 	Bayesian: require('./bayesian/bayesian'),
 
-	SvmPerf: require('./svm/SvmPerf'),
 	SvmJs: require('./svm/SvmJs'),
+	SvmPerf: require('./svm/SvmPerf'),
+	SvmLinear: require('./svm/SvmLinear'),
 	
 	//BayesClassifier: require('./apparatus/lib/apparatus/classifier/bayes_classifier'),
 	//LogisticRegressionClassifier: require('./apparatus/lib/apparatus/classifier/logistic_regression_classifier'),

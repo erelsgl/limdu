@@ -9,12 +9,14 @@
 /**
  * convert a single dataset to compact JSON format.
  * @param dataset an array of samples in the format {input: [value1, value2, ...], output: (0|1)}
+ * @param bias if nonzero, add it at the beginning of the vector.
+ * @param binarize if true, change output to -1/1. If false, leave output as it is
  */
-exports.toSvmLight = function(dataset, bias) {
+exports.toSvmLight = function(dataset, bias, binarize) {
 	var lines = "";
 	for (var i=0; i<dataset.length; ++i) {
 		var line = (i>0? "\n": "") + 
-			(dataset[i].output>0? "1": "-1") +  // in svm-light, the output comes first:
+			(binarize? (dataset[i].output>0? "1": "-1"): dataset[i].output) +  // in svm-light, the output comes first:
 			featureArrayToFeatureString(dataset[i].input, bias)
 			;
 		lines += line;

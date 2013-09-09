@@ -1,5 +1,5 @@
 /**
- * a unit-test for SvmPerf classifier
+ * a unit-test for SvmLinear classifier (a wrapper for LibLinear)
  * 
  * @author Erel Segal-Halevi
  * @since 2013-08
@@ -10,11 +10,11 @@ var classifiers = require('../../classifiers');
 var ftrs = require('../../features');
 
 
-var SvmClassifier = classifiers.SvmPerf.bind(this, 	{
+var SvmClassifier = classifiers.SvmLinear.bind(this, 	{
 	learn_args: "-c 20.0", 
 });
 
-describe('SVM-Perf classifier with numeric features', function() {
+describe('SVM-Linear classifier with numeric features', function() {
 	var trainSet = [
 	        		{input: [0,0], output: 0},
 	        		{input: [1,1], output: 0},
@@ -28,7 +28,10 @@ describe('SVM-Perf classifier with numeric features', function() {
 		// the max-margin separating line goes through [0,0.5] and [1,1.5]. It is:
 		//        0.5+x-y = 0
 		//  or:   2y-2x-1 = 0
-		classifier.modelMap.should.eql({ '0': -1, '1': -2, '2': 2 });
+		//classifier.modelMap.should.eql({ '0': -1, '1': -2, '2': 2 });  // the LibLinear algorithm is not accurate:
+		classifier.modelMap[0].should.be.within(-0.5,-1.5);
+		classifier.modelMap[1].should.be.within(-1.5,-2.5);
+		classifier.modelMap[2].should.be.within(1.5,2.5);
 	})
 	
 	
@@ -46,8 +49,8 @@ describe('SVM-Perf classifier with numeric features', function() {
 		classifier.classify([0,2], 0, true).should.be.above(0);
 		classifier.classify([1,0], 0, true).should.be.below(0);
 
-		classifier.classify([0,2], 0, true).should.equal(3);
-		classifier.classify([1,0], 0, true).should.equal(-3);
+		classifier.classify([0,2], 0, true).should.be.within(2.5,3.5);
+		classifier.classify([1,0], 0, true).should.be.within(-2.5,-3.5);
 	})
 })
 
@@ -56,7 +59,7 @@ var SvmClassifierStringFeatures = classifiers.EnhancedClassifier.bind(this, 	{
 	featureLookupTable: new ftrs.FeatureLookupTable()
 });
 	
-describe('SVM-Perf classifier with string features', function() {
+describe('SVM-Linear classifier with string features', function() {
 	var trainSet = [
 	        		{input: {a:0, b:0}, output: 0},
 	        		{input: {a:1, b:1}, output: 0},

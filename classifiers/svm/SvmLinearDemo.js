@@ -1,6 +1,6 @@
 // simple demonstration of SVM
 
-var SvmPerf = require('./SvmPerf');
+var SvmLinear = require('./SvmLinear');
 var execSync = require('execSync').run
 
 var trainSet = [
@@ -11,14 +11,14 @@ var trainSet = [
 
 // the separating line goes through [0,0.5] and [1,1.5]. It is:
 //       0.5+x-y = 0
-// or:   2y-2x-1 = 0
+// or:   -1-2x+2y = 0
 
 
-var svm = new SvmPerf(
+var svm = new SvmLinear(
 	{
-		learn_args: "-c 20.0", 
-		model_file_prefix: "demofiles/SvmPerfDemo",
-		debug:false
+		learn_args: "-c 20", 
+		model_file_prefix: "demofiles/SvmLinearDemo",
+		debug: true
 	}
 );
 svm.trainBatch(trainSet);

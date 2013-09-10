@@ -17,7 +17,7 @@ var trainSet = [
 var svm = new SvmPerf(
 	{
 		learn_args: "-c 20.0", 
-		model_file_prefix: "demofiles/SvmPerfDemo",
+		model_file_prefix: "tempfiles/SvmPerfDemo",
 		debug:false
 	}
 );

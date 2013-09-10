@@ -135,6 +135,8 @@ BinaryRelevance.prototype = {
 			if (explain>0) {
 				var explanations = [];
 				labels.forEach(function(datum) {
+					if (JSON.stringify(datum[1])==='null')
+						throw new Error("null value in datum: "+datum);
 					explanations.push(datum[0]+": score="+JSON.stringify(datum[1])+" features="+datum[2]);
 					datum.pop();
 				});
@@ -170,6 +172,13 @@ BinaryRelevance.prototype = {
 	getAllClasses: function() {
 		return Object.keys(this.mapClassnameToClassifier);
 	},
+	
+	/**
+	 * Link to a FeatureLookupTable from a higher level in the hierarchy (typically from an EnhancedClassifier), used ONLY for generating meaningful explanations. 
+	 */
+	setFeatureLookupTable: function(featureLookupTable) {
+		this.featureLookupTable = featureLookupTable;
+	},
 
 	toJSON : function(callback) {
 		var result = {};
@@ -198,6 +207,9 @@ BinaryRelevance.prototype = {
 	makeSureClassifierExists: function(label) {
 		if (!this.mapClassnameToClassifier[label]) { // make sure classifier exists
 			this.mapClassnameToClassifier[label] = new this.binaryClassifierType();
+			if (this.featureLookupTable && this.mapClassnameToClassifier[label].setFeatureLookupTable)
+				this.mapClassnameToClassifier[label].setFeatureLookupTable(this.featureLookupTable);
+			
 		}
 	},
 }

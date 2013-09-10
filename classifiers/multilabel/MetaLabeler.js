@@ -94,6 +94,16 @@ MetaLabeler.prototype = {
 
 	fromJSON : function(json) {
 	},
+	
+	/**
+	 * Link to a FeatureLookupTable from a higher level in the hierarchy (typically from an EnhancedClassifier), used ONLY for generating meaningful explanations. 
+	 */
+	setFeatureLookupTable: function(featureLookupTable) {
+		if (this.ranker.setFeatureLookupTable)
+			this.ranker.setFeatureLookupTable(featureLookupTable);
+		if (this.counter.setFeatureLookupTable)
+			this.counter.setFeatureLookupTable(featureLookupTable);
+	},
 }
 
 

@@ -19,8 +19,8 @@ function SvmPerf(opts) {
 	this.learn_args = opts.learn_args || "";
 	this.learn_args += " --b 0 ";  // we add the bias here, so we don't need SvmPerf to add it
 	this.model_file_prefix = opts.model_file_prefix || null;
-	this.bias = opts.bias || 1.0;
-	this.debug = opts.debug||false;
+	this.bias = 'bias' in opts? opts.bias: 1.0;
+	this.debug = opts.debug || false;
 }
 
 var fs   = require('fs')
@@ -30,7 +30,7 @@ var fs   = require('fs')
   , svmcommon = require('./svmcommon')
   ;
 
-
+var FIRST_FEATURE_NUMBER=1;  // in svm perf, feature numbers start with 1, not 0!
 
 SvmPerf.prototype = {
 		trainOnline: function(features, expected) {
@@ -44,7 +44,7 @@ SvmPerf.prototype = {
 		 */
 		trainBatch: function(dataset) {
 			if (this.debug) console.log("trainBatch start");
-			var learnFile = svmcommon.writeDatasetToFile(dataset, this.bias, /*binarize=*/true, this.model_file_prefix, "SvmPerf");
+			var learnFile = svmcommon.writeDatasetToFile(dataset, this.bias, /*binarize=*/true, this.model_file_prefix, "SvmPerf", FIRST_FEATURE_NUMBER);
 			var modelFile = learnFile.replace(/[.]learn/,".model");
 			var command = "svm_perf_learn "+this.learn_args+" "+learnFile + " "+modelFile;
 			if (this.debug) console.log("running "+command);
@@ -57,13 +57,11 @@ SvmPerf.prototype = {
 			}
 			
 			var modelString = fs.readFileSync(modelFile, "utf-8");
-			this.modelMap = modelStringToModelMap(modelString, this.bias);
+			this.modelMap = modelStringToModelMap(modelString);  // weights in modelMap start from 0 (- the bias).
 			
 			if (this.debug) console.dir(this.modelMap);
 			if (this.debug) console.log("trainBatch end");
 		},
-	
-		
 
 		/**
 		 * @param features - a feature-value hash.
@@ -72,7 +70,15 @@ SvmPerf.prototype = {
 		 * @return the binary classification - 0 or 1.
 		 */
 		classify: function(features, explain, continuous_output) {
-			return svmcommon.classifyWithModelMap(this.modelMap, this.bias, features, explain, continuous_output);
+			return svmcommon.classifyWithModelMap(
+					this.modelMap, this.bias, features, explain, continuous_output, this.featureLookupTable);
+		},
+
+		/**
+		 * Link to a FeatureLookupTable from a higher level in the hierarchy (typically from an EnhancedClassifier), used ONLY for generating meaningful explanations. 
+		 */
+		setFeatureLookupTable: function(featureLookupTable) {
+			this.featureLookupTable = featureLookupTable;
 		},
 };
 
@@ -93,7 +99,7 @@ var SVM_PERF_MODEL_PATTERN = new RegExp(
  * @param modelString a string.
  * @returns a map.
  */
-function modelStringToModelMap(modelString, bias) {
+function modelStringToModelMap(modelString) {
 	var matches = SVM_PERF_MODEL_PATTERN.exec(modelString);
 	if (!matches) {
 		console.log(modelString);
@@ -114,7 +120,8 @@ function modelStringToModelMap(modelString, bias) {
 		if (feature<=0)
 			throw new IllegalArgumentException("Non-positive feature id: featureAndWeight="+featureAndWeight);
 		var weight = parseFloat(featureWeight[1]);
-		mapFeatureToWeight[feature-1]=weight;   // start feature values from 0
+		mapFeatureToWeight[feature-FIRST_FEATURE_NUMBER]=weight;   // start feature values from 0.
+			// Note: if there is bias, then mapFeatureToWeight[0] is its weight.
 	}
 	return mapFeatureToWeight;
 }

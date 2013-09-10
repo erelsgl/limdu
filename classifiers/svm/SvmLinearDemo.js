@@ -17,8 +17,8 @@ var trainSet = [
 var svm = new SvmLinear(
 	{
 		learn_args: "-c 20", 
-		model_file_prefix: "demofiles/SvmLinearDemo",
-		debug: true
+		model_file_prefix: "tempfiles/SvmLinearDemo",
+		debug: false
 	}
 );
 svm.trainBatch(trainSet);

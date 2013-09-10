@@ -12,12 +12,12 @@
  * @param bias if nonzero, add it at the beginning of the vector.
  * @param binarize if true, change output to -1/1. If false, leave output as it is
  */
-exports.toSvmLight = function(dataset, bias, binarize) {
+exports.toSvmLight = function(dataset, bias, binarize, firstFeatureNumber) {
 	var lines = "";
 	for (var i=0; i<dataset.length; ++i) {
 		var line = (i>0? "\n": "") + 
 			(binarize? (dataset[i].output>0? "1": "-1"): dataset[i].output) +  // in svm-light, the output comes first:
-			featureArrayToFeatureString(dataset[i].input, bias)
+			featureArrayToFeatureString(dataset[i].input, bias, firstFeatureNumber)
 			;
 		lines += line;
 	};
@@ -30,14 +30,14 @@ exports.toSvmLight = function(dataset, bias, binarize) {
 /**
  * convert an array of features to a single line in SVM-light format. The line starts with a space.
  */
-function featureArrayToFeatureString(features, bias) {
+function featureArrayToFeatureString(features, bias, firstFeatureNumber) {
 	if (!Array.isArray(features))
 		throw new Error("Expected an array, but got "+JSON.stringify(features))
-	var line = (bias? " 1:"+bias: "");
+	var line = (bias? " "+firstFeatureNumber+":"+bias: "");
 	for (var feature=0; feature<features.length; ++feature) {
 		var value = features[feature];
 		if (value)
-			line += (" "+(feature+1+(!!bias))+":"+value.toPrecision(5));
+			line += (" "+(feature+firstFeatureNumber+(bias?1:0))+":"+value.toPrecision(5));
 	}
 	return line;
 }

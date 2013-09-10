@@ -43,6 +43,10 @@ FeatureLookupTable.prototype = {
 		this.addFeature(feature);
 		return this.featureNameToFeatureIndex[feature];
 	},
+	
+	numberToFeature: function(number) {
+		return this.featureIndexToFeatureName[number];
+	},
 		
 	/**
 	 * Convert the given hash of features to a numeric array, using 0 for padding.

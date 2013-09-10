@@ -29,6 +29,7 @@ var util  = require('util')
   , svmcommon = require('./svmcommon')
   ;
 
+var FIRST_FEATURE_NUMBER=1;  // in lib linear, feature numbers start with 1
 
 
 SvmLinear.prototype = {
@@ -43,7 +44,8 @@ SvmLinear.prototype = {
 		 */
 		trainBatch: function(dataset) {
 			if (this.debug) console.log("trainBatch start");
-			var learnFile = svmcommon.writeDatasetToFile(dataset, this.bias, /*binarize=*/false, this.model_file_prefix, "SvmLinear");
+			var learnFile = svmcommon.writeDatasetToFile(
+					dataset, this.bias, /*binarize=*/false, this.model_file_prefix, "SvmLinear", FIRST_FEATURE_NUMBER);
 			var modelFile = learnFile.replace(/[.]learn/,".model");
 			
 			var command = "liblinear_train "+this.learn_args+" "+learnFile + " "+modelFile;
@@ -57,7 +59,7 @@ SvmLinear.prototype = {
 			}
 			
 			var modelString = fs.readFileSync(modelFile, "utf-8");
-			this.modelMap = modelStringToModelMap(modelString, this.bias);
+			this.modelMap = modelStringToModelMap(modelString);
 			
 			if (this.debug) console.dir(this.modelMap);
 			if (this.debug) console.log("trainBatch end");
@@ -72,7 +74,15 @@ SvmLinear.prototype = {
 		 * @return the binary classification - 0 or 1.
 		 */
 		classify: function(features, explain, continuous_output) {
-			return svmcommon.classifyWithModelMap(this.modelMap, this.bias, features, explain, continuous_output);
+			return svmcommon.classifyWithModelMap(
+					this.modelMap, this.bias, features, explain, continuous_output, this.featureLookupTable);
+		},
+
+		/**
+		 * Link to a FeatureLookupTable from a higher level in the hierarchy (typically from an EnhancedClassifier), used ONLY for generating meaningful explanations. 
+		 */
+		setFeatureLookupTable: function(featureLookupTable) {
+			this.featureLookupTable = featureLookupTable;
 		},
 };
 
@@ -84,8 +94,10 @@ SvmLinear.prototype = {
 
 var LIB_LINEAR_MODEL_PATTERN = new RegExp(
 		"[\\S\\s]*"+    // skip the beginning of string
-		"^bias ([\\S\\s]*)"+  // parse the bias line
-		"^w$"+                // start of weight vector
+		"^label (.*)$[\n\r]"+  // parse the label-list line
+		"^nr_feature .*$[\n\r]"+  // parse the feature-count line
+		"^bias (.*)$[\n\r]"+  // parse the bias line
+		"^w$[\n\r]"+                // start of weight vector
 		"([\\S\\s]*)" + // parse the weights
 		"", "m");
 
@@ -94,26 +106,26 @@ var LIB_LINEAR_MODEL_PATTERN = new RegExp(
  * @param modelString a string.
  * @returns mapFeatureToWeight.
  */
-function modelStringToModelMap(modelString, bias) {
+function modelStringToModelMap(modelString) {
 	var matches = LIB_LINEAR_MODEL_PATTERN.exec(modelString);
 	if (!matches) {
 		console.log(modelString);
 		throw new Error("Model does not match SVM-Linear format");
 	};
-	//var threshold = parseFloat(matches[1]);  // not needed - we use our own bias
-	var featuresAndWeights = matches[2].split(/\s+/);
+	var labels = matches[1].split(/\s+/);
+	//console.log("labels="+labels);
+	//var threshold = parseFloat(matches[2]);  // not needed - we use our own bias
+	var weightsOfFeatures = matches[3].split(/\s+/);
 	var mapFeatureToWeight = {};
 	//mapFeatureToWeight.threshold = threshold; // not needed - we use our own bias
 	
-	//String alphaTimesY = featuresAndWeights[0]; // always 1 in SvmLinear
-	
-	while (isNaN(parseFloat(featuresAndWeights[0])))
-		featuresAndWeights.shift();
-	for (var feature=0; feature<featuresAndWeights.length; ++feature) {
-		var weight = parseFloat(featuresAndWeights[feature]);
+	while (isNaN(parseFloat(weightsOfFeatures[0])))
+		weightsOfFeatures.shift();
+	for (var feature=0; feature<weightsOfFeatures.length; ++feature) {
+		var weight = parseFloat(weightsOfFeatures[feature]);
 		if (isNaN(weight))
 			continue;
-		mapFeatureToWeight[feature] = -weight;   // the weight represent class 0, so we have to take the negative
+		mapFeatureToWeight[feature] = labels[0]==0? -weight: weight;   // if the weight represent class 0, we have to take the negative
 	}
 	return mapFeatureToWeight;
 }

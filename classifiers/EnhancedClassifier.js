@@ -17,28 +17,30 @@ var hash = require('../utils/hash');
  * * 'minFeatureDocumentFrequency' - int - if positive, ignore features that appeared less than this number in the training set.
  * * 'pastTrainingSamples' - an array that keeps all past training samples, to enable retraining.
  * * 'spellChecker' - an initialized 'wordsworth' spell checker, to spell-check features during classification.
+ * * 'bias' - a 'bias' feature with a constant value (usually 1).
  */
 var EnhancedClassifier = function(opts) {
 	if (!opts.classifierType) {
 		console.dir(opts);
 		throw new Error("opts must contain classifierType");
 	}
-	this.classifierType = opts.classifierType;
+
+	this.classifier = new opts.classifierType();
+
 	this.inputSplitter = opts.inputSplitter;
 	this.setNormalizer(opts.normalizer);
 	this.setFeatureExtractor(opts.featureExtractor);
 	this.setFeatureExtractorForClassification(opts.featureExtractorForClassification);
-	this.featureLookupTable = opts.featureLookupTable;
+	this.setFeatureLookupTable(opts.featureLookupTable);
 	
 	this.multiplyFeaturesByIDF = opts.multiplyFeaturesByIDF;
 	this.minFeatureDocumentFrequency = opts.minFeatureDocumentFrequency || 0;
 	if (opts.multiplyFeaturesByIDF||opts.minFeatureDocumentFrequency) 
 		this.featureDocumentFrequency = {};
+	this.bias = opts.bias;
 	
 	this.spellChecker = opts.spellChecker;
 	this.pastTrainingSamples = opts.pastTrainingSamples;
-	
-	this.classifier = new this.classifierType();
 }
 
 EnhancedClassifier.prototype = {
@@ -66,6 +68,14 @@ EnhancedClassifier.prototype = {
 		}
 	},
 	
+	setFeatureLookupTable: function(featureLookupTable) {
+		if (featureLookupTable) {
+			this.featureLookupTable = featureLookupTable;
+			if (this.classifier.setFeatureLookupTable)
+				this.classifier.setFeatureLookupTable(featureLookupTable);  // for generating clearer explanations only
+		}
+	},
+
 	// private function: use this.normalizers to normalize the given sample:
 	normalizedSample: function(sample) {
 		if (this.normalizers) {
@@ -156,6 +166,8 @@ EnhancedClassifier.prototype = {
 			for (var feature in features)
 				if ((this.featureDocumentFrequency[feature]||0)<this.minFeatureDocumentFrequency)
 					delete features[feature];
+		if (this.bias && !features.bias)
+			features.bias = this.bias;
 	},
 	
 

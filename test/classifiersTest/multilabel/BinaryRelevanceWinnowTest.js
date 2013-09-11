@@ -59,7 +59,7 @@ var testMultiLabelClassifier = function(classifier) {
 	
 	it('supports ranking with scores', function() {
 		var a = classifier.classify({I:1 , want:1 , aa:1 }, /*explain=*/0, /*withScores=*/true);
-		//console.dir(a);
+//		console.dir(a);
 		a.should.have.lengthOf(3);
 		a[0][0].should.eql('A');
 		a[0][1].should.be.above(0);

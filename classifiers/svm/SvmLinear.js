@@ -13,12 +13,14 @@
  *	<li>learn_args - a string with arguments for liblinear_train
  *  <li>model_file_prefix - prefix to path to model file (optional; the default is to create a temporary file in the system temp folder).
  *  <li>bias - constant (bias) factor (default: 1).
+ *  <li>multiclass - if true, the 'classify' function returns an array [label,score]. If false (default), it returns only a score.
  */
 
 function SvmLinear(opts) {
 	this.learn_args = opts.learn_args || "";
 	this.model_file_prefix = opts.model_file_prefix || null;
 	this.bias = opts.bias || 1.0;
+	this.multiclass = opts.multiclass || false;
 	this.debug = opts.debug||false;
 }
 
@@ -58,11 +60,19 @@ SvmLinear.prototype = {
 				throw new Error("Failed to execute: "+command);
 			}
 			
-			var modelString = fs.readFileSync(modelFile, "utf-8");
-			this.modelMap = modelStringToModelMap(modelString);
-			
-			if (this.debug) console.dir(this.modelMap);
+			this.setModel(fs.readFileSync(modelFile, "utf-8"));
 			if (this.debug) console.log("trainBatch end");
+		},
+		
+		setModel: function(modelString) {
+			this.modelString = modelString;
+			this.mapLabelToMapFeatureToWeight = modelStringToModelMap(modelString);
+			this.allLabels = Object.keys(this.mapLabelToMapFeatureToWeight);
+			if (this.debug) console.dir(this.mapLabelToMapFeatureToWeight);
+		},
+		
+		getModelWeights: function() {
+			return (this.multiclass? this.mapLabelToMapFeatureToWeight: this.mapLabelToMapFeatureToWeight[1]);
 		},
 	
 		
@@ -74,8 +84,50 @@ SvmLinear.prototype = {
 		 * @return the binary classification - 0 or 1.
 		 */
 		classify: function(features, explain, continuous_output) {
-			return svmcommon.classifyWithModelMap(
-					this.modelMap, this.bias, features, explain, continuous_output, this.featureLookupTable);
+			var labels = [];
+			if (explain>0) var explanations = [];
+			for (var label in this.mapLabelToMapFeatureToWeight) {
+				var mapFeatureToWeight = this.mapLabelToMapFeatureToWeight[label];
+
+				var scoreWithExplain = svmcommon.classifyWithModelMap(
+					mapFeatureToWeight, this.bias, features, explain, /*continuous_output=*/true, this.featureLookupTable);
+				
+				var score = (explain>0? scoreWithExplain.classification: scoreWithExplain);
+				
+				var labelAndScore = [parseInt(label), score];
+				if (scoreWithExplain.explanation && explain>0) {
+					labelAndScore.push(this.multiclass? 
+						scoreWithExplain.explanation.join(" "):
+						scoreWithExplain.explanation)
+				}
+
+				labels.push(labelAndScore);
+			}
+			
+			labels.sort(function(a,b) {return b[1]-a[1]}); // sort by decreasing score
+			
+			if (explain>0) {
+				if (this.multiclass) {
+					var explanations = [];
+					labels.forEach(function(datum) {
+						explanations.push(datum[0]+": score="+JSON.stringify(datum[1])+" features="+datum[2]);
+						datum.pop();
+					});
+				} else {
+					var explanations = (labels[0][0]>0? labels[0][2]: labels[1][2])
+				}
+			}
+			
+			var result = (
+				!continuous_output?   labels[0][0]:
+					!this.multiclass? (labels[0][0]>0? labels[0][1]: labels[1][1]):
+					                  labels);
+			return (explain>0? 
+				{
+					classes: result,
+					explanation: explanations,
+				}:
+				result);
 		},
 
 		/**
@@ -91,20 +143,21 @@ SvmLinear.prototype = {
  * UTILS
  */
 
+var NEWLINE = require('os').EOL;
 
 var LIB_LINEAR_MODEL_PATTERN = new RegExp(
 		"[\\S\\s]*"+    // skip the beginning of string
-		"^label (.*)$[\n\r]"+  // parse the label-list line
-		"^nr_feature .*$[\n\r]"+  // parse the feature-count line
-		"^bias (.*)$[\n\r]"+  // parse the bias line
-		"^w$[\n\r]"+                // start of weight vector
+		"^label (.*)"+NEWLINE+  // parse the label-list line
+		"^nr_feature .*"+NEWLINE+  // parse the feature-count line (not used)
+		"^bias (.*)"+NEWLINE+  // parse the bias line (not used - we use our own bias)
+		"^w"+NEWLINE+                // start of weight matrix
 		"([\\S\\s]*)" + // parse the weights
 		"", "m");
 
 /**
- * A utility that converts a model in the SvmLinear format to a map of feature weights.
+ * A utility that converts a model in the SvmLinear format to a matrix of feature weights per label.
  * @param modelString a string.
- * @returns mapFeatureToWeight.
+ * @returns mapLabelToMapFeatureToWeight.
  */
 function modelStringToModelMap(modelString) {
 	var matches = LIB_LINEAR_MODEL_PATTERN.exec(modelString);
@@ -113,21 +166,34 @@ function modelStringToModelMap(modelString) {
 		throw new Error("Model does not match SVM-Linear format");
 	};
 	var labels = matches[1].split(/\s+/);
-	//console.log("labels="+labels);
-	//var threshold = parseFloat(matches[2]);  // not needed - we use our own bias
-	var weightsOfFeatures = matches[3].split(/\s+/);
-	var mapFeatureToWeight = {};
-	//mapFeatureToWeight.threshold = threshold; // not needed - we use our own bias
-	
-	while (isNaN(parseFloat(weightsOfFeatures[0])))
-		weightsOfFeatures.shift();
-	for (var feature=0; feature<weightsOfFeatures.length; ++feature) {
-		var weight = parseFloat(weightsOfFeatures[feature]);
-		if (isNaN(weight))
-			continue;
-		mapFeatureToWeight[feature] = labels[0]==0? -weight: weight;   // if the weight represent class 0, we have to take the negative
+	var mapLabelToMapFeatureToWeight = {};
+	for (var iLabel in labels) {
+		var label = labels[iLabel];
+		mapLabelToMapFeatureToWeight[label]={};
 	}
-	return mapFeatureToWeight;
+
+	var weightsMatrix = matches[3];
+	// each line represents a feature; each column represents a label:
+	
+	var weightsLines = weightsMatrix.split(NEWLINE);
+	for (var feature in weightsLines) {
+		var weights = weightsLines[feature].split(/\s+/);
+		weights.pop(); // ignore last weight, which is empty (-space)
+		if (weights.length==0)
+			continue; // ignore empty lines
+//		if (isNaN(parseFloat(weights[weights.length-1])))
+//			weights.pop();
+		if (weights.length==1 && labels.length==2)
+			weights[1] = -weights[0];
+		if (weights.length!=labels.length)
+			throw new Error("Model does not match SVM-Linear format: there are "+labels.length+" labels ("+labels+") and "+weights.length+" weights ("+weights+")");
+		for (var iLabel in labels) {
+			var label = labels[iLabel];
+			mapLabelToMapFeatureToWeight[label][feature]=parseFloat(weights[iLabel]);
+		}
+	}
+
+	return mapLabelToMapFeatureToWeight;
 }
 
 

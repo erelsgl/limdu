@@ -64,9 +64,9 @@ MultiLabelPassiveAggressive.prototype = {
 //		}
 		
 		scores = hash.inner_product_matrix(features, weights_for_classification); // scores is a map: category=>score
-		var scores_vector = _.pairs(scores); // scores_vector is an array of pairs [category,score]
-		scores_vector.sort(function(a,b) {return b[1]-a[1]}); // sort by decreasing score
-		return scores_vector; 
+		var scoresVector = _.pairs(scores); // scoresVector is an array of pairs [category,score]
+		scoresVector.sort(function(a,b) {return b[1]-a[1]}); // sort by decreasing score
+		return scoresVector; 
 	},
 	
 	/**

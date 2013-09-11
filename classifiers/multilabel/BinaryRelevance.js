@@ -112,17 +112,21 @@ BinaryRelevance.prototype = {
 		}
 		for (var label in this.mapClassnameToClassifier) {
 			var classifier = this.mapClassnameToClassifier[label];
-			var classification = classifier.classify(sample, explain, withScores);
-			var score = classification.explanation?  classification.classification: classification;
+			var scoreWithExplain = classifier.classify(sample, explain, withScores);
+			var score = scoreWithExplain.explanation?  scoreWithExplain.classification: scoreWithExplain;
 
-			var explanations_string = ((classification.explanation && explain>0)?
-				classification.explanation.reduce(function(a,b) {
-					return a + " " + b;
-				}, ""):
-				null);
+		
+			var explanations_string = ((scoreWithExplain.explanation && explain>0)?
+				// cannot use .join here
+					scoreWithExplain.explanation.reduce(function(a,b) {
+						return a + " " + b;
+					}, ""):
+					null);
 			
 			if (withScores) {
-				labels.push(explanations_string? [label, score, explanations_string]: [label, score]);
+				var labelAndScore = [label, score];
+				if (explanations_string) labelAndScore.push(explanations_string);
+				labels.push(labelAndScore);
 			} else if (score>0.5) {
 				labels.push(label);
 				if (explanations_string) positive_explanations[label]=explanations_string;
@@ -135,8 +139,6 @@ BinaryRelevance.prototype = {
 			if (explain>0) {
 				var explanations = [];
 				labels.forEach(function(datum) {
-					if (JSON.stringify(datum[1])==='null')
-						throw new Error("null value in datum: "+datum);
 					explanations.push(datum[0]+": score="+JSON.stringify(datum[1])+" features="+datum[2]);
 					datum.pop();
 				});

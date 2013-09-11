@@ -56,11 +56,18 @@ SvmPerf.prototype = {
 				throw new Error("Failed to execute: "+command);
 			}
 			
-			var modelString = fs.readFileSync(modelFile, "utf-8");
-			this.modelMap = modelStringToModelMap(modelString);  // weights in modelMap start from 0 (- the bias).
-			
-			if (this.debug) console.dir(this.modelMap);
+			this.setModel(fs.readFileSync(modelFile, "utf-8"));
 			if (this.debug) console.log("trainBatch end");
+		},
+		
+		setModel: function(modelString) {
+			this.modelString = modelString;
+			this.mapFeatureToWeight = modelStringToModelMap(modelString);  // weights in modelMap start from 0 (- the bias).
+			if (this.debug) console.dir(this.mapFeatureToWeight);
+		},
+		
+		getModelWeights: function() {
+			return this.mapFeatureToWeight;
 		},
 
 		/**
@@ -71,7 +78,7 @@ SvmPerf.prototype = {
 		 */
 		classify: function(features, explain, continuous_output) {
 			return svmcommon.classifyWithModelMap(
-					this.modelMap, this.bias, features, explain, continuous_output, this.featureLookupTable);
+					this.mapFeatureToWeight, this.bias, features, explain, continuous_output, this.featureLookupTable);
 		},
 
 		/**
@@ -86,7 +93,6 @@ SvmPerf.prototype = {
 /*
  * UTILS
  */
-
 
 var SVM_PERF_MODEL_PATTERN = new RegExp(
 		"[\\S\\s]*"+    // skip the beginning of string

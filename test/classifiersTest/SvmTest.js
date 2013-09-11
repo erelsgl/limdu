@@ -1,5 +1,5 @@
 /**
- * a unit-test for SvmLinear classifier (a wrapper for LibLinear)
+ * a unit-test for SvmLinear classifier (a wrapper for LibLinear) and SvmPerf classifier.
  * 
  * @author Erel Segal-Halevi
  * @since 2013-08
@@ -25,9 +25,10 @@ function test(name, SvmClassifier) {
 			//        0.5+x-y = 0
 			//  or:   2y-2x-1 = 0
 			//classifier.modelMap.should.eql({ '0': -1, '1': -2, '2': 2 });  // the LibLinear algorithm is not accurate:
-			classifier.modelMap[0].should.be.within(-1.5,-0.5);
-			classifier.modelMap[1].should.be.within(-2.5,-1.5);
-			classifier.modelMap[2].should.be.within(1.5,2.5);
+			var modelWeights = classifier.getModelWeights();
+			modelWeights[0].should.be.within(-1.5,-0.5);
+			modelWeights[1].should.be.within(-2.5,-1.5);
+			modelWeights[2].should.be.within(1.5,2.5);
 		})
 		
 		
@@ -36,7 +37,7 @@ function test(name, SvmClassifier) {
 			classifier.classify([1,0]).should.eql(0);
 		})
 		
-		it('explains its classifications', function() {
+		it('explains its decisions', function() {
 			classifier.classify([0,2], 2).should.have.property("explanation").with.lengthOf(2);
 			classifier.classify([1,0], 3).should.have.property("explanation").with.lengthOf(3);
 		})

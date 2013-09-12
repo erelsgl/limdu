@@ -29,6 +29,7 @@ var util  = require('util')
   , exec = require('child_process').exec
   , fs   = require('fs')
   , svmcommon = require('./svmcommon')
+  , _ = require('underscore')._
   ;
 
 var FIRST_FEATURE_NUMBER=1;  // in lib linear, feature numbers start with 1
@@ -45,6 +46,11 @@ SvmLinear.prototype = {
 		 * @param dataset an array of samples of the form {input: [value1, value2, ...] , output: 0/1} 
 		 */
 		trainBatch: function(dataset) {
+			this.allLabels = _(dataset).map(function(datum){return datum.output});
+			this.allLabels = _.uniq(this.allLabels);
+			if (this.allLabels.length==1) // a single label
+				return;
+			//console.log(util.inspect(dataset,{depth:1}));
 			if (this.debug) console.log("trainBatch start");
 			var learnFile = svmcommon.writeDatasetToFile(
 					dataset, this.bias, /*binarize=*/false, this.model_file_prefix, "SvmLinear", FIRST_FEATURE_NUMBER);
@@ -52,14 +58,14 @@ SvmLinear.prototype = {
 			
 			var command = "liblinear_train "+this.learn_args+" "+learnFile + " "+modelFile;
 			if (this.debug) console.log("running "+command);
-	
+
 			var result = execSync(command);
 			if (result.code>0) {
 				console.dir(result);
 				console.log(fs.readFileSync(learnFile, 'utf-8'));
 				throw new Error("Failed to execute: "+command);
 			}
-			
+
 			this.setModel(fs.readFileSync(modelFile, "utf-8"));
 			if (this.debug) console.log("trainBatch end");
 		},
@@ -84,6 +90,18 @@ SvmLinear.prototype = {
 		 * @return the binary classification - 0 or 1.
 		 */
 		classify: function(features, explain, continuous_output) {
+			if (this.allLabels.length==1) {  // a single label
+				var result = (
+						!continuous_output?   this.allLabels[0]:
+							!this.multiclass? 1.0:
+							                  [[this.allLabels[0], 1.0]]);
+				return (explain>0? 
+						{
+							classes: result,
+							explanation: ["Single label ("+result+") - no classification needed"],
+						}:
+						result);
+			}
 			var labels = [];
 			if (explain>0) var explanations = [];
 			for (var label in this.mapLabelToMapFeatureToWeight) {

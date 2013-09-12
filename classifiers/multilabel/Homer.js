@@ -30,7 +30,7 @@ var Homer = function(opts) {
 	this.joinLabel  = opts.joinLabel  || function(superlabel) {return superlabel.join("@");}
 	
 	this.root = {
-		superlabelClassifier: new this.multilabelClassifierType(),
+		superlabelClassifier: this.newMultilabelClassifier(),
 		mapSuperlabelToBranch: {}
 	}
 	
@@ -78,12 +78,11 @@ Homer.prototype = {
 			}
 		}
 
-		//console.log("train the superlabel classifier: sample="+JSON.stringify(sample)+", superlabels="+JSON.stringify(superlabels));
 		treeNode.superlabelClassifier.trainOnline(sample, superlabels);
 		for (var superlabel in mapSuperlabelToRest) {
 			if (!(superlabel in treeNode.mapSuperlabelToBranch)) {
 				treeNode.mapSuperlabelToBranch[superlabel] = {
-					superlabelClassifier: new this.multilabelClassifierType(),
+					superlabelClassifier: this.newMultilabelClassifier(),
 					mapSuperlabelToBranch: {}
 				}
 			}
@@ -149,7 +148,7 @@ Homer.prototype = {
 		for (var superlabel in mapSuperlabelToRestDataset) {
 			if (!(superlabel in treeNode.mapSuperlabelToBranch)) {
 				treeNode.mapSuperlabelToBranch[superlabel] = {
-					superlabelClassifier: new this.multilabelClassifierType(),
+					superlabelClassifier: this.newMultilabelClassifier(),
 					mapSuperlabelToBranch: {}
 				}
 			}
@@ -189,7 +188,7 @@ Homer.prototype = {
 		var superlabels = (explain>0? superlabelsWithExplain.classes: superlabelsWithExplain);
 		var splitLabels = [];
 		if (explain>0) {
-			var explanations = ["depth="+depth, superlabelsWithExplain.explanation];
+			var explanations = ["depth="+depth+": "+superlabels, superlabelsWithExplain.explanation];
 		}
 		for (var i in superlabels) {
 			var superlabel = superlabels[i];
@@ -242,17 +241,43 @@ Homer.prototype = {
 		var treeNode = {
 			mapSuperlabelToBranch: {}
 		}; 
-		treeNode.superlabelClassifier =  new this.multilabelClassifierType();
+		treeNode.superlabelClassifier =  this.newMultilabelClassifier();
 		treeNode.superlabelClassifier.fromJSON(treeNodeJson.superlabelClassifier);
-		for (var superlabel in treeNodeJson.mapSuperlabelToBranch) {
-			treeNode.mapSuperlabelToBranch[superlabel] = this.fromJSONRecursive(treeNodeJson.mapSuperlabelToBranch[superlabel]);
-		}
+		for (var superlabel in treeNodeJson.mapSuperlabelToBranch) 
+			treeNode.mapSuperlabelToBranch[superlabel] = 
+				this.fromJSONRecursive(treeNodeJson.mapSuperlabelToBranch[superlabel]);
 		return treeNode;
 	},
 
 	getAllClasses: function() {
 		return Object.keys(this.allClasses);
 	},
+	
+	/**
+	 * Link to a FeatureLookupTable from a higher level in the hierarchy (typically from an EnhancedClassifier), used ONLY for generating meaningful explanations. 
+	 */
+	setFeatureLookupTableRecursive: function(featureLookupTable, treeNode) {
+		if (treeNode.superlabelClassifier && treeNode.superlabelClassifier.setFeatureLookupTable)
+			treeNode.superlabelClassifier.setFeatureLookupTable(featureLookupTable);
+		for (var superlabel in treeNode.mapSuperlabelToBranch)
+			this.setFeatureLookupTableRecursive(featureLookupTable, treeNode.mapSuperlabelToBranch[superlabel]);
+	},
+	
+	/**
+	 * Link to a FeatureLookupTable from a higher level in the hierarchy (typically from an EnhancedClassifier), used ONLY for generating meaningful explanations. 
+	 */
+	setFeatureLookupTable: function(featureLookupTable) {
+		this.featureLookupTable = featureLookupTable;
+		this.setFeatureLookupTableRecursive(featureLookupTable, this.root);
+	},
+	
+	
+	newMultilabelClassifier: function() {
+		var classifier = new this.multilabelClassifierType();
+		if (this.featureLookupTable && classifier.setFeatureLookupTable)
+			classifier.setFeatureLookupTable(this.featureLookupTable);
+		return classifier;
+	}
 }
 
 

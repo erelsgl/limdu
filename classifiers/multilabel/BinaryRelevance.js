@@ -3,10 +3,11 @@ var sprintf = require("sprintf").sprintf;
 var _ = require("underscore")._;
 
 /**
- * BinaryRelevance - Multi-label classifier, based on a collection of binary classifiers.  
+ * BinaryRelevance - Multi-label classifier, based on a collection of binary classifiers. 
+ * Also known as: One-vs-All.
  * 
  * @param opts
- *            binaryClassifierType (mandatory) - the type of the base binary classifier. 
+ *            binaryClassifierType (mandatory) - the type of the base binary classifier. There is one such classifier per label. 
  */
 var BinaryRelevance = function(opts) {
 	if (!opts.binaryClassifierType) {

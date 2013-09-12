@@ -70,9 +70,10 @@ MetaLabeler.prototype = {
 		var rankedLabelsWithExplain = this.ranker.classify(sample, explain, /*withScores=*/true);
 		var rankedLabels = (explain>0? rankedLabelsWithExplain.classes: rankedLabelsWithExplain);
 		var labelCountWithExplain = this.counter.classify(sample, explain, /*withScores=*/true);
-		//console.dir(this.counter);
 		//console.dir(labelCountWithExplain);
 		var labelCount = (explain>0? labelCountWithExplain.classes[0][0]: labelCountWithExplain[0][0]);
+		if (_.isString(labelCount)) labelCount = parseInt(labelCount);
+		//console.log("labelCount="+labelCount);
 		var positiveLabelsWithScores = rankedLabels.slice(0, labelCount);
 		var positiveLabels = positiveLabelsWithScores.map(function(labelWithScore) {return labelWithScore[0]});
 		return (explain>0? {

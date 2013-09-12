@@ -12,7 +12,8 @@ var hash = require('../utils/hash');
  * * 'normalizer' - a function that normalizes the input samples, before they are sent to feature extraction.
  * * 'featureExtractor' - a single feature-extractor (see the "features" folder), or an array of extractors, for extracting features from training and classification samples.
  * * 'featureExtractorForClassification' - additional feature extractor[s], for extracting features from samples during classification. Used for domain adaptation.
- * * 'featureLookupTable' - an instance of FeatureLookupTable for converting features to numeric indices and back.
+ * * 'featureLookupTable' - an instance of FeatureLookupTable for converting features (in the input) to numeric indices and back.
+ * * 'labelLookupTable' - an instance of FeatureLookupTable for converting labels (classes, in the output) to numeric indices and back.
  * * 'multiplyFeaturesByIDF' - boolean - if true, multiply each feature value by log(documentCount / (1+featureDocumentFrequency))
  * * 'minFeatureDocumentFrequency' - int - if positive, ignore features that appeared less than this number in the training set.
  * * 'pastTrainingSamples' - an array that keeps all past training samples, to enable retraining.
@@ -32,6 +33,7 @@ var EnhancedClassifier = function(opts) {
 	this.setFeatureExtractor(opts.featureExtractor);
 	this.setFeatureExtractorForClassification(opts.featureExtractorForClassification);
 	this.setFeatureLookupTable(opts.featureLookupTable);
+	this.setLabelLookupTable(opts.labelLookupTable);
 	
 	this.multiplyFeaturesByIDF = opts.multiplyFeaturesByIDF;
 	this.minFeatureDocumentFrequency = opts.minFeatureDocumentFrequency || 0;
@@ -73,6 +75,14 @@ EnhancedClassifier.prototype = {
 			this.featureLookupTable = featureLookupTable;
 			if (this.classifier.setFeatureLookupTable)
 				this.classifier.setFeatureLookupTable(featureLookupTable);  // for generating clearer explanations only
+		}
+	},
+	
+	setLabelLookupTable: function(labelLookupTable) {
+		if (labelLookupTable) {
+			this.labelLookupTable = labelLookupTable;
+			if (this.classifier.setLabelLookupTable)
+				this.classifier.setLabelLookupTable(labelLookupTable);  // for generating clearer explanations only
 		}
 	},
 
@@ -178,7 +188,7 @@ EnhancedClassifier.prototype = {
 	 * @param classes an array whose VALUES are classes.
 	 */
 	trainOnline: function(sample, classes) {
-		classes = normalizeClasses(classes);
+		classes = normalizeClasses(classes, this.labelLookupTable);
 		sample = this.normalizedSample(sample);
 		var features = this.sampleToFeatures(sample, this.featureExtractors);
 		this.countFeatures(features);
@@ -201,7 +211,7 @@ EnhancedClassifier.prototype = {
 
 		dataset = dataset.map(function(datum) {
 			//console.log(JSON.stringify(datum));
-			datum.output = normalizeClasses(datum.output);
+			datum.output = normalizeClasses(datum.output, this.labelLookupTable);
 			if (pastTrainingSamples)
 				pastTrainingSamples.push(datum);
 			datum = _(datum).clone();
@@ -251,7 +261,9 @@ EnhancedClassifier.prototype = {
 	classify: function(sample, explain, continuous_output) {
 		sample = this.normalizedSample(sample);
 		if (!this.inputSplitter) {
-			return this.classifyPart(sample, explain, continuous_output);
+			var classesWithExplanation = this.classifyPart(sample, explain, continuous_output);
+			var classes = (explain>0? classesWithExplanation.classes: classesWithExplanation);
+			var explanations = (explain>0? classesWithExplanation.explanation: null);
 		} else {
 			var parts = 	this.inputSplitter(sample);
 			var accumulatedClasses = {};
@@ -269,14 +281,28 @@ EnhancedClassifier.prototype = {
 				//console.log(part+" "+JSON.stringify(accumulatedClasses));
 			}, this);
 			classes = Object.keys(accumulatedClasses);
-			if (explain>0) 
-				return {
-					classes: classes,
-					explanation: explanations
-				};
-			else
-				return classes;
 		}
+		
+		if (this.labelLookupTable) {
+//			console.log("before: "+classes)
+			classes = _.isArray(classes)? 
+				classes.map(function(label) {
+					if (_.isArray(label))
+						label[0] = this.labelLookupTable.numberToFeature(label[0]);
+					else
+						label = this.labelLookupTable.numberToFeature(label);
+					return label;
+				}, this):
+				this.labelLookupTable.numberToFeature(classes);
+//			console.log("after: "+classes)
+		}
+		if (explain>0) 
+			return {
+				classes: classes,
+				explanation: explanations
+			};
+		else
+			return classes;
 	},
 
 	
@@ -358,12 +384,14 @@ var stringifyClass = function (aClass) {
 	return (_(aClass).isString()? aClass: JSON.stringify(aClass));
 }
 
-var normalizeClasses = function (expectedClasses) {
-	if (!Array.isArray(expectedClasses))
-		expectedClasses = [expectedClasses];
-	expectedClasses = expectedClasses.map(stringifyClass);
-	expectedClasses.sort();
-	return expectedClasses;
+var normalizeClasses = function (classes, labelLookupTable) {
+	if (!Array.isArray(classes))
+		classes = [classes];
+	classes = classes.map(stringifyClass);
+	if (labelLookupTable)
+		classes = classes.map(labelLookupTable.featureToNumber, labelLookupTable);
+	classes.sort();
+	return classes;
 }
 
 module.exports = EnhancedClassifier;

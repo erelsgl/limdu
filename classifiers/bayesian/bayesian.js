@@ -66,10 +66,12 @@ Bayesian.prototype = {
 		
 		var max = this.bestMatch(probs);
 		if (explain>0) {
-			max.explanation = probs.map(function(pair) {
-				return pair[0]+": "+pair[1]
-			});
-			return max;
+			return {
+				classes: max.category,
+				explanation: probs.map(function(pair) {
+					return pair[0]+": "+pair[1]
+				})
+			};
 		} else {
 			return max.category;
 		}

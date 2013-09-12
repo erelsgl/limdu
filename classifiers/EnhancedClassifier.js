@@ -354,6 +354,7 @@ EnhancedClassifier.prototype = {
 		return {
 			classifier: this.classifier.toJSON(callback),
 			featureLookupTable: (this.featureLookupTable? this.featureLookupTable.toJSON(): undefined),
+			labelLookupTable: (this.labelLookupTable? this.labelLookupTable.toJSON(): undefined),
 			spellChecker:  (this.spellChecker? this.spellChecker/*.toJSON()*/: undefined),
 			pastTrainingSamples: (this.pastTrainingSamples? this.pastTrainingSamples: undefined),
 			featureDocumentFrequency: this.featureDocumentFrequency,
@@ -365,6 +366,7 @@ EnhancedClassifier.prototype = {
 	fromJSON : function(json) {
 		this.classifier.fromJSON(json.classifier);
 		if (this.featureLookupTable) this.featureLookupTable.fromJSON(json.featureLookupTable);
+		if (this.labelLookupTable) this.labelLookupTable.fromJSON(json.labelLookupTable);
 		if (this.spellChecker) this.spellChecker = json.spellChecker; 
 		if (this.pastTrainingSamples) this.pastTrainingSamples = json.pastTrainingSamples;
 		this.featureDocumentFrequency = json.featureDocumentFrequency;

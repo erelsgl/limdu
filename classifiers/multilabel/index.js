@@ -5,6 +5,7 @@ module.exports = {
 	MulticlassSegmentation: require('./MulticlassSegmentation'),
 	Homer:                  require('./Homer'),
 	MetaLabeler:            require('./MetaLabeler'),
+	CrossLanguageModel:     require('./CrossLanguageModel')
 }
 
 // add a "classify and log" method to all classifiers, for demos:

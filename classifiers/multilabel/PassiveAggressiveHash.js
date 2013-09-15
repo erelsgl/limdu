@@ -2,6 +2,7 @@ var hash = require("../../utils/hash");
 var sprintf = require("sprintf").sprintf;
 var _ = require("underscore")._;
 var util = require("util");
+var mapScoresVectorToMultilabelResult = require('./MapScoresVectorToMultilabelResult');
 
 
 
@@ -160,22 +161,8 @@ MultiLabelPassiveAggressive.prototype = {
 	 */
 	classify : function(features, explain, withScores) {
 		this.editFeatureValues(features, /*remove_unknown_features=*/true);
-		var ranks = this.predict(features, /*averaging=*/true, explain);
-		var results;
-		if (withScores) {
-			results = ranks;
-		} else {
-			results = [];
-			ranks.forEach(function(pair) {
-				if (pair[1]>0)
-					results.push(pair[0]);
-			});
-		}
-		return explain>0? 	{
-			classes: results, 
-			explanation: ranks.map(function(pair) {return pair[0]+": "+pair[1];})
-		}: 
-		results; 
+		var scoresVector = this.predict(features, /*averaging=*/true, explain);
+		return mapScoresVectorToMultilabelResult(scoresVector, explain, withScores, /*threshold=*/0);
 	},
 
 	

@@ -86,17 +86,18 @@ SvmPerf.prototype = {
 		 * Link to a FeatureLookupTable from a higher level in the hierarchy (typically from an EnhancedClassifier), used ONLY for generating meaningful explanations. 
 		 */
 		setFeatureLookupTable: function(featureLookupTable) {
+			//console.log("SVMPERF setFeatureLookupTable "+featureLookupTable);
 			this.featureLookupTable = featureLookupTable;
 		},
 		
 		toJSON: function() {
-			return this.modelString
-			//return this.mapFeatureToWeight; // much larger, not much faster
+			//return this.modelString
+			return this.mapFeatureToWeight; 
 		},
 		
 		fromJSON: function(json) {
-			this.setModel(json);
-			//this.mapFeatureToWeight = json;  // much larger, not much faster
+			//this.setModel(json);
+			this.mapFeatureToWeight = json;  
 		},
 };
 
@@ -110,6 +111,8 @@ var SVM_PERF_MODEL_PATTERN = new RegExp(
 		"^([\\S\\s]*) # threshold b[\\S\\s]*"+  // parse the threshold line
 		"^([\\S\\s]*) #[\\S\\s]*" + // parse the weights line
 		"", "m");
+
+var MIN_WEIGHT = 1e-5; // weights smaller than this are ignored, to save space
 
 /**
  * A utility that converts a model in the SVMPerf format to a map of feature weights.
@@ -137,7 +140,8 @@ function modelStringToModelMap(modelString) {
 		if (feature<=0)
 			throw new IllegalArgumentException("Non-positive feature id: featureAndWeight="+featureAndWeight);
 		var weight = parseFloat(featureWeight[1]);
-		mapFeatureToWeight[feature-FIRST_FEATURE_NUMBER]=weight;   // start feature values from 0.
+		if (Math.abs(weight)>=MIN_WEIGHT)
+			mapFeatureToWeight[feature-FIRST_FEATURE_NUMBER]=weight;   // start feature values from 0.
 			// Note: if there is bias, then mapFeatureToWeight[0] is its weight.
 	}
 	return mapFeatureToWeight;

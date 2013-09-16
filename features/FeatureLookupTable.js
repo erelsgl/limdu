@@ -123,6 +123,7 @@ FeatureLookupTable.prototype = {
 	fromJSON: function(json) {
 		this.featureIndexToFeatureName = json.featureIndexToFeatureName;
 		this.featureNameToFeatureIndex = json.featureNameToFeatureIndex;
+		return this;
 	},
 }
 

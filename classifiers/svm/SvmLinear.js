@@ -156,11 +156,13 @@ SvmLinear.prototype = {
 		},
 		
 		toJSON: function() {
-			return this.modelString
+			//return this.modelString
+			return this.mapFeatureToWeight; 
 		},
 		
 		fromJSON: function(json) {
-			this.setModel(json);
+			//this.setModel(json);
+			this.mapFeatureToWeight = json;  
 		},
 };
 
@@ -179,6 +181,8 @@ var LIB_LINEAR_MODEL_PATTERN = new RegExp(
 		"^w"+NEWLINE+                // start of weight matrix
 		"([\\S\\s]*)" + // parse the weights
 		"", "m");
+
+var MIN_WEIGHT = 1e-5; // weights smaller than this are ignored, to save space
 
 /**
  * A utility that converts a model in the SvmLinear format to a matrix of feature weights per label.
@@ -215,7 +219,9 @@ function modelStringToModelMap(modelString) {
 			throw new Error("Model does not match SVM-Linear format: there are "+labels.length+" labels ("+labels+") and "+weights.length+" weights ("+weights+")");
 		for (var iLabel in labels) {
 			var label = labels[iLabel];
-			mapLabelToMapFeatureToWeight[label][feature]=parseFloat(weights[iLabel]);
+			var weight = parseFloat(weights[iLabel]);
+			if (Math.abs(weight)>=MIN_WEIGHT)
+				mapLabelToMapFeatureToWeight[label][feature]=weight;
 		}
 	}
 

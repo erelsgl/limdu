@@ -87,26 +87,30 @@ exports.fromString = function(string, contextFolderForFunction) {
  * @param createNewClassifierFunction [optional] a function for creating a new (untrained) classifier. This function will be saved verbatim in the file, in order to reproduce the exact type of the classifier.
  * @param contextFolderForFunction  the base folder for the "require" statements in the create-new-classifier function.
  * @param testSet an array of {input: ... , output: ...} pairs, for testing the classifier before and after reload.
+ * @param explain (int) if positive, also compare the explanations.
  * @return A nicely-formatted string. Can be saved directly to a file. 
  */
-exports.toStringVerified = function(classifier, createNewClassifierFunction, contextFolderForFunction, testSet) {
+exports.toStringVerified = function(classifier, createNewClassifierFunction, contextFolderForFunction, testSet, explain) {
 	var should = require("should");
 	var resultsBeforeReload = [];
 	
 	for (var i=0; i<testSet.length; ++i) {
-		var actualClasses = classifier.classify(testSet[i].input);  
-		actualClasses.sort();
+		var actualClasses = classifier.classify(testSet[i].input, explain);
 		resultsBeforeReload[i] = actualClasses;
 	}
-	
+
 	var string = exports.toString(classifier, createNewClassifierFunction);
 	
 	var classifier2 = exports.fromString(string, contextFolderForFunction);
 	
 	for (var i=0; i<testSet.length; ++i) {
-		var actualClasses = classifier2.classify(testSet[i].input);
-		actualClasses.sort();
-		actualClasses.should.eql(resultsBeforeReload[i]);
+		var actualClasses = classifier2.classify(testSet[i].input, explain);
+		if (explain>0) {
+			actualClasses.classes.should.eql(resultsBeforeReload[i].classes);
+			actualClasses.explanation.should.eql(resultsBeforeReload[i].explanation);
+		} else {
+			actualClasses.should.eql(resultsBeforeReload[i]);
+		}
 	}
 	
 	return string;

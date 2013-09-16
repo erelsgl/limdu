@@ -20,17 +20,17 @@ module.exports = function(regexpString, delimitersToInclude) {
 		var parts = text.split(regexp);
 		var normalizedParts = [];
 		for (var i=0; i<parts.length; i+=2) {
-			parts[i] = parts[i].replace(/^\s+/,"").replace(/\s+$/,"");
-			if (parts[i].length==0) continue;
+			parts[i] = parts[i].trim();
+			var part = parts[i];
 			if (i+1<parts.length) {
 				var delimiter = parts[i+1];
-				normalizedParts.push(delimitersToInclude[delimiter]?
-					parts[i]+" "+delimiter:
-					parts[i]);
-			} else {
-				normalizedParts.push(parts[i]);
+				if (delimitersToInclude[delimiter])
+					part += " " + delimiter;
 			}
+			if (part.length>0)
+				normalizedParts.push(part);
 		}
+		//console.log(text);
 		//console.dir(normalizedParts);
 		return normalizedParts;
 	}

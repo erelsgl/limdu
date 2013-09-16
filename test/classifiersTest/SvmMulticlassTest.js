@@ -91,7 +91,7 @@ describe('SVM-LibLinear multiclass'+' with numeric features and string labels', 
 	it('supports classification with scores', function() {
 		classifier.classify([1,0],0,true).should.have.lengthOf(3);
 		classifier.classify([0,1.3],0,true)[0].should.have.lengthOf(2);
-		classifier.classify([0,1.7],0,true)[0][0].should.equal('c');
+		classifier.classify([0,1.7],0,true)[0][0].should.equal('c');  // must be the first!
 		classifier.classify([0,3],0,true)[0][1].should.be.within(2.5,3.5);
 	})
 })

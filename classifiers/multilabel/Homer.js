@@ -183,10 +183,8 @@ Homer.prototype = {
 	 *  @return an array of arrays, where each internal array represents a split label.
 	 */
 	classifyRecursive: function(sample, explain, treeNode, depth) {
-		//console.log("start classifyRecursive "+Object.keys(sample)+", explain="+explain+", depth="+depth);
 		if (!depth) depth = 1;
 		var superlabelsWithExplain = treeNode.superlabelClassifier.classify(sample, explain);
-		//console.log("   sample="+Object.keys(sample));
 		var superlabels = (explain>0? superlabelsWithExplain.classes: superlabelsWithExplain);
 		var splitLabels = [];
 		if (explain>0) {
@@ -207,7 +205,6 @@ Homer.prototype = {
 				splitLabels.push(splitLabel);
 			}
 		}
-		//console.log("end   classifyRecursive "+Object.keys(sample)+", explain="+explain+", depth="+depth+" = "+JSON.stringify(splitLabels));
 		return (explain>0? 
 				{classes: splitLabels, explanation: explanations}:
 				splitLabels);
@@ -221,7 +218,6 @@ Homer.prototype = {
 	},
 	
 	toJSONRecursive: function(treeNode) {
-		//console.log("start toJSONRecursive: " +util.inspect(treeNode, {depth:1}));
 		var treeNodeJson = { 
 			superlabelClassifier: treeNode.superlabelClassifier.toJSON(),
 			mapSuperlabelToBranch: {}
@@ -229,7 +225,6 @@ Homer.prototype = {
 		for (var superlabel in treeNode.mapSuperlabelToBranch) {
 			treeNodeJson.mapSuperlabelToBranch[superlabel] = this.toJSONRecursive(treeNode.mapSuperlabelToBranch[superlabel]);
 		}
-		//console.log("end   toJSONRecursive: " +util.inspect(treeNodeJson, {depth:1}));
 		return treeNodeJson;
 	},
 
@@ -269,6 +264,7 @@ Homer.prototype = {
 	 * Link to a FeatureLookupTable from a higher level in the hierarchy (typically from an EnhancedClassifier), used ONLY for generating meaningful explanations. 
 	 */
 	setFeatureLookupTable: function(featureLookupTable) {
+		//console.log("HOMER setFeatureLookupTable "+featureLookupTable);
 		this.featureLookupTable = featureLookupTable;
 		this.setFeatureLookupTableRecursive(featureLookupTable, this.root);
 	},

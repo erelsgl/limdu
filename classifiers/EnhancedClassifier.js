@@ -282,19 +282,21 @@ EnhancedClassifier.prototype = {
 			}, this);
 			classes = Object.keys(accumulatedClasses);
 		}
+//		if (Array.isArray(classes) && !continuous_output) 
+//			classes.sort(); // to make results repeatable
 		
 		if (this.labelLookupTable) {
-//			console.log("before: "+classes)
-			classes = _.isArray(classes)? 
-				classes.map(function(label) {
-					if (_.isArray(label))
-						label[0] = this.labelLookupTable.numberToFeature(label[0]);
-					else
-						label = this.labelLookupTable.numberToFeature(label);
-					return label;
-				}, this):
-				this.labelLookupTable.numberToFeature(classes);
-//			console.log("after: "+classes)
+			if (Array.isArray(classes)) {
+				classes = classes.map(function(label) {
+						if (_.isArray(label))
+							label[0] = this.labelLookupTable.numberToFeature(label[0]);
+						else
+							label = this.labelLookupTable.numberToFeature(label);
+						return label;
+					}, this);
+			} else {
+				classes = this.labelLookupTable.numberToFeature(classes);
+			}
 		}
 		if (explain>0) 
 			return {
@@ -308,27 +310,28 @@ EnhancedClassifier.prototype = {
 	
 	/**
 	 * Train on past training samples
+	 * currently doesn't work
 	 */
-	retrain: function() {
-		if (!this.pastTrainingSamples)
-			throw new Error("No pastTrainingSamples array - can't retrain");
-			
-		var featureLookupTable = this.featureLookupTable;
-		var featureExtractor = this.featureExtractors;
-		var dataset = this.pastTrainingSamples;
-
-		dataset = dataset.map(function(datum) {
-			datum = _(datum).clone();
-			if (normalizer)
-				datum.input = normalizer(datum.input);
-			if (featureExtractor)
-				datum.input = featureExtractor(datum.input);
-			if (featureLookupTable)
-				datum.input = featureLookupTable.hashToArray(datum.input);
-			return datum;
-		});
-		this.classifier.trainBatch(dataset);
-	},
+//	retrain: function() {
+//		if (!this.pastTrainingSamples)
+//			throw new Error("No pastTrainingSamples array - can't retrain");
+//			
+//		var featureLookupTable = this.featureLookupTable;
+//		var featureExtractor = this.featureExtractors;
+//		var dataset = this.pastTrainingSamples;
+//
+//		dataset = dataset.map(function(datum) {
+//			datum = _(datum).clone();
+//			if (normalizer)
+//				datum.input = normalizer(datum.input);
+//			if (featureExtractor)
+//				datum.input = featureExtractor(datum.input);
+//			if (featureLookupTable)
+//				datum.input = featureLookupTable.hashToArray(datum.input);
+//			return datum;
+//		});
+//		this.classifier.trainBatch(dataset);
+//	},
 	
 	/**
 	 * @return an array with all samples whose class is the given class.
@@ -365,8 +368,8 @@ EnhancedClassifier.prototype = {
 
 	fromJSON : function(json) {
 		this.classifier.fromJSON(json.classifier);
-		if (this.featureLookupTable) this.featureLookupTable.fromJSON(json.featureLookupTable);
-		if (this.labelLookupTable) this.labelLookupTable.fromJSON(json.labelLookupTable);
+		if (this.featureLookupTable) this.setFeatureLookupTable(this.featureLookupTable.fromJSON(json.featureLookupTable));
+		if (this.labelLookupTable) this.setLabelLookupTable(this.labelLookupTable.fromJSON(json.labelLookupTable));
 		if (this.spellChecker) this.spellChecker = json.spellChecker; 
 		if (this.pastTrainingSamples) this.pastTrainingSamples = json.pastTrainingSamples;
 		this.featureDocumentFrequency = json.featureDocumentFrequency;

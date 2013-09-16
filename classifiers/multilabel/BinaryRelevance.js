@@ -166,7 +166,11 @@ BinaryRelevance.prototype = {
 	 * Link to a FeatureLookupTable from a higher level in the hierarchy (typically from an EnhancedClassifier), used ONLY for generating meaningful explanations. 
 	 */
 	setFeatureLookupTable: function(featureLookupTable) {
+		//console.log("BR setFeatureLookupTable "+featureLookupTable);
 		this.featureLookupTable = featureLookupTable;
+		for (var label in this.mapClassnameToClassifier)
+			if (featureLookupTable && this.mapClassnameToClassifier[label].setFeatureLookupTable)
+				this.mapClassnameToClassifier[label].setFeatureLookupTable(featureLookupTable);
 	},
 
 	toJSON : function(callback) {

@@ -34,7 +34,8 @@ var FIRST_FEATURE_NUMBER=1;  // in svm perf, feature numbers start with 1, not 0
 
 SvmPerf.prototype = {
 		trainOnline: function(features, expected) {
-			throw new Error("SVM-perf does not support online training");
+			//throw new Error("SVM-perf does not support online training");
+			console.error("SVM-perf does not support online training");
 		},
 
 		/**
@@ -90,10 +91,12 @@ SvmPerf.prototype = {
 		
 		toJSON: function() {
 			return this.modelString
+			//return this.mapFeatureToWeight; // much larger, not much faster
 		},
 		
 		fromJSON: function(json) {
 			this.setModel(json);
+			//this.mapFeatureToWeight = json;  // much larger, not much faster
 		},
 };
 

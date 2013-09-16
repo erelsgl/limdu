@@ -2,6 +2,7 @@ var hash = require("../../utils/hash");
 var sprintf = require("sprintf").sprintf;
 var _ = require("underscore")._;
 var util = require('util');
+var multilabelutils = require('./multilabelutils');
 
 
 /**
@@ -48,14 +49,14 @@ Homer.prototype = {
 	 *            an object whose KEYS are classes, or an array whose VALUES are classes.
 	 */
 	trainOnline: function(sample, labels) {
-		var normalizedLabels = normalizeLabels(labels); // make sure it is an array of strings
+		labels = multilabelutils.normalizeOutputLabels(labels);
 		
-		for (var i in normalizedLabels)
-			this.allClasses[normalizedLabels[i]]=true;
+		for (var i in labels)
+			this.allClasses[labels[i]]=true;
 		
 		return this.trainOnlineRecursive(
 				sample, 
-				normalizedLabels.map(this.splitLabel), 
+				labels.map(this.splitLabel), 
 				this.root);
 	},
 
@@ -78,7 +79,7 @@ Homer.prototype = {
 			}
 		}
 
-		treeNode.superlabelClassifier.trainOnline(sample, superlabels);
+		treeNode.superlabelClassifier.trainOnline(sample, Object.keys(superlabels));
 		for (var superlabel in mapSuperlabelToRest) {
 			if (!(superlabel in treeNode.mapSuperlabelToBranch)) {
 				treeNode.mapSuperlabelToBranch[superlabel] = {
@@ -99,7 +100,7 @@ Homer.prototype = {
 	 */
 	trainBatch : function(dataset) {
 		dataset = dataset.map(function(datum) {
-			var normalizedLabels = normalizeLabels(datum.output);
+			var normalizedLabels = multilabelutils.normalizeOutputLabels(datum.output);
 			for (var i in normalizedLabels)
 				this.allClasses[normalizedLabels[i]]=true;
 			return {
@@ -107,6 +108,7 @@ Homer.prototype = {
 				output: normalizedLabels.map(this.splitLabel)
 			}
 		}, this);
+		//console.dir(dataset[0]);
 		return this.trainBatchRecursive(dataset, this.root);
 	},
 	
@@ -132,7 +134,7 @@ Homer.prototype = {
 			}
 			superlabelsDataset.push({
 				input: datum.input,
-				output: superlabels
+				output: Object.keys(superlabels)
 			});
 			for (var superlabel in mapSuperlabelToRest) {
 				if (!(superlabel in mapSuperlabelToRestDataset)) 
@@ -284,20 +286,5 @@ Homer.prototype = {
 /*
  * UTILS
  */
-
-/**
- * Make sure "labels" is an array of strings
- */
-function normalizeLabels(theLabels) {
-	if (Array.isArray(theLabels)) {
-		return theLabels.map(function(label) {
-			return (typeof(label)==='string'? label: JSON.stringify(label));
-		});
-	} else if (theLabels instanceof Object) {
-			return Object.keys(theLabels);
-	} else  {
-		return [theLabels];
-	}
-}
 
 module.exports = Homer;

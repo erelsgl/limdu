@@ -40,6 +40,7 @@ var trainsetSimple = [  // a simple trainset, with no hierarchy, to use as a bas
 ];
 
 var testHomerNonHierarchical = function(classifier) {
+	//console.log(util.inspect(classifier,{depth:5}))
 	it('classifies 1-class samples', function() {
 		classifier.classify({I:1 , want:1 , aa:1 }).should.eql(['A']);
 		classifier.classify({I:1 , want:1 , bb:1 }).should.eql(['B']);

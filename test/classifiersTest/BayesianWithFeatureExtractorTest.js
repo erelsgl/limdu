@@ -37,7 +37,6 @@ describe('bayesian classifier with a single feature extractor for words', functi
 	it('explains its decisions', function() {
 		var c;
 		c = spamClassifier.classify("cheap clocks !!!",1);
-		console.dir(c);
 		c.should.have.property('classes', 'spam');
 		c.should.have.property('explanation');
 		

@@ -154,6 +154,14 @@ SvmLinear.prototype = {
 		setFeatureLookupTable: function(featureLookupTable) {
 			this.featureLookupTable = featureLookupTable;
 		},
+		
+		toJSON: function() {
+			return this.modelString
+		},
+		
+		fromJSON: function(json) {
+			this.setModel(json);
+		},
 };
 
 

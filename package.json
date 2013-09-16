@@ -15,7 +15,7 @@
     "temp": "*",
     "execSync": "*",
     "svm": "*",
-    "languagemodel": "~0.1.0"
+    "languagemodel": "latest"
   },
   "devDependencies": {
     "mocha": ">=1.0.0",

@@ -27,6 +27,7 @@ var CrossLanguageModelClassifier = function(opts) {
 	this.labelFeatureExtractor = opts.labelFeatureExtractor;
 	this.threshold = opts.threshold || 0;
 	this.allLabels = {};
+	this.allLabelsFeatures = {};
 }
 
 CrossLanguageModelClassifier.prototype = {
@@ -56,9 +57,7 @@ CrossLanguageModelClassifier.prototype = {
 		var scoresVector = [];
 		for (var labelString in this.allLabels) {
 			var label = this.allLabels[labelString];
-			var labelFeatures = (this.labelFeatureExtractor?
-					this.labelFeatureExtractor(label):
-					label);
+			var labelFeatures = this.allLabelsFeatures[labelString] || label;
 			var similarity = -this.model.divergence(features, labelFeatures);
 			scoresVector.push([label, similarity]);
 		}
@@ -85,8 +84,10 @@ CrossLanguageModelClassifier.prototype = {
 		for (var i in labels) {
 			var label = labels[i];
 			var labelString = multilabelutils.stringifyIfNeeded(label);
-			if (this.labelFeatureExtractor)
+			if (this.labelFeatureExtractor) {
 				this.labelFeatureExtractor(label, features);
+				this.allLabelsFeatures[labelString] = this.labelFeatureExtractor(label, {});
+			}
 			else if (_.isObject(label))
 				features = util._extend(features, label);
 			else 

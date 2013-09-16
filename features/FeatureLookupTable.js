@@ -27,7 +27,7 @@ FeatureLookupTable.prototype = {
 			for (var feature in hash)
 				this.addFeature(feature);
 		} 
-		else throw new Error("hash.addFeatures expects a hash or an array, but got: "+JSON.stringify(hash));
+		else throw new Error("FeatureLookupTable.addFeatures expects a hash or an array, but got: "+JSON.stringify(hash));
 	},
 
 	// add all features in all hashes in the given array

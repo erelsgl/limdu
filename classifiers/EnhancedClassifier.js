@@ -104,7 +104,7 @@ EnhancedClassifier.prototype = {
 		var features = sample;
 		if (featureExtractor) {
 			try {
-				features = featureExtractor(sample);
+				features = featureExtractor(sample, {});
 			} catch (err) {
 				throw new Error("Cannot extract features from '"+sample+"': "+JSON.stringify(err));
 			}

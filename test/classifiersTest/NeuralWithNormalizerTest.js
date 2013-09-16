@@ -7,13 +7,13 @@
 
 var should = require('should');
 var classifiers = require('../../classifiers');
-var FeaturesUnit = require('../../features');
+var ftrs = require('../../features');
 
 describe('baseline - classifier without a normalizer', function() {
 	it('should not classify non-normalized sentencs', function() {
 		var spamClassifier = new classifiers.EnhancedClassifier({
 			classifierType:   classifiers.NeuralNetwork,
-			featureExtractor: FeaturesUnit.WordsFromText(1),
+			featureExtractor: ftrs.WordsFromText(1),
 			normalizer: null,
 		});
 
@@ -32,8 +32,8 @@ describe('classifier with a single normalizer', function() {
 	it('should classify sentences', function() {
 		var spamClassifier = new classifiers.EnhancedClassifier({
 			classifierType:   classifiers.NeuralNetwork,
-			featureExtractor: FeaturesUnit.WordsFromText(1),
-			normalizer: FeaturesUnit.RegexpNormalizer([
+			featureExtractor: ftrs.WordsFromText(1),
+			normalizer: ftrs.RegexpNormalizer([
 			                               			{source: "er\\b", target: ""},
 			                            			{source: "est\\b", target: ""},
 			                            			{source: " es\\b", target: "es"},
@@ -56,14 +56,15 @@ describe('classifier with an array of normalizers', function() {
 	it('should classify sentences', function() {
 		var spamClassifier = new classifiers.EnhancedClassifier({
 			classifierType:   classifiers.NeuralNetwork,
-			featureExtractor: FeaturesUnit.WordsFromText(1),
-			normalizer: [FeaturesUnit.RegexpNormalizer([{source: "er\\b", target: ""}]),
-			             FeaturesUnit.RegexpNormalizer([{source: "est\\b", target: ""}]),
-			             FeaturesUnit.RegexpNormalizer([{source: " es\\b", target: "es"}])]
+			featureExtractor: ftrs.WordsFromText(1),
+			normalizer: [ftrs.LowerCaseNormalizer,
+			             ftrs.RegexpNormalizer([{source: "er\\b", target: ""}]),
+			             ftrs.RegexpNormalizer([{source: "est\\b", target: ""}]),
+			             ftrs.RegexpNormalizer([{source: " es\\b", target: "es"}])]
 		});
 
 		spamClassifier.trainBatch([
-			{input: "cheaper watches", output: [1]},
+			{input: "ChEaPeR WaTcHeS", output: [1]},
 			{input: "", output: [0]},
 		]);
 

@@ -10,13 +10,12 @@ var should = require('should');
 var classifiers = require('../../../classifiers');
 require('../../sorted');
 
-var retrain_count = 10;
 var BinaryRelevanceWinnow = classifiers.multilabel.BinaryRelevance.bind(this, {
 		binaryClassifierType: classifiers.Winnow.bind(this, {
 			promotion: 1.5,
 			demotion: 0.5,
 			margin: 1,
-			retrain_count: retrain_count,
+			retrain_count: 10,
 		}),
 });
 

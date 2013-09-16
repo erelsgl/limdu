@@ -1,6 +1,8 @@
 module.exports = {
-	WordsFromText: require("./WordExtractor"),
-	//WordsTyposFromText: require("./WordTyposExtractor"),
+	NGramsFromArray: require("./NGramExtractor").NGramsFromArray,
+	NGramsFromText:  require("./NGramExtractor").NGramsFromText,
+	WordsFromText :  require("./NGramExtractor").NGramsFromText,   // for backward compatibility
+
 	LettersFromText: require("./LetterExtractor"),
 	Hypernyms: require("./HypernymExtractor"),
 	CollectionOfExtractors: require("./CollectionOfExtractors"),

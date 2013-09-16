@@ -51,7 +51,7 @@ MetaLabeler.prototype = {
 		var countDataset = dataset.map(function(datum) {
 			return {
 				input: datum.input,
-				output: (Array.isArray(datum.output)? datum.output: Object.keys(datum.output)).length
+				output: (Array.isArray(datum.output)? datum.output.length: 1)
 			};
 		});
 		//console.dir(countDataset);

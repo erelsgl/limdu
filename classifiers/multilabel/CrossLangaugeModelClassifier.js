@@ -2,10 +2,10 @@ var hash = require("../../utils/hash");
 var sprintf = require("sprintf").sprintf;
 var _ = require("underscore")._;
 var util = require("util");
-var mapScoresVectorToMultilabelResult = require('./mapScoresVectorToMultilabelResult');
+var multilabelutils = require('./multilabelutils');
 
-//var CrossLanguageModel = require('languagemodel').CrossLanguageModel;
-var CrossLanguageModel = require('../../../languagemodel').CrossLanguageModel;
+var CrossLanguageModel = require('languagemodel').CrossLanguageModel;
+//var CrossLanguageModel = require('../../../languagemodel').CrossLanguageModel;
 
 
 
@@ -59,13 +59,11 @@ CrossLanguageModelClassifier.prototype = {
 			var labelFeatures = (this.labelFeatureExtractor?
 					this.labelFeatureExtractor(label):
 					label);
-			if (label!==Object(label))
-				throw new Error("expected this.allLabels to be objects, but found "+JSON.stringify(this.allLabels));
 			var similarity = -this.model.divergence(features, labelFeatures);
-			scoresVector.push([labelString, similarity]);
+			scoresVector.push([label, similarity]);
 		}
 		scoresVector.sort(function(a,b) {return b[1]-a[1]}); // sort by decreasing score
-		return mapScoresVectorToMultilabelResult(scoresVector, explain, withScores, this.threshold);
+		return multilabelutils.mapScoresVectorToMultilabelResult(scoresVector, explain, withScores, this.threshold);
 	},
 
 
@@ -86,7 +84,7 @@ CrossLanguageModelClassifier.prototype = {
 		var features = {};
 		for (var i in labels) {
 			var label = labels[i];
-			var labelString = JSON.stringify(label);
+			var labelString = multilabelutils.stringifyIfNeeded(label);
 			if (this.labelFeatureExtractor)
 				this.labelFeatureExtractor(label, features);
 			else if (_.isObject(label))

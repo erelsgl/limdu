@@ -19,7 +19,6 @@ var createNewClassifier = function() {
 }
 
 var classifier = createNewClassifier();
-classifier.addClasses(['spam', 'clocks', 'windows', 'important', 'pills']);
 classifier.trainOnline("cheap replica watch es", ['spam', 'clocks']);
 classifier.trainOnline("your watch is ready", ['clocks', 'important']);
 classifier.trainOnline("I don't know if this works on windows", ['windows', 'important']);

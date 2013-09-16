@@ -24,7 +24,7 @@ var BinaryRelevanceWinnow = classifiers.multilabel.BinaryRelevance.bind(this, {
 
 var HomerWinnow = classifiers.multilabel.Homer.bind(this, {
 	multilabelClassifierType: BinaryRelevanceWinnow
-})
+});
 
 
 

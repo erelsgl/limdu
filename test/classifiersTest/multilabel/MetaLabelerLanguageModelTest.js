@@ -1,6 +1,6 @@
 /**
  * a unit-test for Multi-Label classification in the Meta-Labeler method,
- * with Modified Balanced Winnow as the underlying binary classifier.
+ * with Cross-Language-Model as the underlying ranker.
  * 
  * @author Erel Segal-Halevi
  * @since 2013-08
@@ -20,73 +20,57 @@ var BinaryRelevanceWinnow = classifiers.multilabel.BinaryRelevance.bind(this, {
 		}),
 });
 
-var MetaLabelerWinnow = classifiers.multilabel.MetaLabeler.bind(this, {
-	rankerType: BinaryRelevanceWinnow,
+var CrossLanguageModelClassifier = classifiers.multilabel.CrossLanguageModel.bind(this, {
+	smoothingFactor : 0.9,
+	labelFeatureExtractor: function(string, features) {
+		if (!features) features = {};
+		features[string]=1;
+		return features;
+	}
+});
+
+var MetaLabelerLanguageModel = classifiers.multilabel.MetaLabeler.bind(this, {
+	rankerType: CrossLanguageModelClassifier,
 	counterType: BinaryRelevanceWinnow
 });
 
 var dataset = [
        		{input: {I:1 , want:1 , aa:1 }, output: 'A'},      // train on single class
     		{input: {I:1 , want:1 , bb:1 }, output: ['B']},    // train on array with single class (same effect)
-    		{input: {I:1 , want:1 , cc:1 }, output: [{C:"c"}]},// train on structured class, that will be stringified to "{C:c}".
+    		{input: {I:1 , want:1 , cc:1 }, output: 'C'},
     	];
 
 
-describe('Meta-Labeler batch-trained on Single-class inputs', function() {
-	var classifierBatch = new MetaLabelerWinnow();
+describe('CLIR Meta-Labeler batch-trained on Single-class inputs', function() {
+	var classifierBatch = new MetaLabelerLanguageModel();
 	classifierBatch.trainBatch(dataset);
 	
 	var classifier = classifierBatch;
+
 	it('classifies 1-class samples', function() {
 		classifier.classify({I:1 , want:1 , aa:1 }).should.eql(['A']);
 		classifier.classify({I:1 , want:1 , bb:1 }).should.eql(['B']);
-		classifier.classify({I:1 , want:1 , cc:1 }).should.eql(['{"C":"c"}']);
+		classifier.classify({I:1 , want:1 , cc:1 }).should.eql(['C']);
 	});
 	
 	it('knows its classes', function() {
-		classifier.getAllClasses().should.eql(['A','B','{"C":"c"}']);
+		classifier.getAllClasses().should.eql(['A','B','C']);
 	})
 
 	it('explains its decisions', function() {
 		var ab = classifier.classify({I:1 , want:1 , aa:1 , and:1 , bb:1 }, /*explain=*/3);
-		//console.dir(ab);
 		ab.should.have.property('explanation').with.property('ranking');
 		ab.should.have.property('explanation').with.property('counting');
 	})
 })
 
 
-describe('Meta-Labeler online-trained on Single-class inputs', function() {
-	var classifierOnline = new MetaLabelerWinnow();
-	for (var i=0; i<=retrain_count; ++i) 
-		for (var d=0; d<dataset.length; ++d)
-			classifierOnline.trainOnline(dataset[d].input, dataset[d].output);
-
-	
-	var classifier = classifierOnline;
-	it('classifies 1-class samples', function() {
-		classifier.classify({I:1 , want:1 , aa:1 }).should.eql(['A']);
-		classifier.classify({I:1 , want:1 , bb:1 }).should.eql(['B']);
-		classifier.classify({I:1 , want:1 , cc:1 }).should.eql(['{"C":"c"}']);
-	});
-	
-	it('knows its classes', function() {
-		classifier.getAllClasses().should.eql(['A','B','{"C":"c"}']);
-	})
-
-	it('explains its decisions', function() {
-		classifier.classify({I:1 , want:1 , aa:1 , and:1 , bb:1 }, /*explain=*/1).should.have.property('explanation').with.property('ranking').with.lengthOf(3);
-		classifier.classify({I:1 , want:1 , aa:1 , and:1 , bb:1 }, /*explain=*/3).should.have.property('explanation').with.property('counting').with.lengthOf(1);
-	})
-})
-
-
-describe('Meta-Labeler batch-trained on two-class inputs', function() {
-	var classifier = new MetaLabelerWinnow();
+describe('CLIR Meta-Labeler batch-trained on two-class inputs', function() {
+	var classifier = new MetaLabelerLanguageModel();
 	classifier.trainBatch([
-		{input: {I:1 , want:1 , aa:1 , bb:1 }, output: ['A','B']},    
-		{input: {I:1 , want:1 , bb:1 , cc:1 }, output: ['B','C']},    
-		{input: {I:1 , want:1 , cc:1 , dd:1 }, output: ['C','D']},   
+		{input: {I:1 , want:1 , aa:1 , bb:1 }, output: ['A','B']},    // train on array with classes
+		{input: {I:1 , want:1 , bb:1 , cc:1 }, output: ['B','C']},    // train on array with classes
+		{input: {I:1 , want:1 , cc:1 , dd:1 }, output: ['C','D']},
 		{input: {I:1 , want:1 , dd:1 , aa:1 }, output: ['D','A']},   
 	]);
 

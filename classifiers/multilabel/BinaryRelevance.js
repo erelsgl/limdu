@@ -1,6 +1,7 @@
 var hash = require("../../utils/hash");
 var sprintf = require("sprintf").sprintf;
 var _ = require("underscore")._;
+var multilabelutils = require('./multilabelutils');
 
 /**
  * BinaryRelevance - Multi-label classifier, based on a collection of binary classifiers. 
@@ -29,14 +30,15 @@ BinaryRelevance.prototype = {
 	 *            an object whose KEYS are labels, or an array whose VALUES are labels.
 	 */
 	trainOnline: function(sample, labels) {
-		labels = hash.normalized(labels);
-		for ( var positiveClass in labels) {
-			this.makeSureClassifierExists(positiveClass);
-			this.mapClassnameToClassifier[positiveClass].trainOnline(sample, 1);
+		labels = multilabelutils.normalizeOutputLabels(labels);
+		for (var l in labels) {
+			var positiveLabel = labels[l];
+			this.makeSureClassifierExists(positiveLabel);
+			this.mapClassnameToClassifier[positiveLabel].trainOnline(sample, 1);
 		}
-		for ( var negativeClass in this.mapClassnameToClassifier) {
-			if (!labels[negativeClass])
-				this.mapClassnameToClassifier[negativeClass].trainOnline(sample, 0);
+		for (var negativeLabel in this.mapClassnameToClassifier) {
+			if (labels.indexOf(negativeLabel)<0)
+				this.mapClassnameToClassifier[negativeLabel].trainOnline(sample, 0);
 		}
 	},
 
@@ -52,35 +54,35 @@ BinaryRelevance.prototype = {
 		var mapClassnameToDataset = {}; 
 
 		// create positive samples for each class:
-		for (var i=0; i<dataset.length; ++i) {
-			var sample = dataset[i].input;
-			//console.dir(dataset[i]);
-			dataset[i].output = hash.normalized(dataset[i].output);
+		for (var d in dataset) {
+			var sample = dataset[d].input;
+			dataset[d].output = multilabelutils.normalizeOutputLabels(dataset[d].output);
+			var labels = dataset[d].output;
 
-			var labels = dataset[i].output;
-			for ( var positiveClass in labels) {
-				this.makeSureClassifierExists(positiveClass);
-				if (!(positiveClass in mapClassnameToDataset)) // make sure dataset for this class exists
-					mapClassnameToDataset[positiveClass] = [];
-				mapClassnameToDataset[positiveClass].push({
+			for (var l in labels) {
+				var positiveLabel  = labels[l];
+				this.makeSureClassifierExists(positiveLabel);
+				if (!(positiveLabel in mapClassnameToDataset)) // make sure dataset for this class exists
+					mapClassnameToDataset[positiveLabel] = [];
+				mapClassnameToDataset[positiveLabel].push({
 					input : sample,
 					output : 1
 				})
 			}
 		}
 
-		// create negative samples for each class (after all labels are in the  array):
-		for (var i=0; i<dataset.length; ++i) {
-			var sample = dataset[i].input;
-			var labels = dataset[i].output;
-			for ( var negativeClass in this.mapClassnameToClassifier) {
-				if (!(negativeClass in mapClassnameToDataset)) // make sure dataset for this class exists
-					mapClassnameToDataset[negativeClass] = [];
-				if (!labels[negativeClass])
-					mapClassnameToDataset[negativeClass].push({
+		// create negative samples for each class (after all labels are in the array):
+		for (var d in dataset) {
+			var sample = dataset[d].input;
+			var labels = dataset[d].output;
+			for (var negativeLabel in this.mapClassnameToClassifier) {
+				if (!(negativeLabel in mapClassnameToDataset)) // make sure dataset for this class exists
+					mapClassnameToDataset[negativeLabel] = [];
+				if (labels.indexOf(negativeLabel)<0)
+					mapClassnameToDataset[negativeLabel].push({
 						input : sample,
 						output : 0
-					})
+					});
 			}
 		}
 
@@ -154,22 +156,6 @@ BinaryRelevance.prototype = {
 				}
 			}:
 			labels);
-	},
-
-	/**
-	 * Tell the classifier that the given labels will be used for the following
-	 * samples, so that it will know to add negative samples to labels that do
-	 * not appear.
-	 * 
-	 * @param labels an object whose KEYS are labels, or an array whose VALUES are labels.
-	 */
-	addClasses: function(labels) {
-		labels = hash.normalized(labels);
-		for (var label in labels) {
-			if (!this.mapClassnameToClassifier[label]) {
-				this.mapClassnameToClassifier[label] = new this.binaryClassifierType();
-			}
-		}
 	},
 	
 	getAllClasses: function() {

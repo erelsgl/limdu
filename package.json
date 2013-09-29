@@ -10,12 +10,14 @@
   "dependencies": {
     "underscore": "*",
     "sprintf": "*",
-    "wordsworth": "*",
-    "graph-paths": "*",
+
+    "svm": "*",
     "temp": "*",
     "execSync": "*",
-    "svm": "*",
-    "languagemodel": "latest"
+    "brain": "*",
+    
+    "graph-paths": "*",
+    "languagemodel": "*"
   },
   "devDependencies": {
     "mocha": ">=1.0.0",

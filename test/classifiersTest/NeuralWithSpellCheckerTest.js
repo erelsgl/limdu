@@ -9,40 +9,51 @@ var should = require('should');
 var classifiers = require('../../classifiers');
 var FeaturesUnit = require('../../features');
 
-describe('baseline - classifier without a spell-checker', function() {
-	it('should not classify sentences with spelling mistakes', function() {
-		var spamClassifier = new classifiers.EnhancedClassifier({
-			classifierType:   classifiers.NeuralNetwork,
-			featureExtractor: FeaturesUnit.WordsFromText(1),
-			spellChecker: null,
-		});
+try {
+	var wordsworth = require('wordsworth');
+	var isTestRelevant = true;
+} catch (e) {
+	console.warn("WARNING: Cannot load Spell-checker module (wordsworth) - can't run spell-checker unit test. The error is:");
+	console.dir(e);
+	var isTestRelevant = false;
+}
 
-		spamClassifier.trainBatch([
-			{input: "cheap watches", output: [1]},
-			{input: "", output: [0]},
-		]);
-
-		spamClassifier.classify("cheap watches").should.be.above(0.6);  // (spam)
-		spamClassifier.classify("cheep watchs").should.be.below(0.4);  // (not spam)
-		spamClassifier.classify("expensive clocks").should.be.below(0.4);  // (not spam)
+if (isTestRelevant) {
+	describe('baseline - classifier without a spell-checker', function() {
+		it('should not classify sentences with spelling mistakes', function() {
+			var spamClassifier = new classifiers.EnhancedClassifier({
+				classifierType:   classifiers.NeuralNetwork,
+				featureExtractor: FeaturesUnit.WordsFromText(1),
+				spellChecker: null,
+			});
+	
+			spamClassifier.trainBatch([
+				{input: "cheap watches", output: [1]},
+				{input: "", output: [0]},
+			]);
+	
+			spamClassifier.classify("cheap watches").should.be.above(0.6);  // (spam)
+			spamClassifier.classify("cheep watchs").should.be.below(0.4);  // (not spam)
+			spamClassifier.classify("expensive clocks").should.be.below(0.4);  // (not spam)
+		})
 	})
-})
-
-describe('classifier with spell-checker', function() {
-	it('should classify sentences with spelling mistakes', function() {
-		var spamClassifier = new classifiers.EnhancedClassifier({
-			classifierType:   classifiers.NeuralNetwork,
-			featureExtractor: FeaturesUnit.WordsFromText(1),
-			spellChecker: require('wordsworth').getInstance(),
-		});
-
-		spamClassifier.trainBatch([
-			{input: "cheap watches", output: [1]},
-			{input: "", output: [0]},
-		]);
-
-		spamClassifier.classify("cheap watches").should.be.above(0.9);  // (spam)
-		spamClassifier.classify("cheep watchs").should.be.above(0.9);  // (not spam)
-		spamClassifier.classify("expensive clocks").should.be.below(0.4);  // (not spam)
+	
+	describe('classifier with spell-checker', function() {
+		it('should classify sentences with spelling mistakes', function() {
+			var spamClassifier = new classifiers.EnhancedClassifier({
+				classifierType:   classifiers.NeuralNetwork,
+				featureExtractor: FeaturesUnit.WordsFromText(1),
+				spellChecker: wordsworth.getInstance(),
+			});
+	
+			spamClassifier.trainBatch([
+				{input: "cheap watches", output: [1]},
+				{input: "", output: [0]},
+			]);
+	
+			spamClassifier.classify("cheap watches").should.be.above(0.9);  // (spam)
+			spamClassifier.classify("cheep watchs").should.be.above(0.9);  // (not spam)
+			spamClassifier.classify("expensive clocks").should.be.below(0.4);  // (not spam)
+		})
 	})
-})
+}

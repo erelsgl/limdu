@@ -17,7 +17,7 @@ var hash = require('../utils/hash');
  * * 'multiplyFeaturesByIDF' - boolean - if true, multiply each feature value by log(documentCount / (1+featureDocumentFrequency))
  * * 'minFeatureDocumentFrequency' - int - if positive, ignore features that appeared less than this number in the training set.
  * * 'pastTrainingSamples' - an array that keeps all past training samples, to enable retraining.
- * * 'spellChecker' - an initialized 'wordsworth' spell checker, to spell-check features during classification.
+ * * 'spellChecker' - an initialized spell checker from the 'wordsworth' package, to spell-check features during classification.
  * * 'bias' - a 'bias' feature with a constant value (usually 1).
  */
 var EnhancedClassifier = function(opts) {

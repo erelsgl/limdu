@@ -173,9 +173,9 @@ BinaryRelevance.prototype = {
 				this.mapClassnameToClassifier[label].setFeatureLookupTable(featureLookupTable);
 	},
 
-	toJSON : function(callback) {
+	toJSON : function() {
 		var result = {};
-		for ( var label in this.mapClassnameToClassifier) {
+		for (var label in this.mapClassnameToClassifier) {
 			var binaryClassifier = this.mapClassnameToClassifier[label];
 			if (!binaryClassifier.toJSON) {
 				console.dir(binaryClassifier);
@@ -183,13 +183,13 @@ BinaryRelevance.prototype = {
 				console.dir(binaryClassifier.__proto__);
 				throw new Error("this binary classifier does not have a toJSON function");
 			}
-			result[label] = binaryClassifier.toJSON(callback);
+			result[label] = binaryClassifier.toJSON();
 		}
 		return result;
 	},
 
-	fromJSON : function(json, callback) {
-		for ( var label in json) {
+	fromJSON : function(json) {
+		for (var label in json) {
 			this.mapClassnameToClassifier[label] = new this.binaryClassifierType();
 			this.mapClassnameToClassifier[label].fromJSON(json[label]);
 		}

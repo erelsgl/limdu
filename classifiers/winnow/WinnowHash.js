@@ -53,8 +53,10 @@ WinnowHash.prototype = {
 		},
 
 		fromJSON: function(json) {
+			if (!json.positive_weights) throw new Error("No positive weights in json: "+JSON.stringify(json));
 			this.positive_weights = json.positive_weights;
 			this.positive_weights_sum = json.positive_weights_sum;
+			if (!json.negative_weights) throw new Error("No negative weights in json: "+JSON.stringify(json));
 			this.negative_weights = json.negative_weights;
 			this.negative_weights_sum = json.negative_weights_sum;
 		},

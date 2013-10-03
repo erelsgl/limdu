@@ -11,7 +11,7 @@ var _ = require('underscore');
 
 describe('PrecisionRecall object', function() {
 	var pr = new mlutils.PrecisionRecall();
-	it('should correctly calculate precision, recall, etc.', function() {
+	it('correctly calculates precision, recall, etc.', function() {
 		var expectedClasses = [1,2,3,4,5];
 		var actualClasses   = [1,3,5,7];
 		pr.addCases(expectedClasses, actualClasses);

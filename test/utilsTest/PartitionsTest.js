@@ -12,7 +12,7 @@ var _ = require('underscore');
 describe('partitions', function() {
 	// A dummy dataset with 10 documents:
 	var dataset = [1,2,3,4,5,6,7,8,9,10];
-	it('should create 5 partitions, with a test-set of 2 in each', function() {
+	it('creates 5 partitions, with a test-set of 2 in each', function() {
 		var numOfPartitions = 0;
 		mlutils.partitions.partitions(dataset, 5, function(train, test, index) {
 			//console.log("\t"+index+": "+train+" / "+test);
@@ -23,7 +23,7 @@ describe('partitions', function() {
 		});
 		numOfPartitions.should.equal(5);
 	});
-	it('should create 3 partitions, with a test-set of 3 in each', function() {
+	it('creates 3 partitions, with a test-set of 3 in each', function() {
 		var numOfPartitions = 0;
 		mlutils.partitions.partitions(dataset, 3, function(train, test, index) {
 			//console.log("\t"+index+": "+train+" / "+test);	

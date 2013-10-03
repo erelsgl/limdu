@@ -29,10 +29,6 @@ describe('classifier with a single feature extractor for words', function() {
 		spamClassifier.classify("your").should.be.below(0.5);  // low number (not spam)
 		spamClassifier.classify("watch").should.be.above(0.3).and.below(0.7);  // medium number (not sure if spam)
 	})
-
-	it('explains its decisions', function() {
-		// TODO
-	})
 })
 
 describe('classifier with an array of feature extractors, for words and bigrams', function() {
@@ -54,9 +50,5 @@ describe('classifier with an array of feature extractors, for words and bigrams'
 		spamClassifier.classify("replica").should.be.above(0.5);  // high number (probably spam)
 		spamClassifier.classify("your").should.be.below(0.5);  // low number (not spam)
 		spamClassifier.classify("watch").should.be.above(0.3).and.below(0.7);  // medium number (not sure if spam)
-	})
-
-	it('explains its decisions', function() {
-		// TODO
 	})
 })

@@ -10,7 +10,7 @@ var classifiers = require('../../classifiers');
 var ftrs = require('../../features');
 
 describe('baseline - classifier without a normalizer', function() {
-	it('should not classify non-normalized sentencs', function() {
+	it('errs on non-normalized sentencs', function() {
 		var spamClassifier = new classifiers.EnhancedClassifier({
 			classifierType:   classifiers.NeuralNetwork,
 			featureExtractor: ftrs.WordsFromText(1),
@@ -29,7 +29,7 @@ describe('baseline - classifier without a normalizer', function() {
 })
 
 describe('classifier with a single normalizer', function() {
-	it('should classify sentences', function() {
+	it('classifies sentences correctly', function() {
 		var spamClassifier = new classifiers.EnhancedClassifier({
 			classifierType:   classifiers.NeuralNetwork,
 			featureExtractor: ftrs.WordsFromText(1),
@@ -53,7 +53,7 @@ describe('classifier with a single normalizer', function() {
 })
 
 describe('classifier with an array of normalizers', function() {
-	it('should classify sentences', function() {
+	it('classifies sentences correctly', function() {
 		var spamClassifier = new classifiers.EnhancedClassifier({
 			classifierType:   classifiers.NeuralNetwork,
 			featureExtractor: ftrs.WordsFromText(1),

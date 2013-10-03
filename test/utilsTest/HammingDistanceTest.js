@@ -9,7 +9,7 @@ var should = require('should');
 var mlutils = require('../../utils');
 
 describe('Hamming distance', function() {
-	it('should calculate hamming distance', function() {
+	it('calculates hamming distance', function() {
 		mlutils.hammingDistance([],[]).should.equal(0);
 		mlutils.hammingDistance(['a'],[]).should.equal(1);
 		mlutils.hammingDistance([],['a']).should.equal(1);

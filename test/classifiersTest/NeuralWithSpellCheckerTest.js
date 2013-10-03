@@ -10,7 +10,7 @@ var classifiers = require('../../classifiers');
 var FeaturesUnit = require('../../features');
 
 try {
-	var wordsworth = require('wordsfworth');
+	var wordsworth = require('wordsworth');
 	var isTestRelevant = true;
 } catch (e) {
 	var isTestRelevant = false;

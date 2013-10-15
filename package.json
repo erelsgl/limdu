@@ -1,11 +1,11 @@
 {
-  "name": "machine-learning",
-  "description": "A collection of machine learning projects and demos",
+  "name": "limdu",
+  "description": "A machine learning framework for Node.js. Supports multi-level classification and online learning.",
   "version": "0.1.0",
   "author": "Erel Segal-haLevi <erelsgl@gmail.com>",
   "repository": {
     "type": "git",
-    "url": "https://github.com/erelsgl/machine-learning.git"
+    "url": "https://github.com/erelsgl/limdu.git"
   },
   "dependencies": {
     "underscore": "*",
@@ -31,10 +31,15 @@
     "classification",
     "categorization",
     "machine learning",
+    "multi label",
+    "multilabel",
+    "multi class",
+    "multiclass",
+    "online learning",
     "naive bayes",
     "winnow",
     "perceptron",
-    "multi label",
-    "binary relevance"
+    "binary relevance",
+    "one vs all"
   ]
 }

@@ -25,14 +25,14 @@ function WinnowHash(opts) {
 	this.default_positive_weight = opts.default_positive_weight || 2.0;
 	this.default_negative_weight = opts.default_negative_weight || 1.0;
 	this.do_averaging = opts.do_averaging || false;
-	this.threshold = opts.threshold || 1;
+	this.threshold = ('threshold' in opts? opts.threshold: 1);
 	this.promotion = opts.promotion || 1.5;
 	this.demotion = opts.demotion || 0.5;
-	this.margin = opts.margin || 1.0;
+	this.margin = ('margin' in opts? opts.margin: 1.0);
 	this.retrain_count = opts.retrain_count || 0;
 	this.detailed_explanations = opts.detailed_explanations || false;
 	
-	this.bias = opts.bias || 1.0;
+	this.bias = ('bias' in opts? opts.bias: 1.0);
 
 	this.positive_weights = {};
 	this.negative_weights = {};
@@ -78,8 +78,7 @@ WinnowHash.prototype = {
 		 * @return true if the input sample got its correct classification (i.e. no change made).
 		 */
 		train_features: function(features, expected) {
-			if (this.debug) 
-				console.log("train_features "+JSON.stringify(features)+" , "+expected);
+			if (this.debug) console.log("train_features "+JSON.stringify(features)+" , "+expected);
 			for (feature in features) {
 				if (!(feature in this.positive_weights)) 
 					this.positive_weights[feature] = this.default_positive_weight;
@@ -87,12 +86,12 @@ WinnowHash.prototype = {
 					this.negative_weights[feature] = this.default_negative_weight;
 			}
 
-			if (this.debug) console.log('> features',features,' this.positive_weights ',this.positive_weights,', this.negative_weights: ',this.negative_weights);
+			if (this.debug) console.log('> ',' this.positive_weights ',JSON.stringify(this.positive_weights),', this.negative_weights: ',JSON.stringify(this.negative_weights));
 
 			var score = this.perceive_features(features, /*continuous_output=*/true, this.positive_weights, this.negative_weights);
 				 // always use the running 'weights' vector for training, and NOT the weights_sum!
 
-			if (this.debug) console.log('> training ',features,', expecting: ',expected, ' got score=', score);
+			//if (this.debug) console.log('> training ',features,', expecting: ',expected, ' got score=', score);
 			
 			if ((expected && score<=this.margin) || (!expected && score>=-this.margin)) {
 				// Current model is incorrect - adjustment needed!
@@ -110,7 +109,7 @@ WinnowHash.prototype = {
 						this.negative_weights[feature] *= (this.promotion * (1 + value));
 					}
 				}
-				if (this.debug) console.log(' -> new weights:', this.positive_weights, this.negative_weights);
+				if (this.debug) console.log('-> ',' this.positive_weights ',JSON.stringify(this.positive_weights),', this.negative_weights: ',JSON.stringify(this.negative_weights));
 				return false;
 			} else {
 				if (this.do_averaging) {
@@ -161,7 +160,7 @@ WinnowHash.prototype = {
 		 */
 		perceive_features: function(features, continuous_output, positive_weights_for_classification, negative_weights_for_classification, explain) {
 			var score = 0;
-			if (explain>0) var explanations = [];
+			var explanations = [];
 			for (var feature in features) {
 				if (feature in positive_weights_for_classification) {
 					var positive_weight = positive_weights_for_classification[feature];
@@ -198,10 +197,10 @@ WinnowHash.prototype = {
 				throw new Error("score is NaN! features="+JSON.stringify(features));
 			score -= this.threshold;
 
-			if (this.debug) console.log("> perceive_features ",features," = ",score);
+			if (this.debug) console.log("> perceive_features ",JSON.stringify(features)," = ",score);
 			var result = (continuous_output? score: (score > 0 ? 1 : 0));
 			if (explain>0) {
-				explanations.sort(function(a,b){return Math.abs(b.relevance)-Math.abs(a.relevance)});
+				explanations.sort(function(a,b){return Math.abs(b.relevance)-Math.abs(a.relevance); });
 				explanations.splice(explain, explanations.length-explain);  // "explain" is the max length of explanation.
 				
 				if (!this.detailed_explanations) {
@@ -213,7 +212,7 @@ WinnowHash.prototype = {
 				result = {
 					classification: result,
 					explanation: explanations,
-				}
+				};
 			}
 			return result;
 		},

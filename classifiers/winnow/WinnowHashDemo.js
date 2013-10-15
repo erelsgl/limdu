@@ -9,7 +9,9 @@ console.log("Winnow demo start");
 var Winnow = require('./WinnowHash');
 
 var classifier = new Winnow({
-	retrain_count: 0,
+	default_positive_weight: 1,
+	default_negative_weight: 1,
+	threshold: 0,
 	do_averaging: false,
 	margin: 1,
 });

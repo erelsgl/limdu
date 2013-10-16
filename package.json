@@ -1,7 +1,7 @@
 {
   "name": "limdu",
   "description": "A machine learning framework for Node.js. Supports multi-level classification and online learning.",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "author": "Erel Segal-haLevi <erelsgl@gmail.com>",
   "repository": {
     "type": "git",
@@ -30,6 +30,8 @@
     "classifier",
     "classification",
     "categorization",
+    "text classification",
+    "natural lanaguage understanding",
     "machine learning",
     "multi label",
     "multilabel",

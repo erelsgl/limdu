@@ -18,7 +18,6 @@
  */
 module.exports = function(hypernyms) {
 	return function(sample, features) {
-		if (!features) features = {};
 		hypernyms.forEach(function(hypernym) {
 			var matches = null;
 			if (hypernym.regexp instanceof RegExp) {
@@ -31,10 +30,8 @@ module.exports = function(hypernyms) {
 			}
 			while ((matches = hypernym.regexp.exec(sample)) !== null) {
 				var feature = matches[0].replace(hypernym.regexp, hypernym.feature);
-				//console.log("\tmatch:  feature="+feature);
 				features[feature]=hypernym.confidence;
 			}
 		});
-		return features;
 	}
 }

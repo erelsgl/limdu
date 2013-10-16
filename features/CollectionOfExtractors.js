@@ -10,10 +10,8 @@
  */
 module.exports = function(extractors) {
 	return function(sample, features) {
-		if (!features) features = {};
 		for (var i=0; i<extractors.length; ++i)
 			extractors[i](sample, features);
-		return features;
 	}
 }
 

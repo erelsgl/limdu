@@ -11,14 +11,14 @@ var ftrs = require('../../features');
 describe('word unigram feature extractor', function() {
 	it('creates word unigram features', function() {
 		var fe = ftrs.WordsFromText(1);
-		fe("This is a demo, you know?").should.eql({ 'This': 1, is: 1, a: 1, demo: 1, you: 1, know: 1 });
+		ftrs.call(fe, "This is a demo, you know?").should.eql({ 'This': 1, is: 1, a: 1, demo: 1, you: 1, know: 1 });
 	})
 })
 
 describe('word bigram feature extractor', function() {
 	it('creates word bigram features', function() {
 		var fe = ftrs.WordsFromText(2);
-		fe("This is a demo, you know?").should.eql({
+		ftrs.call(fe, "This is a demo, you know?").should.eql({
 			'[start] This': 1,
 			'This is': 1,
 			'is a': 1,
@@ -32,7 +32,7 @@ describe('word bigram feature extractor', function() {
 describe('last letter extractor', function() {
 	it('creates last letter feature', function() {
 		var fe = ftrs.LastLetterExtractor;
-		fe("This is a demo, you know?").should.eql({
+		ftrs.call(fe, "This is a demo, you know?").should.eql({
 			'? [end]': 1});
 	});
 })
@@ -40,7 +40,7 @@ describe('last letter extractor', function() {
 describe('word trigram-with-gap feature extractor', function() {
 	it('creates word bigram features', function() {
 		var fe = ftrs.WordsFromText(3, true);
-		fe("This is a demo, you know?").should.eql({
+		ftrs.call(fe, "This is a demo, you know?").should.eql({
 			'[start] - is': 1,
 			'This - a': 1,
 			'is - demo': 1,
@@ -56,7 +56,7 @@ describe('hypernym extractor', function() {
 			{regexp: /demo/g, feature: "demonstration", confidence: 0.9}
 		];
 		var fe = ftrs.Hypernyms(hypernyms);
-		fe("This is a demo, you know?").should.eql({ demonstration: 0.9 });
+		ftrs.call(fe, "This is a demo, you know?").should.eql({ demonstration: 0.9 });
 	});
 });
 
@@ -64,7 +64,7 @@ describe('hypernym extractor', function() {
 describe('letter unigram feature extractor', function() {
 	it('creates letter unigram features', function() {
 		var fe = ftrs.LettersFromText(1);
-		fe("This is a demo, you know?").should.eql({ t: 1,
+		ftrs.call(fe, "This is a demo, you know?").should.eql({ t: 1,
 		  h: 1,
 		  i: 1,
 		  s: 1,
@@ -91,7 +91,7 @@ describe('collection of extractors', function() {
 		var fe = ftrs.CollectionOfExtractors(
 				[ftrs.WordsFromText(1), 
 				 ftrs.WordsFromText(2)])
-		fe("This is a demo, you know?").should.eql({
+		ftrs.call(fe, "This is a demo, you know?").should.eql({
 			'This': 1, is: 1, a: 1, demo: 1, you: 1, know: 1 ,
 			'[start] This': 1,
 			'This is': 1,

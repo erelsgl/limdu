@@ -34,13 +34,13 @@ var EnhancedClassifier = function(opts) {
 	this.setFeatureExtractorForClassification(opts.featureExtractorForClassification);
 	this.setFeatureLookupTable(opts.featureLookupTable);
 	this.setLabelLookupTable(opts.labelLookupTable);
-	
+
 	this.multiplyFeaturesByIDF = opts.multiplyFeaturesByIDF;
 	this.minFeatureDocumentFrequency = opts.minFeatureDocumentFrequency || 0;
 	if (opts.multiplyFeaturesByIDF||opts.minFeatureDocumentFrequency) 
 		this.featureDocumentFrequency = {};
 	this.bias = opts.bias;
-	
+
 	this.spellChecker = opts.spellChecker;
 	this.pastTrainingSamples = opts.pastTrainingSamples;
 }
@@ -104,7 +104,8 @@ EnhancedClassifier.prototype = {
 		var features = sample;
 		if (featureExtractor) {
 			try {
-				features = featureExtractor(sample, {});
+				features = {};
+				featureExtractor(sample, features);
 			} catch (err) {
 				throw new Error("Cannot extract features from '"+sample+"': "+JSON.stringify(err));
 			}

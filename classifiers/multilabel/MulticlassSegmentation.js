@@ -182,7 +182,8 @@ MulticlassSegmentation.prototype = {
 		var features = sample;
 		if (featureExtractor) {
 			try {
-				features = featureExtractor(sample);
+				features = {};
+				featureExtractor(sample, features);
 			} catch (err) {
 				throw new Error("Cannot extract features from '"+JSON.stringify(sample)+"': "+JSON.stringify(err));
 			}

@@ -13,6 +13,15 @@ module.exports = {
 	LastLetterExtractor: require("./LastLetterExtractor"),
 }
 
+/**
+ * Call the given featureExtractor on the given sample, and return the result.
+ * Used for testing.
+ */
+module.exports.call = function(featureExtractor, sample) {
+	var features = {};
+	featureExtractor(sample, features);
+	return features;
+} 
 
 /**
  * If the input is a featureExtractor, return it as is.

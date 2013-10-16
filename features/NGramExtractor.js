@@ -13,7 +13,6 @@ module.exports = {
 		 * @return a hash with all the different n-grams.
 		 */
 		NGramsFromArray: function(numOfWords, gap, grams, features) {
-				if (!features) features = {};
 				for (var i=0; i<numOfWords-1-(gap?1:0); ++i) {
 					grams.unshift("[start]");
 					grams.push("[end]");
@@ -28,7 +27,6 @@ module.exports = {
 					grams.pop();
 					grams.shift();
 				}
-				return features;
 		},
 
 		/**
@@ -42,7 +40,7 @@ module.exports = {
 		NGramsFromText: function(numOfWords, gap) {
 			return function(sample, features) {
 				var words = sample.split(/[ \t,;:.!?]/).filter(function(a){return !!a}); // all non-empty words
-				return module.exports.NGramsFromArray(numOfWords, gap, words, features);
+				module.exports.NGramsFromArray(numOfWords, gap, words, features);
 			}
 		},
 }

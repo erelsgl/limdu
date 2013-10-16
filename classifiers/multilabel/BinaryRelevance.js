@@ -193,7 +193,6 @@ BinaryRelevance.prototype = {
 			this.mapClassnameToClassifier[label] = new this.binaryClassifierType();
 			this.mapClassnameToClassifier[label].fromJSON(json[label]);
 		}
-		return this;
 	},
 	
 	// private function: 

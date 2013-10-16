@@ -344,7 +344,6 @@ BinarySegmentation.prototype = {
 			this.mapClassnameToClassifier[aClass] = new this.binaryClassifierType();
 			this.mapClassnameToClassifier[aClass].fromJSON(json[aClass]);
 		}
-		return this;
 	},
 	
 	// private function: 

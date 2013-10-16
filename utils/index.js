@@ -16,3 +16,6 @@ module.exports = {
 	writeDataset: require("./trainAndTest").writeDataset,
 	hammingDistance: require("./hamming").hammingDistance,
 }
+
+module.exports.toString = module.exports.serialize.toString;
+module.exports.fromString = module.exports.serialize.fromString;

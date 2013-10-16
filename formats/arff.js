@@ -155,7 +155,8 @@ exports.fromString = function(string, contextFolderForFunction) {
 	}
 	newClassifier.createNewClassifierString = json.createNewClassifierString;
 	newClassifier.createNewClassifierFunction = createNewClassifierFunction;
-	return newClassifier.fromJSON(json.trainedClassifier);
+	newClassifier.fromJSON(json.trainedClassifier);
+	return newClassifier;
 }
 
 

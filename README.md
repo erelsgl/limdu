@@ -2,16 +2,17 @@
 
 Limdu is a machine-learning framework for Node.js, which supports online learning and multi-label classification.
 
-
 ## Installation
 
 	npm install limdu
 
+## Demos
+
 Demos can be found at [limdu-demo](https://github.com/erelsgl/limdu-demo).
 
-## Binary classification
+## Binary Classification
 
-### Batch learning
+### Batch Learning
 
 This example uses [brain.js, by Heather Arthur](https://github.com/harthur/brain).
 
@@ -28,9 +29,9 @@ This example uses [brain.js, by Heather Arthur](https://github.com/harthur/brain
 	console.log(colorClassifier.classify({ r: 1, g: 0.4, b: 0 }));  // 0.99 - almost white
 
 
-### Online learning
+### Online Learning; Explanations
 
-This example uses [Modified Balanced Margin Winnow (Carvalho and Cohen, 2006)](http://www.citeulike.org/user/erelsegal-halevi/article/2243777):
+This example uses Modified Balanced Margin Winnow ([Carvalho and Cohen, 2006](http://www.citeulike.org/user/erelsegal-halevi/article/2243777)):
 
 	var limdu = require('limdu');
 	
@@ -50,17 +51,6 @@ This example uses [Modified Balanced Margin Winnow (Carvalho and Cohen, 2006)](h
 	console.dir(birdClassifier.classify({'wings': 1, 'flight': 0, 'beak': 1, 'chicken': 1})); // now, chicken is correctly classified as a bird, although it does not fly.  
 	console.dir(birdClassifier.classify({'wings': 1, 'flight': 0, 'beak': 1, 'chicken': 1}, /*explanation level=*/4)); // why?  because it has wings and beak.
 
-### Other binary classifiers
-
-In addition to Winnow and NeuralNetwork, version 0.2 includes the following binary classifiers:
-
-* Bayesian - uses [classifier.js, by Heather Arthur](https://github.com/harthur/classifier). 
-* Perceptron
-* SVM - uses [svm.js, by Andrej Karpathy](https://github.com/karpathy/svmjs). 
-* Linear SVM - wrappers around SVM-Perf and Lib-Linear (see below).
-
-This library is still under construction, and not all features work for all classifiers. For a full list of the features that do work, see the "test" folder. 
-
 
 ### Binding
 
@@ -77,7 +67,19 @@ Using Javascript's binding capabilities, it is possible to create custom classes
 	// continue as above
 
 
-## Multi-label Classification
+### Other Binary Classifiers
+
+In addition to Winnow and NeuralNetwork, version 0.2 includes the following binary classifiers:
+
+* Bayesian - uses [classifier.js, by Heather Arthur](https://github.com/harthur/classifier). 
+* Perceptron
+* SVM - uses [svm.js, by Andrej Karpathy](https://github.com/karpathy/svmjs). 
+* Linear SVM - wrappers around SVM-Perf and Lib-Linear (see below).
+
+This library is still under construction, and not all features work for all classifiers. For a full list of the features that do work, see the "test" folder. 
+
+
+## Multi-Label Classification
 
 	var MyWinnow = limdu.classifiers.Winnow.bind(0, {retrain_count: 10});
 
@@ -90,11 +92,22 @@ Using Javascript's binding capabilities, it is possible to create custom classes
 		{input: {I:1,want:1,a:1,banana:1}, output: "BANANA"},
 		{input: {I:1,want:1,chips:1}, output: "CHIPS"}
 		]);
-	
+
 	console.dir(intentClassifier.classify({I:1,want:1,an:1,apple:1,and:1,a:1,banana:1}));  // ['APPLE','BANANA']
 
+### Other Multi-label classifiers
 
-## Feature extraction
+In addition to BinaryRelevance, version 0.2 includes the following multi-label classifier types (see the multilabel folder):
+
+* HOMER - Hierarchy Of Multi-label classifiERs ([Tsoumakas et al., 2007](http://www.citeulike.org/user/erelsegal-halevi/article/3170786))
+* Passive-Aggressive ([Koby Crammer, Ofer Dekel, Joseph Keshet, Shai Shalev-Shwartz, Yoram Singer, 2006](http://www.citeulike.org/user/erelsegal-halevi/article/5960770))
+ 
+
+This library is still under construction, and not all features work for all classifiers. For a full list of the features that do work, see the "test" folder. 
+
+## Feature engineering
+
+### Feature extraction
 
 	// Use binding to define our base classifier type (a multi-label classifier based on winnow):
 	var TextClassifier = limdu.classifiers.multilabel.BinaryRelevance.bind(0, {
@@ -125,7 +138,7 @@ Using Javascript's binding capabilities, it is possible to create custom classes
 	console.dir(intentClassifier.classify("I WANT AN APPLE AND A BANANA"));  // [] (case sensitive)
 
 
-## Input Normalization
+### Input Normalization
 
 	//Initialize a classifier with a feature extractor and a case normalizer:
 	intentClassifier = new limdu.classifiers.EnhancedClassifier({
@@ -158,3 +171,12 @@ Using Javascript's binding capabilities, it is possible to create custom classes
 ## SVM wrappers
 
 [TODO]
+
+## Contributions
+
+Contributions are more than welcome! All reasonable pull requests, with appropriate unit-tests, will be accepted.
+
+## License
+
+LGPL
+

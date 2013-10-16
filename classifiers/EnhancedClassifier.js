@@ -369,15 +369,19 @@ EnhancedClassifier.prototype = {
 
 	fromJSON : function(json) {
 		this.classifier.fromJSON(json.classifier);
-		if (this.featureLookupTable) this.setFeatureLookupTable(this.featureLookupTable.fromJSON(json.featureLookupTable));
-		if (this.labelLookupTable) this.setLabelLookupTable(this.labelLookupTable.fromJSON(json.labelLookupTable));
+		if (this.featureLookupTable) {
+			this.featureLookupTable.fromJSON(json.featureLookupTable);
+			this.setFeatureLookupTable(this.featureLookupTable);
+		}
+		if (this.labelLookupTable) {
+			this.labelLookupTable.fromJSON(json.labelLookupTable);
+			this.setLabelLookupTable(this.labelLookupTable);
+		}
 		if (this.spellChecker) this.spellChecker = json.spellChecker; 
 		if (this.pastTrainingSamples) this.pastTrainingSamples = json.pastTrainingSamples;
 		this.featureDocumentFrequency = json.featureDocumentFrequency;
 		this.documentCount = json.documentCount;
-
 		/* Note: the feature extractors are functions - they should be created at initialization - they cannot be deserialized! */ 
-		return this;
 	},
 
 	getAllClasses: function() {  // relevant for multilabel classifiers

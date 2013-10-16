@@ -156,12 +156,10 @@ SvmLinear.prototype = {
 		},
 		
 		toJSON: function() {
-			//return this.modelString
 			return this.mapFeatureToWeight; 
 		},
 		
 		fromJSON: function(json) {
-			//this.setModel(json);
 			this.mapFeatureToWeight = json;  
 		},
 };

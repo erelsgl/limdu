@@ -231,7 +231,6 @@ Homer.prototype = {
 	fromJSON: function(json) {
 		this.allClasses = json.allClasses;
 		this.root = this.fromJSONRecursive(json);
-		return this;
 	},
 	
 	fromJSONRecursive: function(treeNodeJson) {

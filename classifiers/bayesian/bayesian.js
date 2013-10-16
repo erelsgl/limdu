@@ -137,7 +137,6 @@ Bayesian.prototype = {
 
 	fromJSON: function(json, callback) {
 		this.backend.fromJSON(json, callback);
-		return this;
 	},
 
 	getCats: function(callback) {

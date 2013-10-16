@@ -86,7 +86,7 @@ WinnowHash.prototype = {
 					this.negative_weights[feature] = this.default_negative_weight;
 			}
 
-			if (this.debug) console.log('> ',' this.positive_weights ',JSON.stringify(this.positive_weights),', this.negative_weights: ',JSON.stringify(this.negative_weights));
+			if (this.debug) console.log('> this.positive_weights  ',JSON.stringify(this.positive_weights),', this.negative_weights: ',JSON.stringify(this.negative_weights));
 
 			var score = this.perceive_features(features, /*continuous_output=*/true, this.positive_weights, this.negative_weights);
 				 // always use the running 'weights' vector for training, and NOT the weights_sum!
@@ -95,7 +95,6 @@ WinnowHash.prototype = {
 			
 			if ((expected && score<=this.margin) || (!expected && score>=-this.margin)) {
 				// Current model is incorrect - adjustment needed!
-				if (this.debug) console.log('> adjusting weights...');
 				if (expected) {
 					for (var feature in features) {
 						var value = features[feature]; 
@@ -109,7 +108,7 @@ WinnowHash.prototype = {
 						this.negative_weights[feature] *= (this.promotion * (1 + value));
 					}
 				}
-				if (this.debug) console.log('-> ',' this.positive_weights ',JSON.stringify(this.positive_weights),', this.negative_weights: ',JSON.stringify(this.negative_weights));
+				if (this.debug) console.log('--> this.positive_weights',JSON.stringify(this.positive_weights),', this.negative_weights: ',JSON.stringify(this.negative_weights));
 				return false;
 			} else {
 				if (this.do_averaging) {

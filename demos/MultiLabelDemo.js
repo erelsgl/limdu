@@ -17,7 +17,7 @@ var _ = require('underscore')._;
  * BINARY CLASSIFIERS (used as basis to other classifiers):
  */
 
-var WinnowBinaryClassifier = classifiers.Winnow.bind(this, {
+var WinnowBinaryClassifier = classifiers.Winnow.bind(0, {
 	retrain_count: 15,  /* 15 is much better than 5, better than 10 */
 	promotion: 1.5,
 	demotion: 0.5,
@@ -25,30 +25,30 @@ var WinnowBinaryClassifier = classifiers.Winnow.bind(this, {
 	margin: 1,
 });
 
-var SvmPerfBinaryClassifier = classifiers.SvmPerf.bind(this, {
+var SvmPerfBinaryClassifier = classifiers.SvmPerf.bind(0, {
 	learn_args: "-c 100 --i 1",   // see http://www.cs.cornell.edu/people/tj/svm_light/svm_perf.html 
 	classify_args: "", 
 	debug:false,
 });
 
-var PassiveAggressiveClassifier = classifiers.multilabel.PassiveAggressive.bind(this, {
+var PassiveAggressiveClassifier = classifiers.multilabel.PassiveAggressive.bind(0, {
 	Constant: 5.0,
 	retrain_count: 10,
 });
 
-var BinaryRelevanceClassifier = classifiers.multilabel.BinaryRelevance.bind(this, {
-	binaryClassifierType: classifiers.Winnow.bind(this, {
+var BinaryRelevanceClassifier = classifiers.multilabel.BinaryRelevance.bind(0, {
+	binaryClassifierType: classifiers.Winnow.bind(0, {
 		promotion: 1.5,
 		demotion: 0.5,
 		retrain_count: 10,
 	}),
 });
 
-var HomerClassifier = classifiers.multilabel.Homer.bind(this, {
+var HomerClassifier = classifiers.multilabel.Homer.bind(0, {
 	multilabelClassifierType: BinaryRelevanceClassifier
 });
 
-var MetaLabelerClassifier = classifiers.multilabel.MetaLabeler.bind(this, {
+var MetaLabelerClassifier = classifiers.multilabel.MetaLabeler.bind(0, {
 	rankerType:  BinaryRelevanceClassifier,
 	counterType: BinaryRelevanceClassifier,
 });

@@ -10,6 +10,27 @@ Limdu is a machine-learning framework for Node.js, which supports online learnin
 
 Working demos can be found at [limdu-demo](https://github.com/erelsgl/limdu-demo).
 
+**Table of Contents**  *generated with [DocToc](http://doctoc.herokuapp.com/)*
+
+	- [Binary Classification](#binary-classification)
+		- [Batch Learning - learn from an array of input-output pairs:](#batch-learning---learn-from-an-array-of-input-output-pairs)
+		- [Online Learning; Explanations](#online-learning-explanations)
+		- [Binding](#binding)
+		- [Other Binary Classifiers](#other-binary-classifiers)
+	- [Multi-Label Classification](#multi-label-classification)
+		- [Other Multi-label classifiers](#other-multi-label-classifiers)
+	- [Feature engineering](#feature-engineering)
+		- [Feature extraction - converting an input sample into feature-value pairs:](#feature-extraction---converting-an-input-sample-into-feature-value-pairs)
+		- [Input Normalization](#input-normalization)
+		- [Feature lookup table - convert custom features to integer features](#feature-lookup-table---convert-custom-features-to-integer-features)
+	- [Serialization](#serialization)
+	- [Cross-validation](#cross-validation)
+	- [Back-classification (aka Generation)](#back-classification-aka-generation)
+	- [SVM wrappers](#svm-wrappers)
+	- [Undocumented featuers](#undocumented-featuers)
+	- [Contributions](#contributions)
+	- [License](#license)
+
 ## Binary Classification
 
 ### Batch Learning - learn from an array of input-output pairs:

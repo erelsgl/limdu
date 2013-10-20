@@ -81,6 +81,13 @@ function test(name, SvmClassifier) {
 } // end of function
 
 
-test("SVM-Perf", classifiers.SvmPerf.bind(this,{learn_args: "-c 20.0"}));
-test("SVM-LibLinear", classifiers.SvmLinear.bind(this,{learn_args: "-c 20.0"}));
-//test("SVM.js", classifiers.SvmJs.bind(this,{C: 20.0})); // handled by SvmJsTest
+if (classifiers.SvmPerf.isInstalled())
+	test("SVM-Perf", classifiers.SvmPerf.bind(this,{learn_args: "-c 20.0"}));
+else
+	console.warn("svm_perf_learn not found - SvmPerf tests skipped.")
+
+if (classifiers.SvmLinear.isInstalled())
+	test("SVM-LibLinear", classifiers.SvmLinear.bind(this,{learn_args: "-c 20.0"}));
+else
+	console.warn("liblinear_train not found - SvmLinear tests skipped.")
+	

@@ -85,5 +85,13 @@ function test(name, SvmClassifier) {
 	});
 }
 
-test("SVM-LibLinear", classifiers.SvmLinear.bind(this,{learn_args: "-c 20.0", model_file_prefix: __dirname+"/../../tempfiles/SvmLinear"}));
-test("SVM-Perf", classifiers.SvmPerf.bind(this,{learn_args: "-c 20.0", model_file_prefix: __dirname+"/../../tempfiles/SvmPerf"}));
+if (classifiers.SvmPerf.isInstalled())
+	test("SVM-Perf", classifiers.SvmPerf.bind(this,{learn_args: "-c 20.0", model_file_prefix: __dirname+"/../../tempfiles/SvmPerf"}));
+else
+	console.warn("svm_perf_learn not found - MetaLabelerSvmPerf tests skipped.")
+
+if (classifiers.SvmLinear.isInstalled())
+	test("SVM-LibLinear", classifiers.SvmLinear.bind(this,{learn_args: "-c 20.0", model_file_prefix: __dirname+"/../../tempfiles/SvmLinear"}));
+else
+	console.warn("liblinear_train not found - MetaLabelerSvmLinear tests skipped.")
+

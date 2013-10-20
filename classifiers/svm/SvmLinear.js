@@ -17,11 +17,21 @@
  */
 
 function SvmLinear(opts) {
+	if (!SvmLinear.isInstalled()) {
+		var msg = "Cannot find the executable 'liblinear_train'. Please download it from the LibLinear website, and put a link to it in your path.";
+		console.error(msg)
+		throw new Error(msg); 
+	}
 	this.learn_args = opts.learn_args || "";
 	this.model_file_prefix = opts.model_file_prefix || null;
 	this.bias = opts.bias || 1.0;
 	this.multiclass = opts.multiclass || false;
 	this.debug = opts.debug||false;
+}
+
+SvmLinear.isInstalled = function() {
+	var result = execSync("liblinear_train");
+	return (result.code!=127);
 }
 
 var util  = require('util')
@@ -55,7 +65,7 @@ SvmLinear.prototype = {
 			var learnFile = svmcommon.writeDatasetToFile(
 					dataset, this.bias, /*binarize=*/false, this.model_file_prefix, "SvmLinear", FIRST_FEATURE_NUMBER);
 			var modelFile = learnFile.replace(/[.]learn/,".model");
-			
+
 			var command = "liblinear_train "+this.learn_args+" "+learnFile + " "+modelFile;
 			if (this.debug) console.log("running "+command);
 

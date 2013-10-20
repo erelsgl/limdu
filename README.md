@@ -140,20 +140,25 @@ This library is still under construction, and not all features work for all clas
 		]);
 	
 	console.dir(intentClassifier.classify("I want an apple and a banana"));  // ['apl','bnn']
-	console.dir(intentClassifier.classify("I WANT AN APPLE AND A BANANA"));  // [] (note: feature extraction is case sensitive)
+	console.dir(intentClassifier.classify("I WANT AN APPLE AND A BANANA"));  // []
+	
+As you can see from the last example, by default feature extraction is case-insensitive. 
+We will take care of this in the next example.
 
-Some simple feature extractors are already bundled with limdu:
+Instead of defining your own feature extractor, you can use those already bundled with limdu:
 
 	limdu.features.NGramsOfWords
 	limdu.features.NGramsOfLetters
 	limdu.features.HypernymExtractor
+
+You can also make 'featureExtractor' an array of several feature extractors, that will be executed in the order you include them.
 
 ### Input Normalization
 
 	//Initialize a classifier with a feature extractor and a case normalizer:
 	intentClassifier = new limdu.classifiers.EnhancedClassifier({
 		classifierType: TextClassifier,  // same as in previous example
-		normalizer: limdu.features.LowerCaseNormalizer,    // a custom normalization function
+		normalizer: limdu.features.LowerCaseNormalizer,
 		featureExtractor: WordExtractor  // same as in previous example
 	});
 
@@ -165,8 +170,9 @@ Some simple feature extractors are already bundled with limdu:
 		]);
 	
 	console.dir(intentClassifier.classify("I want an apple and a banana"));  // ['apl','bnn']
-	console.dir(intentClassifier.classify("I WANT AN APPLE AND A BANANA"));  // ['apl','bnn'] (case insensitive)
+	console.dir(intentClassifier.classify("I WANT AN APPLE AND A BANANA"));  // ['apl','bnn'] 
 
+Of course you can use any other function as an input normalizer. You can also make 'normalizer' an array of several normalizers, that will be executed in the order you include them.
 
 ### Feature lookup table - convert custom features to integer features
 
@@ -196,12 +202,11 @@ This SVM (like most SVM implementations) works with integer features, so we need
 	
 	console.dir(intentClassifier.classify("I want an apple and a banana"));  // ['apl','bnn']
 
+The FeatureLookupTable takes care of the numbers, while you may continue to work with texts! 
 
 ## Serialization
 
-What if you want to train a classifier on your home computer, and use it on a remote server?
-
-To do this, you should serialize the trained classifier, send the string to the remote server, and deserialize it there.
+Say you want to train a classifier on your home computer, and use it on a remote server. To do this, you should somehow convert the trained classifier to a string, send the string to the remote server, and deserialize it there.
 
 You can do this with the "serialization.js" package:
 
@@ -275,10 +280,13 @@ CAUTION: Serialization was not tested for all possible combinations of classifie
 
 ## Cross-validation
 
+	// create a dataset with a lot of input-output pairs:
 	var dataset = [ ... ];
-	var numOfFolds = 5; // for k-fold cross-validation
+	
+	// Decide how many folds you want in your   k-fold cross-validation:
+	var numOfFolds = 5;
 
-	// Define the type of classifier that we want to test:
+	// Define the type of classifier that you want to test:
 	var IntentClassifier = limdu.classifiers.EnhancedClassifier.bind(0, {
 		classifierType: limdu.classifiers.multilabel.BinaryRelevance.bind(0, {
 			binaryClassifierType: limdu.classifiers.Winnow.bind(0, {retrain_count: 10})
@@ -304,7 +312,7 @@ CAUTION: Serialization was not tested for all possible combinations of classifie
 	console.log("\n\nMICRO AVERAGE:"); console.dir(microAverage.fullStats());
 
 
-## Back-classification (aka generation)
+## Back-classification (aka Generation)
 
 Use this option to get the list of all samples with a given class.
 

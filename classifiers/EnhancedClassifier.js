@@ -363,7 +363,7 @@ EnhancedClassifier.prototype = {
 			pastTrainingSamples: (this.pastTrainingSamples? this.pastTrainingSamples: undefined),
 			featureDocumentFrequency: this.featureDocumentFrequency,
 			documentCount: this.documentCount,
-			/* Note: the feature extractors are functions - they should be created at initialization - they cannot be serialized! */ 
+			/* Note: the feature extractors are functions - they should be created at initialization - they are not serializable! */ 
 		};
 	},
 
@@ -381,7 +381,7 @@ EnhancedClassifier.prototype = {
 		if (this.pastTrainingSamples) this.pastTrainingSamples = json.pastTrainingSamples;
 		this.featureDocumentFrequency = json.featureDocumentFrequency;
 		this.documentCount = json.documentCount;
-		/* Note: the feature extractors are functions - they should be created at initialization - they cannot be deserialized! */ 
+		/* Note: the feature extractors are functions - they should be created at initialization - they are not deserializable! */ 
 	},
 
 	getAllClasses: function() {  // relevant for multilabel classifiers

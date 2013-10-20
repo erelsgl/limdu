@@ -64,11 +64,6 @@ var testHomerNonHierarchical = function(classifier) {
 	it('knows its classes', function() {
 		classifier.getAllClasses().should.eql(['A','B','{"C":"c"}']);
 	})
-	
-	it.skip('serializes and de-serializes', function() {
-		var serialize = require('../../../utils/serialize');
-		//serialize.toStringVerified(classifier, function() {return new BinaryRelevanceWinnow();}, __dirname, dataset);
-	})
 }
 
 describe('Homer classifier batch-trained on single-class non-hierarchical inputs', function() {

@@ -3,7 +3,6 @@ module.exports = {
 	hash: require("./hash"),
 	partitions: require("./partitions"),
 	PrecisionRecall: require("./PrecisionRecall"),
-	serialize: require("./serialize"),
 	testLite: trainAndTest.testLite,
 	test: trainAndTest.test,
 	compare: trainAndTest.compare,
@@ -16,6 +15,3 @@ module.exports = {
 	writeDataset: require("./trainAndTest").writeDataset,
 	hammingDistance: require("./hamming").hammingDistance,
 }
-
-module.exports.toString = module.exports.serialize.toString;
-module.exports.fromString = module.exports.serialize.fromString;

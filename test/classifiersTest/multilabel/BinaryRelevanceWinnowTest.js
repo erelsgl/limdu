@@ -75,11 +75,6 @@ var testMultiLabelClassifier = function(classifier) {
 		c[0][1].should.be.above(0);
 		c[1][1].should.be.below(0);
 	});
-	
-	it.skip('serializes and de-serializes', function() {
-		var serialize = require('../../../utils/serialize');
-		//serialize.toStringVerified(classifier, function() {return new BinaryRelevanceWinnow();}, __dirname, dataset);
-	})
 }
 
 

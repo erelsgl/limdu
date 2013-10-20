@@ -1,17 +1,20 @@
 module.exports = {
-	NGramsFromArray: require("./NGramExtractor").NGramsFromArray,
-	NGramsFromText:  require("./NGramExtractor").NGramsFromText,
-	WordsFromText :  require("./NGramExtractor").NGramsFromText,   // for backward compatibility
+	NGramsFromArray: require("./NGramsOfWords").NGramsFromArray,
+	NGramsFromText:  require("./NGramsOfWords").NGramsFromText,
+	WordsFromText :  require("./NGramsOfWords").NGramsFromText,   // for backward compatibility
+	LettersFromText: require("./NGramsOfLetters"),
+	
+	LastLetterExtractor: require("./LastLetterExtractor"),
 
-	LettersFromText: require("./LetterExtractor"),
 	Hypernyms: require("./HypernymExtractor"),
 	CollectionOfExtractors: require("./CollectionOfExtractors"),
 	FeatureLookupTable: require("./FeatureLookupTable"),
-	RegexpNormalizer: require("./RegexpNormalizer"),
+	
 	LowerCaseNormalizer: require("./LowerCaseNormalizer"),
+	RegexpNormalizer: require("./RegexpNormalizer"),
+
 	RegexpSplitter: require("./RegexpSplitter"),
-	LastLetterExtractor: require("./LastLetterExtractor"),
-}
+};
 
 /**
  * Call the given featureExtractor on the given sample, and return the result.

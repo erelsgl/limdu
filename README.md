@@ -107,21 +107,21 @@ This library is still under construction, and not all features work for all clas
 
 ## Feature engineering
 
-### Feature extraction
+### Feature extraction - converting an input sample into feature-value pairs:
 
-	// Use binding to define our base classifier type (a multi-label classifier based on winnow):
+	// First, define our base classifier type (a multi-label classifier based on winnow):
 	var TextClassifier = limdu.classifiers.multilabel.BinaryRelevance.bind(0, {
 		binaryClassifierType: limdu.classifiers.Winnow.bind(0, {retrain_count: 10})
 	});
 	
-	// Define a feature extractor (a function that takes a sample and add features to a given features set):
+	// Now define our feature extractor - a function that takes a sample and adds features to a given features set:
 	var WordExtractor = function(input, features) {
 		input.split(" ").forEach(function(word) {
 			features[word]=1;
 		});
 	};
 	
-	// Initialize a classifier with a feature extractor:
+	// Initialize a classifier with the base classifier type and the feature extractor:
 	var intentClassifier = new limdu.classifiers.EnhancedClassifier({
 		classifierType: TextClassifier,
 		featureExtractor: WordExtractor
@@ -135,15 +135,19 @@ This library is still under construction, and not all features work for all clas
 		]);
 	
 	console.dir(intentClassifier.classify("I want an apple and a banana"));  // ['apl','bnn']
-	console.dir(intentClassifier.classify("I WANT AN APPLE AND A BANANA"));  // [] (case sensitive)
+	console.dir(intentClassifier.classify("I WANT AN APPLE AND A BANANA"));  // [] (note: feature extraction is case sensitive)
 
+Some simple feature extractors are already bundled with limdu:
+
+	limdu.features.NGramsFromText
+	limdu.features.HypernymExtractor
 
 ### Input Normalization
 
 	//Initialize a classifier with a feature extractor and a case normalizer:
 	intentClassifier = new limdu.classifiers.EnhancedClassifier({
 		classifierType: TextClassifier,  // same as in previous example
-		normalizer: limdu.features.LowerCaseNormalizer,
+		normalizer: limdu.features.LowerCaseNormalizer,    // a custom normalization function
 		featureExtractor: WordExtractor  // same as in previous example
 	});
 
@@ -156,6 +160,35 @@ This library is still under construction, and not all features work for all clas
 	
 	console.dir(intentClassifier.classify("I want an apple and a banana"));  // ['apl','bnn']
 	console.dir(intentClassifier.classify("I WANT AN APPLE AND A BANANA"));  // ['apl','bnn'] (case insensitive)
+
+
+### Feature lookup table - convert custom features to integer features
+
+This example uses the quadratic SVM implementation [svm.js, by Andrej Karpathy](https://github.com/karpathy/svmjs). 
+This SVM (like most SVM implementations) works with integer features, so we need a way to convert our string-based features to integers.
+
+	var limdu = require('limdu');
+	
+	// First, define our base classifier type (a multi-label classifier based on svm.js):
+	var TextClassifier = limdu.classifiers.multilabel.BinaryRelevance.bind(0, {
+		binaryClassifierType: limdu.classifiers.SvmJs.bind(0, {C: 1.0})
+	});
+
+	// Initialize a classifier with a feature extractor and a lookup table:
+	var intentClassifier = new limdu.classifiers.EnhancedClassifier({
+		classifierType: TextClassifier,
+		featureExtractor: limdu.features.NGramsFromText(1),  // each word ("1-gram") is a feature  
+		featureLookupTable: new limdu.features.FeatureLookupTable()
+	});
+	
+	// Train and test:
+	intentClassifier.trainBatch([
+		{input: "I want an apple", output: "apl"},
+		{input: "I want a banana", output: "bnn"},
+		{input: "I want chips", output: "cps"},
+		]);
+	
+	console.dir(intentClassifier.classify("I want an apple and a banana"));  // ['apl','bnn']
 
 
 ## Serialization

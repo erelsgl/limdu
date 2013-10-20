@@ -48,7 +48,7 @@ exports.toString = function(trainedClassifier, createNewClassifierFunction) {
 
 /**
  * Load a trained classifier from a string.
- * @param string a string created by serialize.toString.
+ * @param string a string created by exports.toString.
  * @param contextFolderForFunction  the base folder for the "require" statements in the create-new-classifier function.
  */
 exports.fromString = function(string, contextFolderForFunction) {

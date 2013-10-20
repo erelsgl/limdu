@@ -1,5 +1,5 @@
 /**
- * Static Utilities for writing files in ARFF format.
+ * Static Utilities for writing files in ARFF format - the format used by WEKA.
  *
  * @note for READING files in ARFF format, see https://github.com/chesles/node-arff
  * 
@@ -120,43 +120,4 @@ var toARFFLocal = function(dataset, relationName, featureLookupTable) {
 
 	return arff;
 };
-
-
-
-
-/**
- * Load a trained classifier from a string.
- * @param string a string created by serialize.toString.
- * @param contextFolderForFunction  the base folder for the "require" statements in the create-new-classifier function.
- */
-exports.fromString = function(string, contextFolderForFunction) {
-	var json = JSON.parse(string);
-	if (!json.createNewClassifierString) {
-		console.dir(json);
-		throw new Error("Cannot find createNewClassifierString in string");
-	}
-	
-	// add context to the 'require' statements:
-	contextFolderForFunction = contextFolderForFunction.replace(/\\/g, "\\\\");   // for Windows
-	var createNewClassifierString = json.createNewClassifierString.replace(/__dirname/g, "'"+contextFolderForFunction+"'");
-	createNewClassifierString = "("+createNewClassifierString+")";
-	var createNewClassifierFunction = eval(createNewClassifierString);
-	try {
-		var newClassifier = createNewClassifierFunction();
-	} catch (error) {
-		console.log("createNewClassifierString: "+createNewClassifierString);
-		console.log("contextFolderForFunction: "+contextFolderForFunction);
-		throw new Error("Error in creating new classifier from function in string: "+error);
-	}
-	
-	if (!newClassifier) {
-		console.dir(json);
-		throw new Error("Cannot create new classifier from function in string");
-	}
-	newClassifier.createNewClassifierString = json.createNewClassifierString;
-	newClassifier.createNewClassifierFunction = createNewClassifierFunction;
-	newClassifier.fromJSON(json.trainedClassifier);
-	return newClassifier;
-}
-
 

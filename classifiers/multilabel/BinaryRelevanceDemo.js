@@ -9,7 +9,7 @@ var trainSet = [
 		];
 
 var classifier = new classifiers.multilabel.BinaryRelevance({
-	binaryClassifierType: classifiers.Winnow.where({retrain_count:10})
+	binaryClassifierType: classifiers.Winnow.bind(0,{retrain_count:10})
 });
 classifier.trainBatch(trainSet);
 

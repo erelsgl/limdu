@@ -9,7 +9,7 @@ var should = require('should');
 var classifiers = require('../../classifiers');
 var ftrs = require('../../features');
 
-var SvmClassifier = classifiers.SvmLinear.where({
+var SvmClassifier = classifiers.SvmLinear.bind(0,{
 	multiclass: true, 
 	learn_args: "-c 20.0"
 });

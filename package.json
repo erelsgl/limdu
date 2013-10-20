@@ -41,6 +41,8 @@
     "naive bayes",
     "winnow",
     "perceptron",
+    "SVM",
+    "Linear SVM",
     "binary relevance",
     "one vs all"
   ]

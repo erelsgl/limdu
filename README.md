@@ -12,9 +12,7 @@ Working demos can be found at [limdu-demo](https://github.com/erelsgl/limdu-demo
 
 ## Binary Classification
 
-### Batch Learning
-
-This example uses [brain.js, by Heather Arthur](https://github.com/harthur/brain).
+### Batch Learning - learn from an array of input-output pairs:
 
 	var limdu = require('limdu');
 	
@@ -28,10 +26,10 @@ This example uses [brain.js, by Heather Arthur](https://github.com/harthur/brain
 	
 	console.log(colorClassifier.classify({ r: 1, g: 0.4, b: 0 }));  // 0.99 - almost white
 
+Credit: this example uses [brain.js, by Heather Arthur](https://github.com/harthur/brain).
+
 
 ### Online Learning; Explanations
-
-This example uses Modified Balanced Margin Winnow ([Carvalho and Cohen, 2006](http://www.citeulike.org/user/erelsegal-halevi/article/2243777)):
 
 	var limdu = require('limdu');
 	
@@ -51,6 +49,7 @@ This example uses Modified Balanced Margin Winnow ([Carvalho and Cohen, 2006](ht
 	console.dir(birdClassifier.classify({'wings': 1, 'flight': 0, 'beak': 1, 'chicken': 1})); // now, chicken is correctly classified as a bird, although it does not fly.  
 	console.dir(birdClassifier.classify({'wings': 1, 'flight': 0, 'beak': 1, 'chicken': 1}, /*explanation level=*/4)); // why?  because it has wings and beak.
 
+Credit: this example uses Modified Balanced Margin Winnow ([Carvalho and Cohen, 2006](http://www.citeulike.org/user/erelsegal-halevi/article/2243777)):
 
 ### Binding
 
@@ -81,6 +80,10 @@ This library is still under construction, and not all features work for all clas
 
 ## Multi-Label Classification
 
+In binary classification, the output is 0 or 1;
+
+In multi-label classification, the output is a set of zero or more labels.
+
 	var MyWinnow = limdu.classifiers.Winnow.bind(0, {retrain_count: 10});
 
 	var intentClassifier = new limdu.classifiers.multilabel.BinaryRelevance({
@@ -99,9 +102,11 @@ This library is still under construction, and not all features work for all clas
 
 In addition to BinaryRelevance, version 0.2 includes the following multi-label classifier types (see the multilabel folder):
 
-* HOMER - Hierarchy Of Multi-label classifiERs ([Tsoumakas et al., 2007](http://www.citeulike.org/user/erelsegal-halevi/article/3170786))
-* Passive-Aggressive ([Koby Crammer, Ofer Dekel, Joseph Keshet, Shai Shalev-Shwartz, Yoram Singer, 2006](http://www.citeulike.org/user/erelsegal-halevi/article/5960770))
- 
+* Cross-Lingual Language Model Classifier (based on [Anton Leusky and David Traum, 2008](http://www.citeulike.org/user/erelsegal-halevi/article/12540655))
+* HOMER - Hierarchy Of Multi-label classifiERs (based on [Tsoumakas et al., 2007](http://www.citeulike.org/user/erelsegal-halevi/article/3170786))
+* Meta-Labeler (based on [Lei Tang, Suju Rajan, Vijay K. Narayanan, 2009](http://www.citeulike.org/user/erelsegal-halevi/article/4860265)) 
+* Joint identification and segmentation (based on [Fabrizio Morbini, Kenji Sagae, 2011](http://www.citeulike.org/user/erelsegal-halevi/article/10259046))
+* Passive-Aggressive (based on [Koby Crammer, Ofer Dekel, Joseph Keshet, Shai Shalev-Shwartz, Yoram Singer, 2006](http://www.citeulike.org/user/erelsegal-halevi/article/5960770))
 
 This library is still under construction, and not all features work for all classifiers. For a full list of the features that do work, see the "test" folder. 
 
@@ -361,6 +366,7 @@ Some advanced features are not documented yet. If you need them, open an issue a
 * Custom input normalization, based on regular expressions.
 * Input segmentation for multi-label classification - both manual (with regular expressions) and automatic.
 * Feature extraction for model adaptation.
+* Spell-checker features. 
 * Hypernym features.
 * Classification based on a cross-lingual language model.
 * Format conversion - ARFF, JSON, svm-light, TSV.

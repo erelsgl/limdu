@@ -7,13 +7,13 @@
 
 var should = require('should');
 var classifiers = require('../../classifiers');
-var FeaturesUnit = require('../../features');
+var ftrs = require('../../features');
 
 describe('classifier with a single feature extractor for words', function() {
 	it('classifies sentences', function() {
 		var spamClassifier = new classifiers.EnhancedClassifier({
 			classifierType:   classifiers.NeuralNetwork,
-			featureExtractor: FeaturesUnit.WordsFromText(1)
+			featureExtractor: ftrs.NGramsOfWords(1)
 		});
 		
 		spamClassifier.trainBatch([
@@ -35,7 +35,7 @@ describe('classifier with an array of feature extractors, for words and bigrams'
 	it('classifies sentences', function() {
 		var spamClassifier = new classifiers.EnhancedClassifier({
 			classifierType:   classifiers.NeuralNetwork,
-			featureExtractor: [FeaturesUnit.WordsFromText(1),FeaturesUnit.WordsFromText(2)]
+			featureExtractor: [ftrs.NGramsOfWords(1),ftrs.NGramsOfWords(2)]
 		});
 		
 		spamClassifier.trainBatch([

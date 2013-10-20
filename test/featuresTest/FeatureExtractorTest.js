@@ -10,14 +10,14 @@ var ftrs = require('../../features');
 
 describe('word unigram feature extractor', function() {
 	it('creates word unigram features', function() {
-		var fe = ftrs.WordsFromText(1);
+		var fe = ftrs.NGramsOfWords(1);
 		ftrs.call(fe, "This is a demo, you know?").should.eql({ 'This': 1, is: 1, a: 1, demo: 1, you: 1, know: 1 });
 	})
 })
 
 describe('word bigram feature extractor', function() {
 	it('creates word bigram features', function() {
-		var fe = ftrs.WordsFromText(2);
+		var fe = ftrs.NGramsOfWords(2);
 		ftrs.call(fe, "This is a demo, you know?").should.eql({
 			'[start] This': 1,
 			'This is': 1,
@@ -39,7 +39,7 @@ describe('last letter extractor', function() {
 
 describe('word trigram-with-gap feature extractor', function() {
 	it('creates word bigram features', function() {
-		var fe = ftrs.WordsFromText(3, true);
+		var fe = ftrs.NGramsOfWords(3, true);
 		ftrs.call(fe, "This is a demo, you know?").should.eql({
 			'[start] - is': 1,
 			'This - a': 1,
@@ -63,7 +63,7 @@ describe('hypernym extractor', function() {
 
 describe('letter unigram feature extractor', function() {
 	it('creates letter unigram features', function() {
-		var fe = ftrs.LettersFromText(1);
+		var fe = ftrs.NGramsOfLetters(1);
 		ftrs.call(fe, "This is a demo, you know?").should.eql({ t: 1,
 		  h: 1,
 		  i: 1,
@@ -89,8 +89,8 @@ describe('letter unigram feature extractor', function() {
 describe('collection of extractors', function() {
 	it('creates collection of features', function() {
 		var fe = ftrs.CollectionOfExtractors(
-				[ftrs.WordsFromText(1), 
-				 ftrs.WordsFromText(2)])
+				[ftrs.NGramsOfWords(1), 
+				 ftrs.NGramsOfWords(2)])
 		ftrs.call(fe, "This is a demo, you know?").should.eql({
 			'This': 1, is: 1, a: 1, demo: 1, you: 1, know: 1 ,
 			'[start] This': 1,

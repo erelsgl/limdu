@@ -139,7 +139,8 @@ This library is still under construction, and not all features work for all clas
 
 Some simple feature extractors are already bundled with limdu:
 
-	limdu.features.NGramsFromText
+	limdu.features.NGramsOfWords
+	limdu.features.NGramsOfLetters
 	limdu.features.HypernymExtractor
 
 ### Input Normalization
@@ -177,7 +178,7 @@ This SVM (like most SVM implementations) works with integer features, so we need
 	// Initialize a classifier with a feature extractor and a lookup table:
 	var intentClassifier = new limdu.classifiers.EnhancedClassifier({
 		classifierType: TextClassifier,
-		featureExtractor: limdu.features.NGramsFromText(1),  // each word ("1-gram") is a feature  
+		featureExtractor: limdu.features.NGramsOfWords(1),  // each word ("1-gram") is a feature  
 		featureLookupTable: new limdu.features.FeatureLookupTable()
 	});
 	
@@ -232,11 +233,12 @@ On your home machine, do the following:
 	var intentClassifier = newClassifierFunction();
 	
 	// Train and test:
-	intentClassifier.trainBatch([
+	var dataset = [
 		{input: "I want an apple", output: "apl"},
 		{input: "I want a banana", output: "bnn"},
 		{input: "I want chips", output: "cps"},
-		]);
+		];
+	intentClassifier.trainBatch(dataset);
 	
 	console.log("Original classifier:");
 	intentClassifier.classifyAndLog("I want an apple and a banana");  // ['apl','bnn']
@@ -264,11 +266,44 @@ On the remote server, do the following:
 	intentClassifierCopy.trainOnline("I want an elm tree", "elm");
 	intentClassifierCopy.classifyAndLog("I want doughnut and elm tree");  // ['dnt','elm']
 
-
+CAUTION: Serialization was not tested for all possible combinations of classifiers and enhancements. Use carefully!
 
 ## Cross-validation
 
-[TODO]
+	var dataset = [ ... ];
+	var numOfFolds = 5; // for k-fold cross-validation
+
+	// Define the type of classifier that we want to test:
+	var IntentClassifier = limdu.classifiers.EnhancedClassifier.bind(0, {
+		classifierType: limdu.classifiers.multilabel.BinaryRelevance.bind(0, {
+			binaryClassifierType: limdu.classifiers.Winnow.bind(0, {retrain_count: 10})
+		}),
+		featureExtractor: limdu.features.NGramsOfWords(1),
+	});
+	
+	var microAverage = new limdu.utils.PrecisionRecall();
+	var macroAverage = new limdu.utils.PrecisionRecall();
+	
+	limdu.utils.partitions.partitions(dataset, numOfFolds, function(trainSet, testSet) {
+		console.log("Training on "+trainSet.length+" samples, testing on "+testSet.length+" samples");
+		var classifier = new IntentClassifier();
+		classifier.trainBatch(trainSet);
+		limdu.utils.test(classifier, testSet, /* verbosity = */0,
+			microAverage, macroAverage);
+	});
+	
+	macroAverage.calculateMacroAverageStats(numOfFolds);
+	console.log("\n\nMACRO AVERAGE:"); console.dir(macroAverage.fullStats());
+	
+	microAverage.calculateStats();
+	console.log("\n\nMICRO AVERAGE:"); console.dir(microAverage.fullStats());
+
+
+## Back-classification (aka generation)
+
+Use this option to get the list of all samples with a given class.
+
+
 
 
 ## SVM wrappers

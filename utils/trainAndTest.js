@@ -32,7 +32,7 @@ module.exports.testLite = function(classifier, dataset, explain) {
 	}
 	console.log("SUMMARY: "+currentStats.calculateStats().shortStats());
 	return currentStats;
-}
+};
 
 /**
  * Test the given classifier on the given test-set.
@@ -64,7 +64,6 @@ module.exports.test = function(
  * @param explain level of explanations for mistakes (0 for none) 
  */
 module.exports.compare = function(classifier1, classifier2, dataset, explain) {
-	var stats1 = new PrecisionRecall(), stats2 = new PrecisionRecall();
 	for (var i=0; i<dataset.length; ++i) {
 		var expectedClasses = normalizeClasses(dataset[i].output); 
 		var actualClassesWithExplanations1 = classifier1.classify(dataset[i].input, explain);
@@ -87,7 +86,7 @@ module.exports.compare = function(classifier1, classifier2, dataset, explain) {
 			}
 		}
 	}
-}
+};
 
 /**easy
  * Split the given dataset to two datasets: 
@@ -108,7 +107,7 @@ module.exports.splitToEasyAndHard = function(classifier, dataset) {
 		}
 	}
 	return {easy: easyDataset, hard: hardDataset};
-}
+};
 
 /**
  * Test the given classifier-type on the given train-set and test-set.
@@ -126,7 +125,7 @@ module.exports.trainAndTestLite = function(
 		var classifier = createNewClassifierFunction();
 
 		if (verbosity>0) console.log("\nstart training on "+trainSet.length+" samples, "+(trainSet.allClasses? trainSet.allClasses.length+' classes': ''));
-		var startTime = new Date()
+		var startTime = new Date();
 		classifier.trainBatch(trainSet);
 		var elapsedTime = new Date()-startTime;
 		if (verbosity>0) console.log("end training on "+trainSet.length+" samples, "+(trainSet.allClasses? trainSet.allClasses.length+' classes, ': '')+elapsedTime+" [ms]");
@@ -144,14 +143,14 @@ module.exports.trainAndTestLite = function(
  * @return the currentStats.
  */
 module.exports.trainAndTest = function(
-		createNewClassifierFunction, 
+		classifierType, 
 		trainSet, testSet, 
 		verbosity, microAverage, macroSum) {
 		// TRAIN:
-		var classifier = createNewClassifierFunction();
+		var classifier = new classifierType();
 
 		if (verbosity>0) console.log("\nstart training on "+trainSet.length+" samples, "+(trainSet.allClasses? trainSet.allClasses.length+' classes': ''));
-		var startTime = new Date()
+		var startTime = new Date();
 		classifier.trainBatch(trainSet);
 		//console.log(classifier.featureDocumentFrequency['i']);
 		var elapsedTime = new Date()-startTime;
@@ -169,13 +168,13 @@ module.exports.trainAndCompare = function(
 		var classifier2 = createNewClassifier2Function();
 
 		if (verbosity>0) console.log("\nstart training on "+trainSet.length+" samples, "+(trainSet.allClasses? trainSet.allClasses.length+' classes': ''));
-		var startTime = new Date()
+		var startTime = new Date();
 		classifier1.trainBatch(trainSet);
 		var elapsedTime = new Date()-startTime;
 		if (verbosity>0) console.log("end training on "+trainSet.length+" samples, "+(trainSet.allClasses? trainSet.allClasses.length+' classes, ': '')+elapsedTime+" [ms]");
 
 		if (verbosity>0) console.log("start training on "+trainSet.length+" samples, "+(trainSet.allClasses? trainSet.allClasses.length+' classes': ''));
-		var startTime = new Date()
+		var startTime = new Date();
 		classifier2.trainBatch(trainSet);
 		var elapsedTime = new Date()-startTime;
 		if (verbosity>0) console.log("end training on "+trainSet.length+" samples, "+(trainSet.allClasses? trainSet.allClasses.length+' classes, ': '')+elapsedTime+" [ms]");
@@ -206,7 +205,7 @@ module.exports.learningCurve = function(createNewClassifierFunction, datasets, v
 
 		console.log("Train on "+trainSet.length+" samples ("+elapsedTime+" ms): "+testStats);
 	}
-}
+};
 
 
 
@@ -215,7 +214,7 @@ module.exports.learningCurve = function(createNewClassifierFunction, datasets, v
 
 var stringifyClass = function (aClass) {
 	return (_(aClass).isString()? aClass: JSON.stringify(aClass));
-}
+};
 
 var normalizeClasses = function (expectedClasses) {
 	if (!_(expectedClasses).isArray())
@@ -223,4 +222,4 @@ var normalizeClasses = function (expectedClasses) {
 	expectedClasses = expectedClasses.map(stringifyClass);
 	expectedClasses.sort();
 	return expectedClasses;
-}
+};

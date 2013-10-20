@@ -1,5 +1,5 @@
 /**
- * LettersFromText - extracts substrings of letters of a given size.
+ * Extracts substrings of letters of a given size.
  */
 
 var PAD_CHAR = '#';

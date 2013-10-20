@@ -326,12 +326,10 @@ EnhancedClassifier.prototype = {
 		if (!this.pastTrainingSamples)
 			throw new Error("No pastTrainingSamples array - can't backClassify");
 
-		//console.log("\tbackClassify "+JSON.stringify(theClass));
 		if (!(theClass instanceof Array))
 			theClass = [theClass];
 		var samples = [];
 		this.pastTrainingSamples.forEach(function(datum) {
-			//console.log("\t\tChecking "+datum.output);
 			if (_(datum.output).isEqual(theClass))
 				samples.push(datum.input);
 		});

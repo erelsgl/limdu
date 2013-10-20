@@ -7,14 +7,14 @@
 
 var should = require('should');
 var classifiers = require('../../../classifiers');
-var FeaturesUnit = require('../../../features');
+var ftrs = require('../../../features');
 require('../../sorted');
 
 var MulticlassSegmentationBayes = classifiers.multilabel.MulticlassSegmentation.bind(this, {
 		multiclassClassifierType: classifiers.Bayesian.bind(this, {
 			calculateRelativeProbabilities: true
 		}),
-		featureExtractor: FeaturesUnit.WordsFromText(1),
+		featureExtractor: ftrs.NGramsOfWords(1),
 });
 
 // MulticlassSegmentationBayes is now in repair

@@ -37,7 +37,7 @@ exports.fromString = function(string) {
 		hash[key]=value;
 	}
 	return hash;
-}
+};
 
 /**
  * add one hash to another (target += source)
@@ -48,11 +48,11 @@ exports.add  = function(target, source) {
 	for (var feature in source) {
 		if (!(feature in target))
 			target[feature]=0;
-		if (target[feature] instanceof Function)			continue;
+		if (toString.call(target[feature]) != '[object Number]') continue;
 		target[feature] += source[feature];
 	}
 	return target;
-}
+};
  
 /**
  * add one hash to another (target += scalar * source)
@@ -64,11 +64,11 @@ exports.addtimes  = function(target, scalar, source) {
 	for (var feature in source) {
 		if (!(feature in target))
 			target[feature]=0;
-		if (target[feature] instanceof Function)			continue;
+		if (toString.call(target[feature]) != '[object Number]') continue;
 		target[feature] += scalar*source[feature];
 	}
 	return target;
-}
+};
 
 /**
  * multiply one hash by another (elementwise multiplication).
@@ -79,11 +79,11 @@ exports.multiply  = function(target, source) {
 	for (var feature in source) {
 		if (!(feature in target))
 			target[feature]=1;
-		if (target[feature] instanceof Function)			continue;
+		if (toString.call(target[feature]) != '[object Number]') continue;
 		target[feature] *= source[feature];
 	}
 	return target;
-}
+};
 
 /**
  * multiply a hash by a scalar.
@@ -92,12 +92,11 @@ exports.multiply  = function(target, source) {
  */
 exports.multiply_scalar  = function(target, source) {
 	for (var feature in target) {
-		if (target[feature] instanceof Function)
-			continue;
+		if (toString.call(target[feature]) != '[object Number]') continue;
 		target[feature] *= source;
 	}
 	return target;
-}
+};
 
 /**
  * calculate the scalar product (dot product) of the given two hashes.
@@ -110,13 +109,13 @@ exports.inner_product = function(features, weights) {
 	var result = 0;
 	for (var feature in features) {
 			if (feature in weights) {
-				result += features[feature] * weights[feature]
+				result += features[feature] * weights[feature];
 			} else {
 					/* the sample contains a feature that was never seen in training - ignore it for now */ 
 			}
 	}
 	return result;
-}
+};
 
 /**
  * calculate the vector dot product of the given two hashes.
@@ -131,28 +130,28 @@ exports.inner_product_matrix = function(features, weights) {
 		result[category] = exports.inner_product(features, weights[category]);
 	}
 	return result;
-}
+};
 
 exports.sum_of_values = function(weights) {
 	var result = 0;
 	for (var feature in weights)
 		result += weights[feature];
 	return result;
-}
+};
 
 exports.sum_of_absolute_values = function(weights) {
 	var result = 0;
 	for (var feature in weights)
 		result += Math.abs(weights[feature]);
 	return result;
-}
+};
 
 exports.sum_of_square_values = function(weights) {
 	var result = 0;
 	for (var feature in weights)
 		result += Math.pow(weights[feature],2);
 	return result;
-}
+};
 
 /**
  * Normalize the given hash, such that the sum of values is 1.
@@ -162,7 +161,7 @@ exports.normalize_sum_of_values_to_1 = function(features) {
 	var sum = exports.sum_of_absolute_values(features);
 	if (sum!=0)
 		exports.multiply_scalar(features, 1/sum);
-}
+};
 
 /**
  * Normalize the given hash, such that the sum of squares of the values is 1.
@@ -172,7 +171,7 @@ exports.normalize_sum_of_squares_to_1 = function(features) {
 	var sum = exports.sum_of_square_values(features);
 	if (sum!=0)
 		exports.multiply_scalar(features, 1/Math.sqrt(sum));
-}
+};
 
 
 /**
@@ -184,7 +183,7 @@ exports.stringify_sorted = function(weights, separator) {
 	var keys = Object.keys(weights);
 	keys.sort();
 	var last = keys.length-1;
-	for (i = 0; i <= last; i++) {
+	for (var i=0; i <= last; i++) {
 		var key = keys[i];
 		var weight = weights[key]; 
 		result += '"'+key+'": '+weight;
@@ -193,7 +192,7 @@ exports.stringify_sorted = function(weights, separator) {
 	}
 	result += "}";
 	return result;	
-}
+};
 
 
 /**
@@ -215,12 +214,12 @@ exports.normalized = function(object) {
 		result[stringifyIfNeeded(object)]=true; 
 		return result;
 	}
-}
+};
 
 
 var stringifyIfNeeded = function (label) {
 	return (typeof(label)==='string'? label: JSON.stringify(label));
-}
+};
 
 /*
 var toStringOrStringArray = function (classes) {

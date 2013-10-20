@@ -1,8 +1,7 @@
 module.exports = {
-	NGramsFromArray: require("./NGramsOfWords").NGramsFromArray,
-	NGramsFromText:  require("./NGramsOfWords").NGramsFromText,
-	WordsFromText :  require("./NGramsOfWords").NGramsFromText,   // for backward compatibility
-	LettersFromText: require("./NGramsOfLetters"),
+	NGramsFromArray: require("./NGramsFromArray"),
+	NGramsOfWords:  require("./NGramsOfWords"),
+	NGramsOfLetters: require("./NGramsOfLetters"),
 	
 	LastLetterExtractor: require("./LastLetterExtractor"),
 

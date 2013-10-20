@@ -13,7 +13,7 @@ var UnigramBayesianClassifier = classifiers.EnhancedClassifier.bind(this, {
 	classifierType:   classifiers.Bayesian.bind(this, {
 		globalThreshold:  1.5
 	}),
-	featureExtractor: ftrs.NGramsFromText(1),
+	featureExtractor: ftrs.NGramsOfWords(1),
 });
 
 describe('bayesian classifier with a single feature extractor for words', function() {

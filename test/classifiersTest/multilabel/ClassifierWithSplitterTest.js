@@ -17,7 +17,7 @@ describe('baseline - classifier without a splitter', function() {
 					retrain_count: 1
 				}),
 			}),
-			featureExtractor: ftrs.WordsFromText(1),
+			featureExtractor: ftrs.NGramsOfWords(1),
 			inputSplitter: null,
 		});
 		
@@ -42,7 +42,7 @@ describe('classifier with a splitter', function() {
 					retrain_count: 3
 				}),
 			}),
-			featureExtractor: ftrs.WordsFromText(1),
+			featureExtractor: ftrs.NGramsOfWords(1),
 			inputSplitter: ftrs.RegexpSplitter("[.,;?!]|and"),
 		});
 		

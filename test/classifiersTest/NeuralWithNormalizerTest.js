@@ -13,7 +13,7 @@ describe('baseline - classifier without a normalizer', function() {
 	it('errs on non-normalized sentencs', function() {
 		var spamClassifier = new classifiers.EnhancedClassifier({
 			classifierType:   classifiers.NeuralNetwork,
-			featureExtractor: ftrs.WordsFromText(1),
+			featureExtractor: ftrs.NGramsOfWords(1),
 			normalizer: null,
 		});
 
@@ -32,7 +32,7 @@ describe('classifier with a single normalizer', function() {
 	it('classifies sentences correctly', function() {
 		var spamClassifier = new classifiers.EnhancedClassifier({
 			classifierType:   classifiers.NeuralNetwork,
-			featureExtractor: ftrs.WordsFromText(1),
+			featureExtractor: ftrs.NGramsOfWords(1),
 			normalizer: ftrs.RegexpNormalizer([
 			                               			{source: "er\\b", target: ""},
 			                            			{source: "est\\b", target: ""},
@@ -56,7 +56,7 @@ describe('classifier with an array of normalizers', function() {
 	it('classifies sentences correctly', function() {
 		var spamClassifier = new classifiers.EnhancedClassifier({
 			classifierType:   classifiers.NeuralNetwork,
-			featureExtractor: ftrs.WordsFromText(1),
+			featureExtractor: ftrs.NGramsOfWords(1),
 			normalizer: [ftrs.LowerCaseNormalizer,
 			             ftrs.RegexpNormalizer([{source: "er\\b", target: ""}]),
 			             ftrs.RegexpNormalizer([{source: "est\\b", target: ""}]),

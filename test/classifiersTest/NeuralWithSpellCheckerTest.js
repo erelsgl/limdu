@@ -7,7 +7,7 @@
 
 var should = require('should');
 var classifiers = require('../../classifiers');
-var FeaturesUnit = require('../../features');
+var ftrs = require('../../features');
 
 try {
 	var wordsworth = require('wordsworth');
@@ -20,7 +20,7 @@ describe('baseline - classifier without a spell-checker', function() {
 	it('errs on sentences with spelling mistakes', function() {
 		var spamClassifier = new classifiers.EnhancedClassifier({
 			classifierType:   classifiers.NeuralNetwork,
-			featureExtractor: FeaturesUnit.WordsFromText(1),
+			featureExtractor: ftrs.NGramsOfWords(1),
 			spellChecker: null,
 		});
 
@@ -39,7 +39,7 @@ describe('classifier with spell-checker', function() {
 	it('classifies sentences with spelling mistakes correctly', isTestRelevant? function() {
 		var spamClassifier = new classifiers.EnhancedClassifier({
 			classifierType:   classifiers.NeuralNetwork,
-			featureExtractor: FeaturesUnit.WordsFromText(1),
+			featureExtractor: ftrs.NGramsOfWords(1),
 			spellChecker: wordsworth.getInstance(),
 		});
 

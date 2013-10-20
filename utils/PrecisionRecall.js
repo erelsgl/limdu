@@ -91,6 +91,13 @@ PrecisionRecall.prototype = {
 		return this;
 	},
 	
+	calculateMacroAverageStats: function(numOfFolds) {
+		hash.multiply_scalar(this, 1.0/numOfFolds);
+		this.shortStatsString = sprintf("Accuracy=%1.0f%% HammingGain=%1.0f%% Precision=%1.0f%% Recall=%1.0f%% F1=%1.0f%% timePerSample=%1.0f[ms]",
+				this.Accuracy*100, this.HammingGain*100, this.Precision*100, this.Recall*100, this.F1*100, this.timePerSampleMillis);
+	},
+	
+	
 	/**
 	 * @return the full set of statistics for the most recent experiment.
 	 */

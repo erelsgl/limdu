@@ -211,9 +211,8 @@ EnhancedClassifier.prototype = {
 		var pastTrainingSamples = this.pastTrainingSamples;
 
 		dataset = dataset.map(function(datum) {
-			//console.log(JSON.stringify(datum));
 			datum.output = normalizeClasses(datum.output, this.labelLookupTable);
-			if (pastTrainingSamples)
+			if (pastTrainingSamples && dataset!=pastTrainingSamples)
 				pastTrainingSamples.push(datum);
 			datum = _(datum).clone();
 			datum.input = this.normalizedSample(datum.input);
@@ -225,7 +224,6 @@ EnhancedClassifier.prototype = {
 			datum.input = features;
 			return datum;
 		}, this);
-		//console.dir(this.featureDocumentFrequency);
 		dataset.forEach(function(datum) {
 			this.editFeatureValues(datum.input, /*remove_unknown_features=*/false);
 			if (featureLookupTable)
@@ -313,26 +311,12 @@ EnhancedClassifier.prototype = {
 	 * Train on past training samples
 	 * currently doesn't work
 	 */
-//	retrain: function() {
-//		if (!this.pastTrainingSamples)
-//			throw new Error("No pastTrainingSamples array - can't retrain");
-//			
-//		var featureLookupTable = this.featureLookupTable;
-//		var featureExtractor = this.featureExtractors;
-//		var dataset = this.pastTrainingSamples;
-//
-//		dataset = dataset.map(function(datum) {
-//			datum = _(datum).clone();
-//			if (normalizer)
-//				datum.input = normalizer(datum.input);
-//			if (featureExtractor)
-//				datum.input = featureExtractor(datum.input);
-//			if (featureLookupTable)
-//				datum.input = featureLookupTable.hashToArray(datum.input);
-//			return datum;
-//		});
-//		this.classifier.trainBatch(dataset);
-//	},
+	retrain: function() {
+		if (!this.pastTrainingSamples)
+			throw new Error("No pastTrainingSamples array - can't retrain");
+		
+		this.trainBatch(this.pastTrainingSamples);
+	},
 	
 	/**
 	 * @return an array with all samples whose class is the given class.

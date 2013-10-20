@@ -112,7 +112,7 @@ module.exports.splitToEasyAndHard = function(classifier, dataset) {
 
 /**
  * Test the given classifier-type on the given train-set and test-set.
- * @param createNewClassifierFunction a function that creates a new, empty, untrained classifier (of type BinaryClassifierSet).
+ * @param createNewClassifierFunction a function that creates a new, empty, untrained classifier
  * @param trainSet, testSet arrays with objects of the format: {input: "sample1", output: "class1"}
  * @param verbosity [int] level of details in log (0 = no log)
  * @param microAverage, macroSum [output] - objects of type PrecisionRecall, used to return the results. 
@@ -137,7 +137,7 @@ module.exports.trainAndTestLite = function(
 
 /**
  * Test the given classifier-type on the given train-set and test-set.
- * @param createNewClassifierFunction a function that creates a new, empty, untrained classifier (of type BinaryClassifierSet).
+ * @param createNewClassifierFunction a function that creates a new, empty, untrained classifier
  * @param trainSet, testSet arrays with objects of the format: {input: "sample1", output: "class1"}
  * @param verbosity [int] level of details in log (0 = no log)
  * @param microAverage, macroSum [output] - objects of type PrecisionRecall, used to return the results. 

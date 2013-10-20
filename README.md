@@ -8,7 +8,7 @@ Limdu is a machine-learning framework for Node.js, which supports online learnin
 
 ## Demos
 
-Demos can be found at [limdu-demo](https://github.com/erelsgl/limdu-demo).
+Working demos can be found at [limdu-demo](https://github.com/erelsgl/limdu-demo).
 
 ## Binary Classification
 
@@ -72,7 +72,7 @@ Using Javascript's binding capabilities, it is possible to create custom classes
 In addition to Winnow and NeuralNetwork, version 0.2 includes the following binary classifiers:
 
 * Bayesian - uses [classifier.js, by Heather Arthur](https://github.com/harthur/classifier). 
-* Perceptron
+* Perceptron - Loosely based on [perceptron.js, by  by John Chesley](https://github.com/chesles/perceptron)
 * SVM - uses [svm.js, by Andrej Karpathy](https://github.com/karpathy/svmjs). 
 * Linear SVM - wrappers around SVM-Perf and Lib-Linear (see below).
 
@@ -193,7 +193,77 @@ This SVM (like most SVM implementations) works with integer features, so we need
 
 ## Serialization
 
-[TODO]
+What if you want to train a classifier on your home computer, and use it on a remote server?
+
+To do this, you should serialize the trained classifier, send the string to the remote server, and deserialize it there.
+
+You can do this with the "serialization.js" package:
+
+	npm install serialization
+	
+On your home machine, do the following:
+
+	var serialize = require('serialization');
+	
+	// First, define a function that creates a fresh  (untrained) classifier.
+	// This code should be stand-alone - it should include all the 'require' statements
+	//   required for creating the classifier.
+	function newClassifierFunction() {
+		var limdu = require('limdu');
+		var TextClassifier = limdu.classifiers.multilabel.BinaryRelevance.bind(0, {
+			binaryClassifierType: limdu.classifiers.Winnow.bind(0, {retrain_count: 10})
+		});
+	
+		var WordExtractor = function(input, features) {
+			input.split(" ").forEach(function(word) {
+				features[word]=1;
+			});
+		};
+		
+		// Initialize a classifier with a feature extractor:
+		return new limdu.classifiers.EnhancedClassifier({
+			classifierType: TextClassifier,
+			featureExtractor: WordExtractor,
+			pastTrainingSamples: [], // to enable retraining
+		});
+	}
+	
+	// Use the above function for creating a new classifier:
+	var intentClassifier = newClassifierFunction();
+	
+	// Train and test:
+	intentClassifier.trainBatch([
+		{input: "I want an apple", output: "apl"},
+		{input: "I want a banana", output: "bnn"},
+		{input: "I want chips", output: "cps"},
+		]);
+	
+	console.log("Original classifier:");
+	intentClassifier.classifyAndLog("I want an apple and a banana");  // ['apl','bnn']
+	intentClassifier.trainOnline("I want a doughnut", "dnt");
+	intentClassifier.classifyAndLog("I want chips and a doughnut");  // ['cps','dnt']
+	intentClassifier.retrain();
+	intentClassifier.classifyAndLog("I want an apple and a banana");  // ['apl','bnn']
+	intentClassifier.classifyAndLog("I want chips and a doughnut");  // ['cps','dnt']
+	
+	// Serialize the classifier (convert it to a string)
+	var intentClassifierString = serialize.toString(intentClassifier, newClassifierFunction);
+	
+	// Save the string to a file, and send it to a remote server.
+
+
+On the remote server, do the following:
+	
+	// retrieve the string from a file and then:
+	
+	var intentClassifierCopy = serialize.fromString(intentClassifierString, __dirname);
+	
+	console.log("Deserialized classifier:");
+	intentClassifierCopy.classifyAndLog("I want an apple and a banana");  // ['apl','bnn']
+	intentClassifierCopy.classifyAndLog("I want chips and a doughnut");  // ['cps','dnt']
+	intentClassifierCopy.trainOnline("I want an elm tree", "elm");
+	intentClassifierCopy.classifyAndLog("I want doughnut and elm tree");  // ['dnt','elm']
+
 
 
 ## Cross-validation

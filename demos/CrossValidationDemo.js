@@ -22,7 +22,7 @@ var verbosity = 1;
 function createNewClassifier() {
 	var FeaturesUnit = require('../features');
 	var classifiers = require('../classifiers');
-	return new classifiers.BinaryClassifierSet({
+	return new classifiers.multilabel.BinaryRelevance({
 		binaryClassifierType: classifiers.Bayesian,
 	});
 }

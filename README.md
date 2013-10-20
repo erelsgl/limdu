@@ -353,6 +353,18 @@ and similarly with SvmLinear.
 
 See the files classifiers/svm/SvmPerf.js and classifiers/svm/SvmLinear.js for a documentation of the options.
 
+
+## Undocumented featuers
+
+Some advanced features are not documented yet. If you need them, open an issue and I will try to document them.
+
+* Custom input normalization, based on regular expressions.
+* Input segmentation for multi-label classification - both manual (with regular expressions) and automatic.
+* Feature extraction for model adaptation.
+* Hypernym features.
+* Classification based on a cross-lingual language model.
+* Format conversion - ARFF, JSON, svm-light, TSV.
+
 ## Contributions
 
 All contributions are welcome! All reasonable pull requests, with appropriate unit-tests, will be accepted.

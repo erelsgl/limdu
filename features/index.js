@@ -2,8 +2,6 @@ module.exports = {
 	NGramsFromArray: require("./NGramsFromArray"),
 	NGramsOfWords:  require("./NGramsOfWords"),
 	NGramsOfLetters: require("./NGramsOfLetters"),
-	
-	LastLetterExtractor: require("./LastLetterExtractor"),
 
 	Hypernyms: require("./HypernymExtractor"),
 	CollectionOfExtractors: require("./CollectionOfExtractors"),

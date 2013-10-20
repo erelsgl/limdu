@@ -29,14 +29,6 @@ describe('word bigram feature extractor', function() {
 	});
 })
 
-describe('last letter extractor', function() {
-	it('creates last letter feature', function() {
-		var fe = ftrs.LastLetterExtractor;
-		ftrs.call(fe, "This is a demo, you know?").should.eql({
-			'? [end]': 1});
-	});
-})
-
 describe('word trigram-with-gap feature extractor', function() {
 	it('creates word bigram features', function() {
 		var fe = ftrs.NGramsOfWords(3, true);

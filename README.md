@@ -303,16 +303,59 @@ CAUTION: Serialization was not tested for all possible combinations of classifie
 
 Use this option to get the list of all samples with a given class.
 
-
+	var intentClassifier = new limdu.classifiers.EnhancedClassifier({
+		classifierType: limdu.classifiers.multilabel.BinaryRelevance.bind(0, {
+			binaryClassifierType: limdu.classifiers.Winnow.bind(0, {retrain_count: 10})
+		}),
+		featureExtractor: limdu.features.NGramsOfWords(1),
+		pastTrainingSamples: [],
+	});
+	
+	// Train and test:
+	intentClassifier.trainBatch([
+		{input: "I want an apple", output: "apl"},
+		{input: "I want a banana", output: "bnn"},
+		{input: "I really want an apple", output: "apl"},
+		{input: "I want a banana very much", output: "bnn"},
+		]);
+	
+	console.dir(intentClassifier.backClassify("apl"));  // [ 'I want an apple', 'I really want an apple' ]
 
 
 ## SVM wrappers
 
-[TODO]
+The native svm.js implementation takes a lot of time to train -  quadratic in the number of training samples. 
+There are two common packages that can be trained in time linear in the number of training samples. They are:
+
+* [SVM-Perf](http://www.cs.cornell.edu/people/tj/svm_light/svm_perf.html) - by Thorsten Joachims;
+* [LibLinear](http://www.csie.ntu.edu.tw/~cjlin/liblinear) - Fan, Chang, Hsieh, Wang and Lin.
+
+The limdu.js package provides wrappers for these implementations. 
+In order to use the wrappers, you must have the binary file used for training in your path, that is:
+
+* **svm\_perf\_learn** - from [SVM-Perf](http://www.cs.cornell.edu/people/tj/svm_light/svm_perf.html).
+* **liblinear\_train** - from [LibLinear](http://www.csie.ntu.edu.tw/~cjlin/liblinear).
+
+Once you have any one of these installed, you can use the corresponding classifier instead of any binary classifier
+used in the previous demos, as long as you have a feature-lookup-table. For example, with SvmPerf:
+
+	var intentClassifier = new limdu.classifiers.EnhancedClassifier({
+		classifierType: limdu.classifiers.multilabel.BinaryRelevance.bind(0, {
+			binaryClassifierType: limdu.classifiers.SvmPerf.bind(0, 	{
+				learn_args: "-c 20.0" 
+			})
+		}),
+		featureExtractor: limdu.features.NGramsOfWords(1),
+		featureLookupTable: new limdu.features.FeatureLookupTable()
+	});
+
+and similarly with SvmLinear.
+
+See the files classifiers/svm/SvmPerf.js and classifiers/svm/SvmLinear.js for a documentation of the options.
 
 ## Contributions
 
-Contributions are more than welcome! All reasonable pull requests, with appropriate unit-tests, will be accepted.
+All contributions are welcome! All reasonable pull requests, with appropriate unit-tests, will be accepted.
 
 ## License
 

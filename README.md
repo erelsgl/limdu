@@ -1,6 +1,6 @@
 # Limdu.js
 
-Limdu is a machine-learning framework for Node.js. It supports **multi-label classification**, **online learning**, and **real-time classification**. It is especially suited for natural language understanding in dialog systems.
+Limdu is a machine-learning framework for Node.js. It supports **multi-label classification**, **online learning**, and **real-time classification**. Therefore, it is especially suited for natural language understanding in dialog systems.
 
 Limdu is in an "alpha" state - some parts are working (see this readme), but some parts are missing or not tested. Contributions are welcome. 
 
@@ -10,7 +10,7 @@ Limdu is in an "alpha" state - some parts are working (see this readme), but som
 
 ## Demos
 
-Working demos can be found at [limdu-demo](https://github.com/erelsgl/limdu-demo).
+You can run the demos from this project: [limdu-demo](https://github.com/erelsgl/limdu-demo).
 
 **Table of Contents**  *generated with [DocToc](http://doctoc.herokuapp.com/)*
 
@@ -392,7 +392,7 @@ See the files classifiers/svm/SvmPerf.js and classifiers/svm/SvmLinear.js for a 
 
 ## Undocumented featuers
 
-Some advanced features are not documented yet. If you need them, open an issue and I will try to document them.
+Some advanced features are working but not documented yet. If you need any of them, open an issue and I will try to document them.
 
 * Custom input normalization, based on regular expressions.
 * Input segmentation for multi-label classification - both manual (with regular expressions) and automatic.

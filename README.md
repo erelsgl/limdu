@@ -1,6 +1,6 @@
 # Limdu.js
 
-Limdu is a machine-learning framework for Node.js. It supports **multi-label classification**, **online learning**, and **real-time classification**. Therefore, it is especially suited for natural language understanding in dialog systems.
+Limdu is a machine-learning framework for Node.js. It supports **multi-label classification**, **online learning**, and **real-time classification**. Therefore, it is especially suited for natural language understanding in dialog systems and chat-bots.
 
 Limdu is in an "alpha" state - some parts are working (see this readme), but some parts are missing or not tested. Contributions are welcome. 
 

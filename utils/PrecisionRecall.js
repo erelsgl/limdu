@@ -31,7 +31,7 @@ PrecisionRecall.prototype = {
 		if (!expected && actual) this.FP++;
 		if (expected && !actual) this.FN++;
 		if (!expected && !actual) this.TN++;
-		if (expected==actual) this.TRUE;
+		if (expected==actual) this.TRUE++;
 	},
 
 	/**

@@ -5,7 +5,6 @@ var util = require("util");
 var multilabelutils = require('./multilabelutils');
 
 var CrossLanguageModel = require('languagemodel').CrossLanguageModel;
-//var CrossLanguageModel = require('../../../languagemodel').CrossLanguageModel;
 
 
 
@@ -26,14 +25,24 @@ var CrossLanguageModelClassifier = function(opts) {
 	this.model = new CrossLanguageModel(opts);
 	this.labelFeatureExtractor = opts.labelFeatureExtractor;
 	this.threshold = opts.threshold || 0;
-	this.allLabels = {};
+	this.allLabels = {};   
 	this.allLabelsFeatures = {};
 }
 
 CrossLanguageModelClassifier.prototype = {
 
+	/**
+	 * Train the classifier with the given input features and the given array of output labels.
+	 * 
+	 * @note In the original paper, training was apparently done with a single output label per training instance. 
+	 * It is not clear how to train when there are multiple   output labels per training instance.
+	 * I asked: "suppose there is an input sentence "Where is the robot and how do I use it?" and it is labeled with two different output sentences: "The robot is there" and "Read the instructions".   What exactly do you put in the training set in this case?"
+	 * And Anton Leusky replied: "in your example, both labels are in the training set. The goal is to have the classifier to rank these labels above all others for question "Where is the robot and how do I use it?" The order in which the correct labels are ranked is irrelevant. "
+	 */
 	trainOnline: function(features, labels) {
-		this.model.trainOnline(features, this.labelsToFeatures(labels));
+		this.model.trainOnline(
+			features, // input features
+			this.labelsToFeatures(labels)); // output features
 	},
 
 	/**
@@ -57,11 +66,14 @@ CrossLanguageModelClassifier.prototype = {
 		var scoresVector = [];
 		for (var labelString in this.allLabels) {
 			var label = this.allLabels[labelString];
-			var labelFeatures = this.allLabelsFeatures[labelString] || label;
+			var labelFeatures = this.allLabelsFeatures[labelString];
+			if (!labelFeatures)
+				throw new Error("label features for "+labelString+" are undefined");
 			var similarity = -this.model.divergence(features, labelFeatures);
 			scoresVector.push([label, similarity]);
 		}
 		scoresVector.sort(function(a,b) {return b[1]-a[1]}); // sort by decreasing score
+		
 		return multilabelutils.mapScoresVectorToMultilabelResult(scoresVector, explain, withScores, this.threshold);
 	},
 
@@ -76,7 +88,7 @@ CrossLanguageModelClassifier.prototype = {
 	/**
 	 * Internal function.
 	 * 
-	 * Converts an array of labels to a hash of features.
+	 * Converts an array of output labels to a hash of features.
 	 */
 	labelsToFeatures: function(labels) {
 		if (!Array.isArray(labels))  labels = [labels];
@@ -84,15 +96,17 @@ CrossLanguageModelClassifier.prototype = {
 		for (var i in labels) {
 			var label = labels[i];
 			var labelString = multilabelutils.stringifyIfNeeded(label);
+			var labelFeatures = {};
 			if (this.labelFeatureExtractor) {
-				this.labelFeatureExtractor(label, features);
-				this.allLabelsFeatures[labelString] = this.labelFeatureExtractor(label, {});
+				this.labelFeatureExtractor(label, labelFeatures);
+			} else if (_.isObject(label)) {
+				labelFeatures = label;
+			} else {
+				labelFeatures[label] = true;
 			}
-			else if (_.isObject(label))
-				features = util._extend(features, label);
-			else 
-				features[label] = label;
 			this.allLabels[labelString] = label;
+			this.allLabelsFeatures[labelString] = labelFeatures;
+			features = util._extend(features, labelFeatures);
 		}
 		return features;
 	},

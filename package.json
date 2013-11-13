@@ -16,8 +16,8 @@
     "execSync": "*",
     "brain": "*",
     
-    "graph-paths": "*",
-    "languagemodel": "*"
+    "graph-paths": "latest",
+    "languagemodel": "latest"
   },
   "devDependencies": {
     "mocha": ">=1.0.0",

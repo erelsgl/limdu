@@ -74,12 +74,13 @@ PrecisionRecall.prototype = {
 	},
 
 /**
-	 * Record the result of a new classes experiment.
+	 * Record the result of a new classes experiment in a hash manner.
 	 * Doesn't allowed to do a inner output, all stats are put in hash
 	 * @param expectedClasses - the expected set of classes (as an array or a hash).
 	 * @param actualClasses   - the actual   set of classes (as an array or a hash).
 	 * @param logTruePositives- if true, log the true positives. 
 	 * @return an array of explanations "FALSE POSITIVE", "FALSE NEGATIVE", and maybe also "TRUE POSITIVE"
+     * @author Vasily Konovalov
 	 */
 	addCasesHash: function (expectedClasses, actualClasses, logTruePositives ) {
 		var explanations = {};

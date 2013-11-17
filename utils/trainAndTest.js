@@ -42,6 +42,7 @@ module.exports.testLite = function(classifier, dataset, explain) {
  * @param verbosity [int] level of details in log (0 = no log)
  * @param microAverage, macroSum [optional; output] - objects of type PrecisionRecall, used to return the results. 
  * @return the currentStats.
+ * @author Vasily Konovalov
  */
 module.exports.test_hash = function(
 	classifier, testSet, 
@@ -184,7 +185,7 @@ module.exports.trainAndTestLite = function(
 };
 
 /**
- * Test the given classifier-type on the given train-set and test-set.
+ * Test the given classifier-type on the given train-set and test-set and return a hash.
  * The only difference between trainAndTest_hash and trainAndTest is trainAndTest_hash doesn't allow inner console.log 
  * calls to test_hash method and allocate all statistics in hash, the method is still in development
  * @param createNewClassifierFunction a function that creates a new, empty, untrained classifier
@@ -192,6 +193,7 @@ module.exports.trainAndTestLite = function(
  * @param verbosity [int] level of details in log (0 = no log)
  * @param microAverage, macroSum [output] - objects of type PrecisionRecall, used to return the results. 
  * @return the currentStats.
+ * @author Vasily Konovalov
  */
 module.exports.trainAndTest_hash = function(
 		classifierType, 

@@ -13,14 +13,15 @@ var multilabelutils = require('./multilabelutils');
  * 
  * @param opts
  *            multilabelClassifierType (mandatory) - the type of the multilabel classifier used in each level of the hierarchy.
- *            getClusterByDepth (optional) - a function that receives a label and returns a cluster-label, according to the level in the hierarchy. 
+ *            splitLabel (optional) - a function that splits a label to a array of sub-labels, from root to leaves. DEFAULT: split around the "@" char. 
+ *            joinLabel (optional) - a function that joins an array of sub-labels, from root to leaves, to create a full label. DEFAULT: join with the "@" char.
+ *  
+ * @note The original HOMER paper used a clustering algorithm to create a hierarchy of labels.
+ * This clustering algorithm is not implemented here.
+ * Instead, we use a custom function that converts a label to a path in the hierarchy, and another custom function that converts a path back to a label.
  */
 var Homer = function(opts) {
 	opts = opts || {};
-	if (!('multilabelClassifierType' in opts)) {
-		console.dir(opts);
-		throw new Error("opts must contain multilabelClassifierType");
-	}
 	if (!opts.multilabelClassifierType) {
 		console.dir(opts);
 		throw new Error("opts.multilabelClassifierType is null");

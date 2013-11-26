@@ -72,6 +72,50 @@ PrecisionRecall.prototype = {
 		this.count++;
 		return explanations;
 	},
+
+/**
+	 * Record the result of a new classes experiment.
+	 * Doesn't allowed to do a inner output, all stats are put in hash
+	 * @param expectedClasses - the expected set of classes (as an array or a hash).
+	 * @param actualClasses   - the actual   set of classes (as an array or a hash).
+	 * @param logTruePositives- if true, log the true positives. 
+	 * @return an array of explanations "FALSE POSITIVE", "FALSE NEGATIVE", and maybe also "TRUE POSITIVE"
+	 */
+	addCasesHash: function (expectedClasses, actualClasses, logTruePositives, only_false_cases ) {
+		var explanations = {};
+		explanations['TP'] = []; explanations['FP'] = []; explanations['FN'] = [];
+
+		only_false_cases = (typeof only_false_cases === "undefined") ? false : only_false_cases;
+
+		actualClasses = hash.normalized(actualClasses);
+		expectedClasses = hash.normalized(expectedClasses);
+
+		var allTrue = true;
+		for (var actualClass in actualClasses) {
+			if (actualClass in expectedClasses) { 
+				if ((logTruePositives) && (!only_false_cases)) explanations['TP'].push(actualClass);
+				this.TP++;
+			} else {
+				explanations['FP'].push(actualClass);
+				this.FP++;
+				allTrue = false;
+			}
+		}
+		for (var expectedClass in expectedClasses) {
+			if (!(expectedClass in actualClasses)) {
+				explanations['FN'].push(expectedClass);
+				this.FN++;
+				allTrue = false;
+			}
+		}
+		if (allTrue) {
+			// if ((logTruePositives)&& (!only_false_cases)) explanations.push("\t\t*** ALL TRUE!");
+			this.TRUE++;
+		}
+		this.count++;
+		return explanations;
+	},
+	
 	
 	/**
 	 * After the experiment is done, call this method to calculate the performance statistics.

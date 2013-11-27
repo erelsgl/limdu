@@ -35,6 +35,56 @@ module.exports.testLite = function(classifier, dataset, explain) {
 };
 
 /**
+ * Test the given classifier on the given test-set, the result is detailed with with all input data.
+ * the method is still in developemnt and the output data might be changed
+ * @param classifier a (trained) classifier.
+ * @param testSet array with objects of the format: {input: "sample1", output: "class1"}
+ * @param verbosity [int] level of details in log (0 = no log)
+ * @param microAverage, macroSum [optional; output] - objects of type PrecisionRecall, used to return the results. 
+ * @return the currentStats.
+ * @author Vasily Konovalov
+ */
+module.exports.test_hash = function(
+	classifier, testSet, 
+	verbosity, microAverage, macroSum) {
+	var stat_hash = {}
+	var sentence_hash = {}
+	var data_stats = []
+	var currentStats = new PrecisionRecall();
+	var indexes = []
+	var startTime = new Date();
+
+	for (var i=0; i<testSet.length; ++i) 
+	{
+		var expectedClasses = normalizeClasses(testSet[i].output);
+		var actualClasses = classifier.classify(testSet[i].input);
+
+		var explanations = currentStats.addCasesHash(expectedClasses, actualClasses, (verbosity>2));
+
+		var sentence_hash = {}
+		sentence_hash['input'] = testSet[i].input;
+		sentence_hash['expected'] = expectedClasses;
+		sentence_hash['classified'] = actualClasses;
+		sentence_hash['explanations'] = explanations;
+		
+		if (microAverage) microAverage.addCases(expectedClasses, actualClasses);
+
+		data_stats.push(sentence_hash);
+	}
+	
+	currentStats.calculateStats();
+	if (macroSum) hash.add(macroSum, currentStats.fullStats());
+
+	 stat_hash['stats'] = currentStats;
+	 stat_hash['data'] = data_stats;
+	 stat_hash['test_time'] = new Date()-startTime;
+
+	return stat_hash;
+};
+
+
+
+/**
  * Test the given classifier on the given test-set.
  * @param classifier a (trained) classifier.
  * @param testSet array with objects of the format: {input: "sample1", output: "class1"}
@@ -132,6 +182,29 @@ module.exports.trainAndTestLite = function(
 	
 		// TEST:
 		return module.exports.testLite(classifier, testSet, /*explain=*/verbosity-1);
+};
+
+/**
+ * Test the given classifier-type on the given train-set and test-set and return a hash.
+ * The only difference between trainAndTest_hash and trainAndTest is trainAndTest_hash doesn't allow inner console.log 
+ * calls to test_hash method and allocate all statistics in hash, the method is still in development
+ * @param createNewClassifierFunction a function that creates a new, empty, untrained classifier
+ * @param trainSet, testSet arrays with objects of the format: {input: "sample1", output: "class1"}
+ * @param verbosity [int] level of details in log (0 = no log)
+ * @param microAverage, macroSum [output] - objects of type PrecisionRecall, used to return the results. 
+ * @return the currentStats.
+ * @author Vasily Konovalov
+ */
+module.exports.trainAndTest_hash = function(
+		classifierType, 
+		trainSet, testSet, 
+		verbosity, microAverage, macroSum) {
+		var startTime = new Date();
+		var classifier = new classifierType();
+		classifier.trainBatch(trainSet);
+		stat_hash = module.exports.test_hash(classifier, testSet, verbosity, microAverage, macroSum);
+		stat_hash['train_time'] = new Date()-startTime;
+		return stat_hash;
 };
 
 /**

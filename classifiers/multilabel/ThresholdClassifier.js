@@ -5,9 +5,19 @@ var _ = require("underscore")._;
 var PrecisionRecall = require('../../utils/PrecisionRecall');
 var partitions = require('../../utils/partitions');
 
-var Threshold = function(opts) {
+/* ThresholdClassifier - classifier that converts multi-class classifier to multi-label classifier by finding
+ * the best appropriate threshold. 
+ * @param opts
+ *            devsetsize (0.1) - size of the development set from the training set, needed to identify the appropriate threshold, by default 0.1
+ *            evaluateMeasureToMaximize (mandatory) - function that helps evaluate the performance of a given threshold, usually F1 measure.
+ *			  multiclassClassifier - multi-class classifier used for classification.
+ * @author Vasily Konovalov
+ */
+
+var ThresholdClassifier = function(opts) {
 	
 	opts = opts || {};
+
 	if (!('multiclassClassifierType' in opts)) {
 		console.dir(opts);
 		throw new Error("opts must contain multiclassClassifierType");
@@ -16,15 +26,25 @@ var Threshold = function(opts) {
 		console.dir(opts);
 		throw new Error("opts.multiclassClassifierType is null");
 	}
+
+	if (!('evaluateMeasureToMaximize' in opts)) {
+		console.dir(opts);
+		throw new Error("opts must contain evaluateMeasureToMaximize");
+	}
+	if (!opts.evaluateMeasureToMaximize) {
+		console.dir(opts);
+		throw new Error("opts.evaluateMeasureToMaximize is null");
+	}
 	
 	this.multiclassClassifier = new opts.multiclassClassifierType();
 	this.devsetsize = typeof opts.devsetsize !== 'undefined' ? opts.devsetsize : 0.1;
-	this.evaluatefeedback = opts.evaluatefeedback;
+	this.evaluateMeasureToMaximize = opts.evaluateMeasureToMaximize;
 }
 
-Threshold.prototype = {
+ThresholdClassifier.prototype = {
 
 	trainOnline: function(sample, labels) {
+		throw new Error("ThresholdClassifier does not support online training");
 	},
 
 	/**
@@ -61,7 +81,7 @@ Threshold.prototype = {
 		list_of_scores = _.sortBy(list_of_scores, function(num){ return num; });
 		list_of_scores = _.uniq(list_of_scores, true)
 		
- 		// the value to determite the threshold
+ 		// the value to determine the threshold
 		var feedback_value = Number.MIN_VALUE
 		var threshold_value = Number.MIN_VALUE
 
@@ -75,9 +95,10 @@ Threshold.prototype = {
 				scoresVector = validset[i].score
 				var actualClasses = multilabelutils.mapScoresVectorToMultilabelResult(scoresVector, false, false, list_of_scores[th]);
 				explanations.push(currentStats.addCasesHash(validset[i].output, actualClasses, true));
+				console.log(currentStats.addCasesHash(validset[i].output, actualClasses, true))
 			}
 
-			var current_feedback = this.evaluatefeedback(explanations, 0)
+			var current_feedback = this.evaluateMeasureToMaximize(explanations, 0)
 
 			if (current_feedback>feedback_value)
 			{
@@ -97,15 +118,18 @@ Threshold.prototype = {
 	},
 
 	toJSON : function() {
+		return this.multiclassClassifier.toJSON();
 	},
 
 	fromJSON : function(json) {
+		this.multiclassClassifier.fromJSON(json);
 	},
 	
 	setFeatureLookupTable: function(featureLookupTable) {
-
+		if (this.multiclassClassifier.setFeatureLookupTable)
+			this.multiclassClassifier.setFeatureLookupTable(featureLookupTable);
 	},
 }
 
 
-module.exports = Threshold;
+module.exports = ThresholdClassifier;

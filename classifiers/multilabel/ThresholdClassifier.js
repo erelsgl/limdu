@@ -60,9 +60,18 @@ ThresholdClassifier.prototype = {
 	 */
 	trainBatch : function(dataset) {
 
-		clonedataset = partitions.partition(dataset, 1, Math.round(dataset.length*this.devsetsize))
-		dataset = clonedataset['train']
-		validset = clonedataset['test']
+		// for test only, train and valid and test the threshold on the same set, otherwise
+		// best threshold for small validset could not be the best one for testset = trainset
+		if (this.devsetsize == 1)
+			{
+				validset = dataset
+			}
+			else
+			{
+				clonedataset = partitions.partition(dataset, 1, Math.round(dataset.length*this.devsetsize))
+				dataset = clonedataset['train']
+				validset = clonedataset['test']
+			}
 		
 		this.multiclassClassifier.trainBatch(dataset);
 
@@ -78,31 +87,28 @@ ThresholdClassifier.prototype = {
  			list_of_scores = list_of_scores.concat(multilabelutils.getvalue(scoresVector))
  		}	
 
+		// sortBy implements NUMERIC sort, by default .sort() ALPHABETIC sort
 		list_of_scores = _.sortBy(list_of_scores, function(num){ return num; });
 		list_of_scores = _.uniq(list_of_scores, true)
 		
  		// the value to determine the threshold
-		var feedback_value = Number.MIN_VALUE
+		var evaluateMeasureToMaximize_bestvalue = Number.MIN_VALUE
 		var threshold_value = Number.MIN_VALUE
 
  		for (var th=0; th<list_of_scores.length; ++th) {
-
  			var currentStats = new PrecisionRecall();
  			var explanations = []
-
 	 		for (var i=0; i<validset.length; ++i) {
-				
 				scoresVector = validset[i].score
 				var actualClasses = multilabelutils.mapScoresVectorToMultilabelResult(scoresVector, false, false, list_of_scores[th]);
-				explanations.push(currentStats.addCasesHash(validset[i].output, actualClasses, true));
-				console.log(currentStats.addCasesHash(validset[i].output, actualClasses, true))
+				currentStats.addCasesHash(validset[i].output, actualClasses, true);
+				//console.log(currentStats.addCasesHash(validset[i].output, actualClasses, true))
 			}
 
-			var current_feedback = this.evaluateMeasureToMaximize(explanations, 0)
-
-			if (current_feedback>feedback_value)
+			var evaluateMeasureToMaximize_value = this.evaluateMeasureToMaximize(currentStats, 0)
+			if (evaluateMeasureToMaximize_value>evaluateMeasureToMaximize_bestvalue)
 			{
-				current_feedback = feedback_value
+				evaluateMeasureToMaximize_bestvalue = evaluateMeasureToMaximize_value
 				threshold_value = list_of_scores[th]
 			}
 		}

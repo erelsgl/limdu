@@ -1,5 +1,5 @@
-/*
-https://github.com/bugless/nodejs-decision-tree-id3/blob/master/lib/decision-tree.js
+/* Implementation of Decision Tree classifier, ID3 implementation
+   the code based on https://github.com/bugless/nodejs-decision-tree-id3/blob/master/lib/decision-tree.js
  */
 var _ = require('underscore');
 var hash = require("../../utils/hash");

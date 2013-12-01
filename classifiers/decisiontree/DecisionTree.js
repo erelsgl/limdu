@@ -13,9 +13,11 @@ function DecisionTree(opts) {
 DecisionTree.prototype = {
 		
 		toJSON: function(folder) {
+			return this.root
 		},
 
 		fromJSON: function(json) {
+			this.root = json
 		},
 
 		createTree: function(dataset, features) {

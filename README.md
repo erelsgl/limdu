@@ -130,6 +130,7 @@ In addition to BinaryRelevance, version 0.2 includes the following multi-label c
 * Meta-Labeler (based on [Lei Tang, Suju Rajan, Vijay K. Narayanan, 2009](http://www.citeulike.org/user/erelsegal-halevi/article/4860265)) 
 * Joint identification and segmentation (based on [Fabrizio Morbini, Kenji Sagae, 2011](http://www.citeulike.org/user/erelsegal-halevi/article/10259046))
 * Passive-Aggressive (based on [Koby Crammer, Ofer Dekel, Joseph Keshet, Shai Shalev-Shwartz, Yoram Singer, 2006](http://www.citeulike.org/user/erelsegal-halevi/article/5960770))
+* Threshold Classifier (converting multi-class classifier to multi-label classifier by finding the best appropriate threshold)
 
 This library is still under construction, and not all features work for all classifiers. For a full list of the features that do work, see the "test" folder. 
 

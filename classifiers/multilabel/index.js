@@ -6,6 +6,7 @@ module.exports = {
 	Homer:                  require('./Homer'),
 	MetaLabeler:            require('./MetaLabeler'),
 	CrossLanguageModel:     require('./CrossLangaugeModelClassifier'),
+	ThresholdClassifier:    require('./ThresholdClassifier'),
 }
 
 // add a "classify and log" method to all classifiers, for demos:

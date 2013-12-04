@@ -1,3 +1,4 @@
+var _ = require("underscore")._;
 /**
  * A utility function, used by several multi-label classifiers.
  * 
@@ -7,6 +8,26 @@
  * @param threshold if withScores is false, all labels with scores above this threshold will be returned.
  */
 module.exports = {
+		// iterate the list and collect the second item from the every element of the list
+		getvalue: function (list) {
+	                  val = []
+                          for (elem in list)
+                               { val.push(list[elem][1]) }
+	                  return val
+                },
+
+                normalizeClasses: function (expectedClasses) {
+		        if (!_(expectedClasses).isArray())
+			        expectedClasses = [expectedClasses];
+
+		        expectedClasses = expectedClasses.map(this.stringifyClass);
+		        expectedClasses.sort();
+		        return expectedClasses;
+	        },
+
+		stringifyClass: function (aClass) {
+		        return (_(aClass).isString()? aClass: JSON.stringify(aClass));
+		},
 		
 		stringifyIfNeeded: function (label) {
 			return (typeof(label)==='string'? label: JSON.stringify(label));

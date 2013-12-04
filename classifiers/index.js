@@ -13,6 +13,8 @@ module.exports = {
 	Perceptron: require('./perceptron/PerceptronHash'),
 	Winnow: require('./winnow/WinnowHash'),
 
+	DecisionTree: require('./decisiontree/DecisionTree'),
+
 	multilabel: require('./multilabel'),
 	
 	// meta classifier:

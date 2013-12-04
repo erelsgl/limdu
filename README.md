@@ -94,9 +94,10 @@ Using Javascript's binding capabilities, it is possible to create custom classes
 In addition to Winnow and NeuralNetwork, version 0.2 includes the following binary classifiers:
 
 * Bayesian - uses [classifier.js, by Heather Arthur](https://github.com/harthur/classifier). 
-* Perceptron - Loosely based on [perceptron.js, by  by John Chesley](https://github.com/chesles/perceptron)
+* Perceptron - Loosely based on [perceptron.js, by  by John Chesley](https://github.com/chesles/perceptron).
 * SVM - uses [svm.js, by Andrej Karpathy](https://github.com/karpathy/svmjs). 
 * Linear SVM - wrappers around SVM-Perf and Lib-Linear (see below).
+* Decision Tree - based on [node-decision-tree-id3 by Ankit Kuwadekar](https://github.com/bugless/nodejs-decision-tree-id3) or [ID3-Decision-Tree by Will Kurt](https://github.com/willkurt/ID3-Decision-Tree).
 
 This library is still under construction, and not all features work for all classifiers. For a full list of the features that do work, see the "test" folder. 
 
@@ -130,6 +131,7 @@ In addition to BinaryRelevance, version 0.2 includes the following multi-label c
 * Meta-Labeler (based on [Lei Tang, Suju Rajan, Vijay K. Narayanan, 2009](http://www.citeulike.org/user/erelsegal-halevi/article/4860265)) 
 * Joint identification and segmentation (based on [Fabrizio Morbini, Kenji Sagae, 2011](http://www.citeulike.org/user/erelsegal-halevi/article/10259046))
 * Passive-Aggressive (based on [Koby Crammer, Ofer Dekel, Joseph Keshet, Shai Shalev-Shwartz, Yoram Singer, 2006](http://www.citeulike.org/user/erelsegal-halevi/article/5960770))
+* Threshold Classifier (converting multi-class classifier to multi-label classifier by finding the best appropriate threshold)
 
 This library is still under construction, and not all features work for all classifiers. For a full list of the features that do work, see the "test" folder. 
 

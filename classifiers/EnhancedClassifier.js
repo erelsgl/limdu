@@ -281,8 +281,6 @@ EnhancedClassifier.prototype = {
 			}, this);
 			classes = Object.keys(accumulatedClasses);
 		}
-//		if (Array.isArray(classes) && !continuous_output) 
-//			classes.sort(); // to make results repeatable
 		
 		if (this.labelLookupTable) {
 			if (Array.isArray(classes)) {

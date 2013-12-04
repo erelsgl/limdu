@@ -20,7 +20,7 @@ var BinaryRelevanceWinnow = classifiers.multilabel.BinaryRelevance.bind(this, {
 });
 
 var CrossLanguageModelClassifier = classifiers.multilabel.CrossLanguageModel.bind(this, {
-	smoothingFactor : 0.9,
+	smoothingCoefficient: 0.9,
 	labelFeatureExtractor: function(string, features) {
 		if (!features) features = {};
 		features[string]=1;

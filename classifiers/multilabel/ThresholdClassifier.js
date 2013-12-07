@@ -73,76 +73,22 @@ ThresholdClassifier.prototype = {
 		}).bind(this))
 
 		console.log(best_performances)
+		
 		//average_threshold = this.average(_.pluck(best_performances, 'Threshold'))
-		average_threshold = ulist.median(_.pluck(best_performances, 'Threshold'))
+		threshold = ulist.median(_.pluck(best_performances, 'Threshold'))
 
 		average_performances = []
 		partitions.partitions_consistent(dataset, 3, (function(trainSet, testSet, index) {
 			this.multiclassClassifier.trainBatch(trainSet);
-			performance = this.EvaluateThreshold(testSet, average_threshold)
+			performance = this.EvaluateThreshold(testSet, threshold)
 			average_performances.push(performance)
 		}).bind(this))
 
-		
 		console.log(average_performances)
 
 		process.exit(0)
 
-		performance = this.EvaluateThreshold(dataset, this.average(thresholds))
-
-		console.log(performance.calculateStats)
 		
-		process.exit(0)
-
-		this.devsetsize = 1
-		if (this.devsetsize == 1)
-			{
-				validset = dataset
-			}
-			else
-			{
-				clonedataset = partitions.partition(dataset, 1, Math.round(dataset.length*this.devsetsize))
-				dataset = clonedataset['train']
-				validset = clonedataset['test']
-			}
-		
-		this.multiclassClassifier.trainBatch(dataset);
-
-		list_of_scores = [];
-		FN=0
-
-		for (var i=0; i<validset.length; ++i) 
-		{
- 			var scoresVector = this.multiclassClassifier.classify(validset[i].input, false, true);
- 			
- 			for (score in scoresVector)
- 			{
- 				if (validset[i].output.indexOf(scoresVector[score][0])>-1)
- 				{
- 					scoresVector[score].push("+")
- 					FN+=1
- 				}
- 				else {scoresVector[score].push("-")}
-
- 				scoresVector[score].push(i)	
-			}
- 			
- 			list_of_scores = list_of_scores.concat(scoresVector)
- 		}	
-
-		list_of_scores.sort((function(index){
-		    return function(a, b){
-	        return (a[index] === b[index] ? 0 : (a[index] < b[index] ? 1 : -1));
-		    };
-		})(1))
-
-
-		// sortBy implements NUMERIC sort, by default .sort() ALPHABETIC sort
-		// list_of_scores = _.sortBy(list_of_scores, function(num){ return num; });
-		// list_of_scores = _.uniq(list_of_scores, true)
-
-		threshold = this.EvaluateThreshold(list_of_scores, validset, FN)
-
 		
 	},
 

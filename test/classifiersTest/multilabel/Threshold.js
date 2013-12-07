@@ -9,19 +9,12 @@ var should = require('should');
 var classifiers = require('../../../classifiers');
 var random = require('../../generaterandom');
 var wordcounts = require('../../wordcounts');
-var partitions = require('../../../utils/partitions');
-var fs = require('fs');
 
 
 var classifier = classifiers.multilabel.CrossLanguageModel.bind(this, {
 	smoothingFactor : 0.9,
 	// labelFeatureExtractor: Hierarchy.splitJsonFeatures,
 });
-
-// var classifier = classifiers.multilabel.PassiveAggressive.bind(this, {
-// 	Constant: 5.0,
-// 	retrain_count: 10,
-// });
 
 var ThresholdPassiveAggressive = classifiers.multilabel.ThresholdClassifier.bind(this, {
 		multiclassClassifierType: classifier,

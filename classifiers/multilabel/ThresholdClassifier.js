@@ -4,6 +4,8 @@ var multilabelutils = require('./multilabelutils');
 var _ = require("underscore")._;
 var PrecisionRecall = require('../../utils/PrecisionRecall');
 var partitions = require('../../utils/partitions');
+var ulist = require('../../utils/list');
+
 
 /* ThresholdClassifier - classifier that converts multi-class classifier to multi-label classifier by finding
  * the best appropriate threshold. 
@@ -72,7 +74,7 @@ ThresholdClassifier.prototype = {
 
 		console.log(best_performances)
 		//average_threshold = this.average(_.pluck(best_performances, 'Threshold'))
-		average_threshold = this.median(_.pluck(best_performances, 'Threshold'))
+		average_threshold = ulist.median(_.pluck(best_performances, 'Threshold'))
 
 		average_performances = []
 		partitions.partitions_consistent(dataset, 3, (function(trainSet, testSet, index) {
@@ -150,8 +152,6 @@ ThresholdClassifier.prototype = {
 		for (var i=0; i<dataset.length; ++i) 
 		{
  			var scoresVector = this.multiclassClassifier.classify(dataset[i].input, false, true);
- 			console.log(scoresVector)
-
  			for (score in scoresVector)
  			{
  				if (dataset[i].output.indexOf(scoresVector[score][0])>-1)
@@ -175,29 +175,18 @@ ThresholdClassifier.prototype = {
 		    };
 		})(1))
 
-		console.log(list_of_scores)
-
-
 		return [list_of_scores, FN]
 	},
 	
 	EvaluateThreshold: function(testSet, threshold){
-		console.log("_________________________________")
 
  		var currentStats = new PrecisionRecall();
 
 		_.each(testSet, function(value, key, list){ 
-			console.log(value)
 			scoresVector = this.multiclassClassifier.classify(value['input'], false, true);
  			output =  multilabelutils.normalizeClasses(value['output']);
  	     	actualClasses = multilabelutils.mapScoresVectorToMultilabelResult(scoresVector, false, false, threshold);
-			// console.log('expected')
-			// console.log(output)
-			// console.log('gievn')
-			console.log(actualClasses)
-			console.log(scoresVector)
-	 	    currentStats.addCases(output, actualClasses, true);
-	 	    console.log(currentStats)
+			currentStats.addCases(output, actualClasses, true);
  		}, this)	
 
 		currentStats.calculateStats()
@@ -233,7 +222,7 @@ ThresholdClassifier.prototype = {
 
 			index_in_testSet = list_of_scores[th][3]
 
-			if (this.is_equal_set(current_set[index_in_testSet], testSet[index_in_testSet]['output'])) 
+			if (ulist.is_equal_set(current_set[index_in_testSet], testSet[index_in_testSet]['output'])) 
 			{TRUE-=1}
 			
 			if (!current_set[index_in_testSet])
@@ -241,7 +230,7 @@ ThresholdClassifier.prototype = {
 			else
 			{current_set[index_in_testSet].push(list_of_scores[th][0])}
 
- 			if (this.is_equal_set(current_set[index_in_testSet], testSet[index_in_testSet]['output'])) 
+ 			if (ulist.is_equal_set(current_set[index_in_testSet], testSet[index_in_testSet]['output'])) 
 			{TRUE+=1 }
 			
  			PRF = calculate_PRF(TP, FP, FN)

@@ -12,8 +12,6 @@ var wordcounts = require('../../wordcounts');
 var PrecisionRecall = require('../../../utils/PrecisionRecall');
 var multilabelutils = require('../../../classifiers/multilabel/multilabelutils');
 
-
-
 var classifier = classifiers.multilabel.CrossLanguageModel.bind(this, {
 	smoothingFactor : 0.9,
 });
@@ -23,11 +21,12 @@ var ThresholdCrossLanguageModel = classifiers.multilabel.ThresholdClassifier.bin
         evaluateMeasureToMaximize: 'F1',
         validateThreshold: 10,
 });
-		train = []
-		test = []
 
-		_.times(50, function(e) { train.push({'input':wordcounts(random.random_string(5)), 'output':random.random_list_length([1,2,3,4,5])}) })
-	 	_.times(10, function(e) { test.push({'input':wordcounts(random.random_string(5)), 'output':random.random_list_length([1,2,3,4,5])}) })
+train = []
+test = []
+
+_.times(50, function(e) { train.push({'input':wordcounts(random.random_string(5)), 'output':random.random_list_length([1,2,3,4,5])}) })
+_.times(10, function(e) { test.push({'input':wordcounts(random.random_string(5)), 'output':random.random_list_length([1,2,3,4,5])}) })
 
 describe('Threshold inner function', function() {
 

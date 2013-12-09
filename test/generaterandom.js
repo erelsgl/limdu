@@ -36,6 +36,9 @@ module.exports = {
   * @param list - the source list for the elements of the new list
   *
   */
+  random_list_length: function(list) {
+    return this.random_list(Math.floor(Math.random() * 5), list)
+  },
 
   random_list: function(length, list) {
     var result = []

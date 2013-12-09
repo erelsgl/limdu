@@ -39,7 +39,7 @@ var ThresholdClassifier = function(opts) {
 	}
 	
 	this.multiclassClassifier = new opts.multiclassClassifierType();
-	this.devsetsize = typeof opts.devsetsize !== 'undefined' ? opts.devsetsize : 0.1;
+	// this.devsetsize = typeof opts.devsetsize !== 'undefined' ? opts.devsetsize : 0.1;
 	this.evaluateMeasureToMaximize = opts.evaluateMeasureToMaximize;
 }
 
@@ -62,10 +62,14 @@ ThresholdClassifier.prototype = {
 	 */
 	trainBatch : function(dataset) {
 
+		_.shuffle(dataset)
+
 		thresholds=[]
 		best_performances=[]
+		average_performances = []
+		median_performances = []
 
-		partitions.partitions_consistent(dataset, 3, (function(trainSet, testSet, index) { 	 
+		partitions.partitions_consistent(dataset, 10, (function(trainSet, testSet, index) { 	 
 			this.multiclassClassifier.trainBatch(trainSet);
 			result = this.receiveScores(testSet)
 			performance = this.CalculatePerformance(result[0], testSet, result[1])
@@ -74,21 +78,26 @@ ThresholdClassifier.prototype = {
 
 		console.log(best_performances)
 		
-		//average_threshold = this.average(_.pluck(best_performances, 'Threshold'))
-		threshold = ulist.median(_.pluck(best_performances, 'Threshold'))
-
-		average_performances = []
-		partitions.partitions_consistent(dataset, 3, (function(trainSet, testSet, index) {
+		threshold_average = ulist.average(_.pluck(best_performances, 'Threshold'))
+		threshold_median = ulist.median(_.pluck(best_performances, 'Threshold'))
+		
+		partitions.partitions_consistent(dataset, 10, (function(trainSet, testSet, index) {
 			this.multiclassClassifier.trainBatch(trainSet);
-			performance = this.EvaluateThreshold(testSet, threshold)
+			
+			performance = this.EvaluateThreshold(testSet, threshold_average)
 			average_performances.push(performance)
+
+			performance = this.EvaluateThreshold(testSet, threshold_median)
+			median_performances.push(performance)
+
 		}).bind(this))
 
+		console.log('average')
 		console.log(average_performances)
 
-		process.exit(0)
+		console.log('median')
+		console.log(median_performances)
 
-		
 		
 	},
 
@@ -186,13 +195,13 @@ ThresholdClassifier.prototype = {
  			result[list_of_scores[th][1]] = PRF
  			}
 
-			optial_F1=0
+			optial_measure=0
 			for (i in result)
 			{
-				if (result[i]['F1'] > optial_F1)
+				if (result[i][this.evaluateMeasureToMaximize] > optial_measure)
 				{
 					index = i
-					optial_F1 = result[i]['F1']
+					optial_measure = result[i][this.evaluateMeasureToMaximize]
 				}
 			}
 			 			

@@ -62,7 +62,7 @@ ThresholdClassifier.prototype = {
 	 */
 	trainBatch : function(dataset) {
 
-		_.shuffle(dataset)
+		_.times(3, function(n) {dataset = _.shuffle(dataset)})
 
 		thresholds=[]
 		best_performances=[]
@@ -97,6 +97,8 @@ ThresholdClassifier.prototype = {
 
 		console.log('median')
 		console.log(median_performances)
+
+		this.multiclassClassifier.threshold = threshold_average
 
 		
 	},

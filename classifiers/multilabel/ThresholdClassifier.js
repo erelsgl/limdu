@@ -37,10 +37,18 @@ var ThresholdClassifier = function(opts) {
 		console.dir(opts);
 		throw new Error("opts.evaluateMeasureToMaximize is null");
 	}
+	if (!opts.validateThreshold) {
+		console.dir(opts);
+		throw new Error("opts.validateThreshold is null");
+	}
 	
 	this.multiclassClassifier = new opts.multiclassClassifierType();
 	// this.devsetsize = typeof opts.devsetsize !== 'undefined' ? opts.devsetsize : 0.1;
 	this.evaluateMeasureToMaximize = opts.evaluateMeasureToMaximize;
+
+	this.devsetsize = 0.1
+
+	this.validateThreshold = opts.validateThreshold
 }
 
 ThresholdClassifier.prototype = {
@@ -64,43 +72,49 @@ ThresholdClassifier.prototype = {
 
 		_.times(3, function(n) {dataset = _.shuffle(dataset)})
 
-		thresholds=[]
-		best_performances=[]
-		average_performances = []
-		median_performances = []
+		if (this.validateThreshold > 1) {
+			thresholds=[]
+			best_performances=[]
+			average_performances = []
+			median_performances = []
+			partitions.partitions_consistent(dataset, this.validateThreshold, (function(trainSet, testSet, index) { 	 
+				this.multiclassClassifier.trainBatch(trainSet);
+				result = this.receiveScores(testSet)
+				performance = this.CalculatePerformance(result[0], testSet, result[1])
+				best_performances.push(performance)
+			}).bind(this))
 
-		partitions.partitions_consistent(dataset, 10, (function(trainSet, testSet, index) { 	 
+			// console.log(best_performances)
+			
+			threshold_average = ulist.average(_.pluck(best_performances, 'Threshold'))
+			threshold_median = ulist.median(_.pluck(best_performances, 'Threshold'))
+
+			Threshold = threshold_median
+			
+			// partitions.partitions_consistent(dataset, this.validateThreshold, (function(trainSet, testSet, index) {
+			// 	this.multiclassClassifier.trainBatch(trainSet);
+				
+			// 	performance = this.EvaluateThreshold(testSet, threshold_average)
+			// 	average_performances.push(performance)
+
+			// 	performance = this.EvaluateThreshold(testSet, threshold_median)
+			// 	median_performances.push(performance)
+
+			// }).bind(this))
+		}
+		else
+		{
+			dataset = partitions.partition(dataset, 1, Math.round(dataset.length*this.devsetsize))
+			trainSet = dataset['train']
+			testSet = dataset['test']
 			this.multiclassClassifier.trainBatch(trainSet);
 			result = this.receiveScores(testSet)
 			performance = this.CalculatePerformance(result[0], testSet, result[1])
-			best_performances.push(performance)
-		}).bind(this))
+			Threshold = performance['Threshold']	
+			console.log(Threshold)
+		}
 
-		console.log(best_performances)
-		
-		threshold_average = ulist.average(_.pluck(best_performances, 'Threshold'))
-		threshold_median = ulist.median(_.pluck(best_performances, 'Threshold'))
-		
-		partitions.partitions_consistent(dataset, 10, (function(trainSet, testSet, index) {
-			this.multiclassClassifier.trainBatch(trainSet);
-			
-			performance = this.EvaluateThreshold(testSet, threshold_average)
-			average_performances.push(performance)
-
-			performance = this.EvaluateThreshold(testSet, threshold_median)
-			median_performances.push(performance)
-
-		}).bind(this))
-
-		console.log('average')
-		console.log(average_performances)
-
-		console.log('median')
-		console.log(median_performances)
-
-		this.multiclassClassifier.threshold = threshold_average
-
-		
+		this.multiclassClassifier.threshold = Threshold
 	},
 
 	receiveScores: function(dataset) {

@@ -18,6 +18,7 @@ You can run the demos from this project: [limdu-demo](https://github.com/erelsgl
 	- [Batch Learning - learn from an array of input-output pairs:](#batch-learning---learn-from-an-array-of-input-output-pairs)
 	- [Online Learning; Explanations](#online-learning-explanations)
 	- [Binding](#binding)
+	- [Explanations](#explanations)
 	- [Other Binary Classifiers](#other-binary-classifiers)
 - [Multi-Label Classification](#multi-label-classification)
 	- [Other Multi-label classifiers](#other-multi-label-classifiers)
@@ -52,10 +53,8 @@ You can run the demos from this project: [limdu-demo](https://github.com/erelsgl
 Credit: this example uses [brain.js, by Heather Arthur](https://github.com/harthur/brain).
 
 
-### Online Learning; Explanations
+### Online Learning
 
-	var limdu = require('limdu');
-	
 	var birdClassifier = new limdu.classifiers.Winnow({
 		default_positive_weight: 1,
 		default_negative_weight: 1,
@@ -74,6 +73,7 @@ Credit: this example uses [brain.js, by Heather Arthur](https://github.com/harth
 
 Credit: this example uses Modified Balanced Margin Winnow ([Carvalho and Cohen, 2006](http://www.citeulike.org/user/erelsegal-halevi/article/2243777)):
 
+
 ### Binding
 
 Using Javascript's binding capabilities, it is possible to create custom classes, which are made of existing classes and pre-specified parameters:
@@ -87,6 +87,25 @@ Using Javascript's binding capabilities, it is possible to create custom classes
 	var birdClassifier = new MyWinnow();
 	...
 	// continue as above
+
+
+### Explanations
+
+Some classifiers can return "explanations" - additional information that explains how the classification result has been derived. 
+This feature is experimental and is supported differently for different classifiers. For example, for the Bayesian classifier it returns the probabilities for each category:
+
+	var colorClassifier = new limdu.classifiers.Bayesian();
+	
+	colorClassifier.trainBatch([
+		{input: { r: 0.03, g: 0.7, b: 0.5 }, output: 'black'}, 
+		{input: { r: 0.16, g: 0.09, b: 0.2 }, output: 'white'},
+		{input: { r: 0.5, g: 0.5, b: 1.0 }, output: 'white'},
+		]);
+	
+	console.log(colorClassifier.classify({ r: 1, g: 0.4, b: 0 }, 
+			/* explanation level = */1));
+
+Credit: this example uses code from [classifier.js, by Heather Arthur](https://github.com/harthur/classifier).
 
 
 ### Other Binary Classifiers

@@ -1,7 +1,9 @@
 var _ = require("underscore")._;
 
 /**
- * A multi-class Bayes classifier.
+ * A multi-class single-label Bayes classifier.
+ * 
+ * @author Erel Segal-Halevi based on code by Heather Arthur (https://github.com/harthur/classifier)
  * 
  * @param options
  */
@@ -35,16 +37,16 @@ Bayesian.prototype = {
 
 	/**
 	 * Tell the classifier that the given document belongs to the given category.
-	 * @param doc [string] a training sample - a feature-value hash: {feature1: value1, feature2: value2, ...} 
-	 * @param cat [string] the correct class of this sample.
+	 * @param document [string] a training sample - a feature-value hash: {feature1: value1, feature2: value2, ...} 
+	 * @param category [string] the correct category of this sample.
 	 */
-	trainOnline: function(doc, cat) {
-		this.incDocCounts([{input: doc, output: cat}]);
+	trainOnline: function(document, category) {
+		this.incDocCounts([{input: document, output: category}]);
 	},
 
 	/**
 	 * Train the classifier with all the given documents.
-	 * @param data an array with objects of the format: {input: sample1, output: class1}
+	 * @param data an array with objects of the format: {input: sample1, output: category1}
 	 * where sample1 is a feature-value hash: {feature1: value1, feature2: value2, ...} 
 	 */
 	trainBatch: function(data) {
@@ -53,16 +55,15 @@ Bayesian.prototype = {
 	
 	/**
 	 * Ask the classifier what category the given document belongs to.
-	 * @param doc a hash {feature1: value1, feature2: value2, ...}
-	 * @return the most probable class of this sample.
-	 * If explain>0, also return its probability.
+	 * @param document a hash {feature1: value1, feature2: value2, ...}
+	 * @return the most probable category of this sample.
+	 * If explain>0, also return the probability of each category.
 	 */
-	classify: function(doc, explain) {
-		if (!_.isObject(doc)) {
-			throw new Error("doc should be an object, but is "+JSON.stringify(doc));
+	classify: function(document, explain) {
+		if (!_.isObject(document)) {
+			throw new Error("document should be a feature-value hash, but it is "+JSON.stringify(document));
 		}
-		var probs = this.getProbsSync(doc);
-		//console.log("probs for "+JSON.stringify(doc)+" are "+JSON.stringify(probs));
+		var probs = this.getProbsSync(document);
 		
 		var max = this.bestMatch(probs);
 		if (explain>0) {
@@ -78,14 +79,14 @@ Bayesian.prototype = {
 	},
 
 	/**
-	 * Used for classification.
-	 * Get the probabilities of the words in the given sentence.
-	 * @param doc a hash {feature1: value1, feature2: value2, ...}
+	 * A subroutine used for classification.
+	 * Gets the probabilities of the words in the given sentence.
+	 * @param document a hash {feature1: value1, feature2: value2, ...}
 	 */
-	getProbsSync: function(doc) {
-		var words = Object.keys(doc); // an array with the unique words in the text, for example: [ 'free', 'watches' ]
+	getProbsSync: function(document) {
+		var words = Object.keys(document); // an array with the unique words in the text, for example: [ 'free', 'watches' ]
 		var cats = this.getCats(); // a hash with the possible categories: { 'cat1': 1, 'cat2': 1 }
-		var counts = this.getWordCounts(words, cats); // For each word encountered during training, the counts of times it occured in each category. 
+		var counts = this.getWordCounts(words, cats); // For each word encountered during training, the counts of times it occurred in each category. 
 		var probs = this.getCatProbs(cats, words, counts); // The probabilities that the given document belongs to each of the categories, i.e.: { 'cat1': 0.1875, 'cat2': 0.0625 }
 		
 		if (this.normalizeOutputProbabilities) {
@@ -94,7 +95,7 @@ Bayesian.prototype = {
 				probs[cat] = probs[cat]/sum;
 		}
 		
-		var pairs = _.pairs(probs);   // [cat,prob]
+		var pairs = _.pairs(probs);   // pairs of [category,probability], for all categories that appeared in the training set.
 		//console.dir(pairs);
 		if (pairs.length==0) {
 			return {category: this.default, probability: 0};

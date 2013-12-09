@@ -26,6 +26,16 @@
   "scripts": {
     "test": "mocha"
   },
+  "contributors": [
+                   {
+                     "name": "Erel Segal-Halevi",
+                     "email": "erelsgl@gmail.com"
+                   },
+                   {
+                       "name": "Vasily Konovalov",
+                       "email": "vasili.konov@gmail.com"
+                   },
+  ],   	
   "keywords": [
     "classifier",
     "classification",

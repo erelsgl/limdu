@@ -12,11 +12,9 @@ var CrossLanguageModel = require('languagemodel').CrossLanguageModel;
  * Multilabel classifier based on cross-language model.
  * 
  * See https://github.com/erelsgl/languagemodel .
- * 
- * IN CONSTRUCTION
  *
  * @param opts
- *			smoothingFactor (lamda of the model)
+ *			smoothingCoefficient (lamda of the model)
  *          threshold (optional; default 0) - for selecting relevant/irrelevant classes.
  *          labelFeatureExtractor (optional) - function that extracts features from the output labels. 
  *
@@ -132,7 +130,7 @@ if (process.argv[1] === __filename) {
 	console.log("CrossLanguageModelClassifier demo start");
 	
 	var classifier = new CrossLanguageModelClassifier({
-		smoothingFactor : 0.9,
+		smoothingCoefficient : 0.9,
 		labelFeatureExtractor: null,
 		threshold: -0.5,
 	});

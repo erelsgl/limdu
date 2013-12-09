@@ -43,11 +43,14 @@ var ThresholdClassifier = function(opts) {
 	}
 	
 	this.multiclassClassifier = new opts.multiclassClassifierType();
-	// this.devsetsize = typeof opts.devsetsize !== 'undefined' ? opts.devsetsize : 0.1;
+
+	// [F1, Accuracy]	
 	this.evaluateMeasureToMaximize = opts.evaluateMeasureToMaximize;
 
+	// constant size of validation set
 	this.devsetsize = 0.1
 
+	// > 1, n - fold cross - validation, oteherwise validation set
 	this.validateThreshold = opts.validateThreshold
 }
 
@@ -111,7 +114,7 @@ ThresholdClassifier.prototype = {
 			result = this.receiveScores(testSet)
 			performance = this.CalculatePerformance(result[0], testSet, result[1])
 			Threshold = performance['Threshold']	
-			console.log(Threshold)
+			// console.log(Threshold)
 		}
 
 		this.multiclassClassifier.threshold = Threshold
@@ -214,7 +217,7 @@ ThresholdClassifier.prototype = {
 			optial_measure=0
 			for (i in result)
 			{
-				if (result[i][this.evaluateMeasureToMaximize] > optial_measure)
+				if (result[i][this.evaluateMeasureToMaximize] >= optial_measure)
 				{
 					index = i
 					optial_measure = result[i][this.evaluateMeasureToMaximize]

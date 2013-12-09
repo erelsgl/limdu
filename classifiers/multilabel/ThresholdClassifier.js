@@ -50,7 +50,7 @@ var ThresholdClassifier = function(opts) {
 	// constant size of validation set
 	this.devsetsize = 0.1
 
-	// > 1, n - fold cross - validation, oteherwise validation set
+	// > 1, n - fold cross - validation, otherwise validation set
 	this.validateThreshold = opts.validateThreshold
 }
 

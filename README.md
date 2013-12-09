@@ -107,6 +107,7 @@ This feature is experimental and is supported differently for different classifi
 
 Credit: this example uses code from [classifier.js, by Heather Arthur](https://github.com/harthur/classifier).
 
+WARNING: The inner format of the explanations might change without notice. The explanations should be used for presentation purposes only! 
 
 ### Other Binary Classifiers
 

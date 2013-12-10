@@ -10,8 +10,9 @@ var ulist = require('../../utils/list');
 /* ThresholdClassifier - classifier that converts multi-class classifier to multi-label classifier by finding
  * the best appropriate threshold. 
  * @param opts
- *            devsetsize (0.1) - size of the development set from the training set, needed to identify the appropriate threshold, by default 0.1
- *            evaluateMeasureToMaximize (mandatory) - function that helps evaluate the performance of a given threshold, usually F1 measure.
+ *            numOfFoldsForThresholdCalculation - =1 the threshold is approximated on validation set of size 10% of training set
+ 												  >1 n - fold cross - validation is applied to approximate the threshold
+ *            evaluateMeasureToMaximize (['Accuracy','F1']) - string of the measure that operate the improvement of threshold
  *			  multiclassClassifier - multi-class classifier used for classification.
  * @author Vasily Konovalov
  */
@@ -91,7 +92,6 @@ ThresholdClassifier.prototype = {
 					
 			threshold_average = ulist.average(_.pluck(best_performances, 'Threshold'))
 			threshold_median = ulist.median(_.pluck(best_performances, 'Threshold'))
-
 
 			Threshold = threshold_median
 		}

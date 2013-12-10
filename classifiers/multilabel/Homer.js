@@ -109,7 +109,9 @@ Homer.prototype = {
 				output: normalizedLabels.map(this.splitLabel)
 			}
 		}, this);
-		//console.dir(dataset[0]);
+		
+		// [ [ 'Offer', 'Leased Car', 'Without leased car' ], [ 'Offer', 'Working Hours', '9 hours' ] ]
+		
 		return this.trainBatchRecursive(dataset, this.root);
 	},
 	
@@ -119,24 +121,35 @@ Homer.prototype = {
 	trainBatchRecursive: function(dataset, treeNode) {
 		var superlabelsDataset = [];
 		var mapSuperlabelToRestDataset = {};
-		dataset.forEach(function(datum) {
-			var splitLabels = datum.output;
+		dataset.forEach(function(datum) { 
+			var splitLabels = datum.output;	// [ [ 'Offer', 'Leased Car', 'Without leased car' ], [ 'Offer', 'Working Hours', '9 hours' ] ]
 			var superlabels = {};           // the first parts of each of the splitLabels
 			var mapSuperlabelToRest = {};   // each value is a list of continuations of the key. 
-			for (var i in splitLabels) {
-				var splitLabel = splitLabels[i];
+			for (var i in splitLabels) { 
+				var splitLabel = splitLabels[i];//[ 'Offer', 'Leased Car', 'Without leased car' ]
 				var superlabel = splitLabel[0];
-				superlabels[superlabel] = true;
-				if (splitLabel.length>1) {
+				superlabels[superlabel] = true; //superlabels['Offer'] = true
+				if (splitLabel.length>1) { 		// if it have more than one label (superlabel)
 					if (!mapSuperlabelToRest[superlabel]) 
 						mapSuperlabelToRest[superlabel] = [];
-					mapSuperlabelToRest[superlabel].push(splitLabel.slice(1));
+					mapSuperlabelToRest[superlabel].push(splitLabel.slice(1));//['Leased Car', 'Without leased car']
 				}
 			}
+
+/*			Sample of mapSuperlabelToRest
+			{ Offer: 
+			[ [ 'Leased Car', 'Without leased car' ],
+   			  [ 'Working Hours', '9 hours' ] ] }
+
+			Sample of superlabelsDataset, initial dataset with superlabel instead of entire output
+			'. [end]': 0.965080896043587 },
+			output: [ 'Offer' ] } ]
+*/
 			superlabelsDataset.push({
 				input: datum.input,
 				output: Object.keys(superlabels)
-			});
+			});		
+
 			for (var superlabel in mapSuperlabelToRest) {
 				if (!(superlabel in mapSuperlabelToRestDataset)) 
 					mapSuperlabelToRestDataset[superlabel] = [];
@@ -146,8 +159,14 @@ Homer.prototype = {
 				});
 			}
 		}, this);
+		
+/*		Sample of mapSuperlabelToRestDataset
+		{ Offer: [ { input: [Object], output: [["Leased Car","Without leased car"],["Working Hours","9 hours"]] } ] }
+*/
 
+		// train the classifier only on superlabels
 		treeNode.superlabelClassifier.trainBatch(superlabelsDataset);
+
 		for (var superlabel in mapSuperlabelToRestDataset) {
 			if (!(superlabel in treeNode.mapSuperlabelToBranch)) {
 				treeNode.mapSuperlabelToBranch[superlabel] = {
@@ -155,7 +174,9 @@ Homer.prototype = {
 					mapSuperlabelToBranch: {}
 				}
 			}
-			this.trainBatchRecursive(mapSuperlabelToRestDataset[superlabel], treeNode.mapSuperlabelToBranch[superlabel]);
+/*			train the next level classifier for a give superlabel classifier superlabel (from loop)
+			with the dataset from new structure mapSuperlabelToRestDataset (see above)
+*/			this.trainBatchRecursive(mapSuperlabelToRestDataset[superlabel], treeNode.mapSuperlabelToBranch[superlabel]);
 		}
 	},
 
@@ -185,19 +206,30 @@ Homer.prototype = {
 	 */
 	classifyRecursive: function(sample, explain, treeNode, depth) {
 		if (!depth) depth = 1;
+		// classify the superlabel 
 		var superlabelsWithExplain = treeNode.superlabelClassifier.classify(sample, explain);
 		var superlabels = (explain>0? superlabelsWithExplain.classes: superlabelsWithExplain);
+		
 		var splitLabels = [];
 		if (explain>0) {
 			var explanations = ["depth="+depth+": "+superlabels, superlabelsWithExplain.explanation];
 		}
+
+		// for all superlabels that were classified, may be there are more than one that were classified with it
 		for (var i in superlabels) {
 			var superlabel = superlabels[i];
 			var splitLabel = [superlabel];
+			
+			// classifier of [Offer] types / second level / classifies Offer's parameters
 			var branch = treeNode.mapSuperlabelToBranch[superlabel];
+			
 			if (branch) {
+				
+				// [ [ 'Without leased car' ] ]
 				var branchLabelsWithExplain = this.classifyRecursive(sample, explain, branch, depth+1);
+				
 				var branchLabels = (explain>0? branchLabelsWithExplain.classes: branchLabelsWithExplain);
+					
 				for (var j in branchLabels)
 					splitLabels.push(splitLabel.concat(branchLabels[j]));
 				if (explain>0) 

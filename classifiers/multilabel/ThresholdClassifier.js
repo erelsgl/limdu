@@ -37,9 +37,9 @@ var ThresholdClassifier = function(opts) {
 		console.dir(opts);
 		throw new Error("opts.evaluateMeasureToMaximize is null");
 	}
-	if (!opts.validateThreshold) {
+	if (!opts.numOfFoldsForThresholdCalculation) {
 		console.dir(opts);
-		throw new Error("opts.validateThreshold is null");
+		throw new Error("opts.numOfFoldsForThresholdCalculation is null");
 	}
 	
 	this.multiclassClassifier = new opts.multiclassClassifierType();
@@ -51,7 +51,7 @@ var ThresholdClassifier = function(opts) {
 	this.devsetsize = 0.1
 
 	// > 1, n - fold cross - validation, otherwise validation set
-	this.validateThreshold = opts.validateThreshold
+	this.numOfFoldsForThresholdCalculation = opts.numOfFoldsForThresholdCalculation
 }
 
 ThresholdClassifier.prototype = {
@@ -75,35 +75,25 @@ ThresholdClassifier.prototype = {
 
 		_.times(3, function(n) {dataset = _.shuffle(dataset)})
 
-		if (this.validateThreshold > 1) {
+		if (this.numOfFoldsForThresholdCalculation > 1) {
 			thresholds=[]
 			best_performances=[]
 			average_performances = []
 			median_performances = []
-			partitions.partitions_consistent(dataset, this.validateThreshold, (function(trainSet, testSet, index) { 	 
+			partitions.partitions_consistent(dataset, this.numOfFoldsForThresholdCalculation, (function(trainSet, testSet, index) { 	 
 				this.multiclassClassifier.trainBatch(trainSet);
 				result = this.receiveScores(testSet)
 				performance = this.CalculatePerformance(result[0], testSet, result[1])
 				best_performances.push(performance)
 			}).bind(this))
 
-			// console.log(best_performances)
-			
+			this.stats = best_performances
+					
 			threshold_average = ulist.average(_.pluck(best_performances, 'Threshold'))
 			threshold_median = ulist.median(_.pluck(best_performances, 'Threshold'))
 
+
 			Threshold = threshold_median
-			
-			// partitions.partitions_consistent(dataset, this.validateThreshold, (function(trainSet, testSet, index) {
-			// 	this.multiclassClassifier.trainBatch(trainSet);
-				
-			// 	performance = this.EvaluateThreshold(testSet, threshold_average)
-			// 	average_performances.push(performance)
-
-			// 	performance = this.EvaluateThreshold(testSet, threshold_median)
-			// 	median_performances.push(performance)
-
-			// }).bind(this))
 		}
 		else
 		{
@@ -114,12 +104,13 @@ ThresholdClassifier.prototype = {
 			result = this.receiveScores(testSet)
 			performance = this.CalculatePerformance(result[0], testSet, result[1])
 			Threshold = performance['Threshold']	
-			// console.log(Threshold)
 		}
 
 		this.multiclassClassifier.threshold = Threshold
 	},
-
+	/*
+	* Classify dataset and return the scored result in sorted list
+	*/
 	receiveScores: function(dataset) {
 		list_of_scores = [];
 		FN=0
@@ -152,31 +143,12 @@ ThresholdClassifier.prototype = {
 		return [list_of_scores, FN]
 	},
 	
-	EvaluateThreshold: function(testSet, threshold){
-
- 		var currentStats = new PrecisionRecall();
-
-		_.each(testSet, function(value, key, list){ 
-			scoresVector = this.multiclassClassifier.classify(value['input'], false, true);
- 			output =  multilabelutils.normalizeClasses(value['output']);
- 	     	actualClasses = multilabelutils.mapScoresVectorToMultilabelResult(scoresVector, false, false, threshold);
-			currentStats.addCases(output, actualClasses, true);
- 		}, this)	
-
-		currentStats.calculateStats()
-
-		output = {}
-		output['Threshold'] = threshold
-		output['F1'] = currentStats.F1
-		output['Accuracy'] = currentStats.Accuracy
-		output['TP'] = currentStats.TP
-		output['FP'] = currentStats.FP
-		output['FN'] = currentStats.FN
- 		
- 		return output
-
-		},
-	
+	/*
+	Calculate the bst threshold with the highest evaluateMeasureToMaximize
+	@param  list_of_scores list of scores
+	@param  testSet test set
+	@param FN false negative
+	*/
 	CalculatePerformance: function(list_of_scores, testSet, FN){
 		current_set=[]
 

@@ -36,13 +36,7 @@ exports.partition = function(dataset, testSetStart, testSetCount) {
  */
 exports.partitions = function(dataset, numOfPartitions, callback) {
 	var shuffledDataset = _.shuffle(dataset);
-	var testSetCount = dataset.length / numOfPartitions;
-	
-	for (var iPartition=0; iPartition<numOfPartitions; ++iPartition) {
-		var testSetStart = iPartition*testSetCount;
-		var partition = exports.partition(shuffledDataset, testSetStart, testSetCount);
-		callback(partition.train, partition.test, iPartition);
-	}
+	partitions_consistent(dataset, numOfPartitions, callback)
 }
 
 /**

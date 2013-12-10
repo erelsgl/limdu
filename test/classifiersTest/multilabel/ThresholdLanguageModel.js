@@ -13,13 +13,13 @@ var ToTest = require('../../../utils/trainAndTest').test;
 var multilabelutils = require('../../../classifiers/multilabel/multilabelutils');
 
 var classifier = classifiers.multilabel.CrossLanguageModel.bind(this, {
-	smoothingFactor : 0.9,
+ 	smoothingFactor : 0.9,
 });
 
 var ThresholdCrossLanguageModel = classifiers.multilabel.ThresholdClassifier.bind(this, {
 		multiclassClassifierType: classifier,
         evaluateMeasureToMaximize: 'F1',
-        validateThreshold: 10,
+        numOfFoldsForThresholdCalculation: 1,
 });
 
 train = []
@@ -43,8 +43,6 @@ describe('Threshold function', function() {
 
 		classifierBatch.multiclassClassifier.threshold = threshold
 
-		performance = classifierBatch.EvaluateThreshold(test, threshold)
-		
 		stats = ToTest(classifierBatch.multiclassClassifier, test, 0)
 		
 		result['TP'].should.be.equal(stats['TP'])
@@ -53,7 +51,7 @@ describe('Threshold function', function() {
 		result['Accuracy'].should.be.equal(stats['Accuracy'])
 	})
 
-	it(' finds the best measure element [F1, Accuracy]', function() {
+	it('finds the best measure element [F1, Accuracy]', function() {
 		var classifierBatch = new ThresholdCrossLanguageModel();
 
 		classifierBatch.multiclassClassifier.trainBatch(train);
@@ -69,6 +67,4 @@ describe('Threshold function', function() {
 		})
 
 	})
-
-
 })

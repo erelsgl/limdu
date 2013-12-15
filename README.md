@@ -16,7 +16,7 @@ You can run the demos from this project: [limdu-demo](https://github.com/erelsgl
 
 - [Binary Classification](#binary-classification)
 	- [Batch Learning - learn from an array of input-output pairs:](#batch-learning---learn-from-an-array-of-input-output-pairs)
-	- [Online Learning; Explanations](#online-learning-explanations)
+	- [Online Learning](#online-learning)
 	- [Binding](#binding)
 	- [Explanations](#explanations)
 	- [Other Binary Classifiers](#other-binary-classifiers)
@@ -91,8 +91,7 @@ Using Javascript's binding capabilities, it is possible to create custom classes
 
 ### Explanations
 
-Some classifiers can return "explanations" - additional information that explains how the classification result has been derived. 
-This feature is experimental and is supported differently for different classifiers. For example, for the Bayesian classifier it returns the probabilities for each category:
+Some classifiers can return "explanations" - additional information that explains how the classification result has been derived: 
 
 	var colorClassifier = new limdu.classifiers.Bayesian();
 	
@@ -107,7 +106,17 @@ This feature is experimental and is supported differently for different classifi
 
 Credit: this example uses code from [classifier.js, by Heather Arthur](https://github.com/harthur/classifier).
 
-WARNING: The inner format of the explanations might change without notice. The explanations should be used for presentation purposes only! 
+The explanation feature is experimental and is supported differently for different classifiers. For example, for the Bayesian classifier it returns the probabilities for each category:
+
+	{ classes: 'white',
+		explanation: [ 'white: 0.0621402182289608', 'black: 0.031460948468170505' ] }
+
+While for the winnow classifier it returns the relevance (feature-value times feature-weight) for each feature: 
+
+{ classification: 1,
+  explanation: [ 'bias+1.12', 'r+1.08', 'g+0.25', 'b+0.00' ] }
+
+WARNING: The inner format of the explanations might change without notice. The explanations should be used for presentation purposes only (and not, for example, for extracting the actual numbers). 
 
 ### Other Binary Classifiers
 

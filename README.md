@@ -113,8 +113,8 @@ The explanation feature is experimental and is supported differently for differe
 
 While for the winnow classifier it returns the relevance (feature-value times feature-weight) for each feature: 
 
-{ classification: 1,
-  explanation: [ 'bias+1.12', 'r+1.08', 'g+0.25', 'b+0.00' ] }
+	{ classification: 1,
+		explanation: [ 'bias+1.12', 'r+1.08', 'g+0.25', 'b+0.00' ] }
 
 WARNING: The inner format of the explanations might change without notice. The explanations should be used for presentation purposes only (and not, for example, for extracting the actual numbers). 
 

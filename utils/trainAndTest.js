@@ -100,6 +100,7 @@ module.exports.test = function(
 		var expectedClasses = normalizeClasses(testSet[i].output);
 		var actualClasses = classifier.classify(testSet[i].input);
 		var explanations = currentStats.addCases(expectedClasses, actualClasses, (verbosity>2));
+		currentStats.addCasesLabels(expectedClasses, actualClasses);
 		if (verbosity>1 && explanations.length>0) console.log("\t"+testSet[i].input+": \n"+explanations.join("\n"));
 		if (microAverage) microAverage.addCases(expectedClasses, actualClasses);
 	}

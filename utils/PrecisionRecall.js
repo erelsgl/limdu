@@ -43,7 +43,7 @@ PrecisionRecall.prototype = {
 	 * @return an array of explanations "FALSE POSITIVE", "FALSE NEGATIVE", and maybe also "TRUE POSITIVE"
 	 */
 
-addCasesLabels: function (expectedClasses, actualClasses, ) {
+addCasesLabels: function (expectedClasses, actualClasses ) {
 		var explanations = [];
 		actualClasses = hash.normalized(actualClasses);
 		expectedClasses = hash.normalized(expectedClasses);

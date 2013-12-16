@@ -433,11 +433,12 @@ Some advanced features are working but not documented yet. If you need any of th
 * Classification based on a cross-lingual language model.
 * Format conversion - ARFF, JSON, svm-light, TSV.
 
-## Contributions
-
-All contributions are welcome! All reasonable pull requests, with appropriate unit-tests, will be accepted.
-
 ## License
 
 LGPL
 
+## Contributions
+
+Code contributions are welcome. Reasonable pull requests, with appropriate documentation and unit-tests, will be accepted.
+
+Do you like limdu? Remember that you can star it :-)

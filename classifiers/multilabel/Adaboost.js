@@ -5,6 +5,7 @@ var fs = require('fs');
 var partitions = require('../../utils/partitions');
 var execSync = require('execSync')
 var crypto = require('crypto')
+var execSync = require('execSync').exec
 
 /**
  * Adaptive Boosting (Adaboost) is a greedy search for a linear combination of 
@@ -22,6 +23,12 @@ var crypto = require('crypto')
  */
 
 var Adaboost = function(opts) {
+	if (!Adaboost.isInstalled()) {
+		var msg = "Cannot find the executable 'icsiboost'.";
+		console.error(msg)
+		throw new Error(msg); 
+	}
+
 	this.set_of_labels = []
 	this.text_expert = 'ngram'
 	this.assigner = crypto.randomBytes(20).toString('hex');
@@ -29,6 +36,11 @@ var Adaboost = function(opts) {
 
 	this.ngram_length = opts.ngram_length || 2
 	this.iterations = opts.iterations || 2000
+}
+
+Adaboost.isInstalled = function() {
+	var result = execSync("./icsiboost");
+	return (result.code!=127);
 }
 
 Adaboost.prototype = {
@@ -77,13 +89,14 @@ Adaboost.prototype = {
 			str = ""
 			_.each(valueset, function(value, key, list){
 					if (value['input'].length <= 1) return
-	    			str += value['input'].replace(/\,/g,'') + ',' + value['output'].join(" ")+ ".\n"
+	    			//str += value['input'].replace(/\,/g,'') + ',' + value['output'].join(" ")+ ".\n"
+	    			str += value['input']+ ',' + value['output'].join(" ")+ ".\n"
 	    		})   
 
 			fs.writeFileSync("./"+this.folder+"/"+this.assigner+"."+key1, str)
 		}, this)
 
-		var result = execSync.run("./icsiboost -S ./"+this.folder+"/"+this.assigner+" -n "+this.iterations)
+		var result = execSync("./icsiboost -S ./"+this.folder+"/"+this.assigner+" -n "+this.iterations)
 		console.log(result)
 	},
 
@@ -91,8 +104,9 @@ Adaboost.prototype = {
 
 		if (this.set_of_labels.length == 1) {return this.set_of_labels[0]}
 
-		fs.writeFileSync("./"+this.folder+"/"+this.assigner+".test", sample.replace(/\,/g,'')+"\n")
-		var result = execSync.run("./icsiboost -S ./"+this.folder+"/"+this.assigner +" -W "+this.ngram_length+" -N "+this.text_expert+" -C < ./"+this.folder+"/"+this.assigner+".test > ./"+this.folder+"/"+this.assigner+".output")
+		// fs.writeFileSync("./"+this.folder+"/"+this.assigner+".test", sample.replace(/\,/g,'')+"\n")
+		fs.writeFileSync("./"+this.folder+"/"+this.assigner+".test", sample+"\n")
+		var result = execSync("./icsiboost -S ./"+this.folder+"/"+this.assigner +" -W "+this.ngram_length+" -N "+this.text_expert+" -C < ./"+this.folder+"/"+this.assigner+".test > ./"+this.folder+"/"+this.assigner+".output")
 		var stats = fs.readFileSync("./"+this.folder+"/"+this.assigner+".output", "utf8");
 
 		set_of_labels = this.set_of_labels

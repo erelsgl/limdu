@@ -7,7 +7,7 @@ module.exports = {
 	MetaLabeler:            require('./MetaLabeler'),
 	CrossLanguageModel:     require('./CrossLangaugeModelClassifier'),
 	ThresholdClassifier:    require('./ThresholdClassifier'),
-	Adaboost:  				require('./Adaboost'),
+	Adaboost:  		require('./Adaboost'),
 }
 
 // add a "classify and log" method to all classifiers, for demos:

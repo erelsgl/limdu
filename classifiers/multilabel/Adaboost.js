@@ -89,8 +89,8 @@ Adaboost.prototype = {
 			str = ""
 			_.each(valueset, function(value, key, list){
 					if (value['input'].length <= 1) return
-	    			//str += value['input'].replace(/\,/g,'') + ',' + value['output'].join(" ")+ ".\n"
-	    			str += value['input']+ ',' + value['output'].join(" ")+ ".\n"
+	    			str += value['input'].replace(/\,/g,'') + ',' + value['output'].join(" ")+ ".\n"
+	    			//str += value['input']+ ',' + value['output'].join(" ")+ ".\n"
 	    		})   
 
 			fs.writeFileSync("./"+this.folder+"/"+this.assigner+"."+key1, str)
@@ -104,7 +104,7 @@ Adaboost.prototype = {
 
 		if (this.set_of_labels.length == 1) {return this.set_of_labels[0]}
 
-		// fs.writeFileSync("./"+this.folder+"/"+this.assigner+".test", sample.replace(/\,/g,'')+"\n")
+		fs.writeFileSync("./"+this.folder+"/"+this.assigner+".test", sample.replace(/\,/g,'')+"\n")
 		fs.writeFileSync("./"+this.folder+"/"+this.assigner+".test", sample+"\n")
 		var result = execSync("./icsiboost -S ./"+this.folder+"/"+this.assigner +" -W "+this.ngram_length+" -N "+this.text_expert+" -C < ./"+this.folder+"/"+this.assigner+".test > ./"+this.folder+"/"+this.assigner+".output")
 		var stats = fs.readFileSync("./"+this.folder+"/"+this.assigner+".output", "utf8");

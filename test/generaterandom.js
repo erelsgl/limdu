@@ -30,13 +30,17 @@ module.exports = {
     return string;
   },
 
+  random_list_length: function(list) {
+    return this.random_list(Math.floor(Math.random() * 5), list)
+  },
+
   /* 
   * Generate random list with the given length with element from the given list
   * @param length - the length of the required random list
   * @param list - the source list for the elements of the new list
   *
   */
-
+  
   random_list: function(length, list) {
     var result = []
     for (var i = 0; i < length; i++) {

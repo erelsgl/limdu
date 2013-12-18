@@ -36,11 +36,21 @@ exports.partition = function(dataset, testSetStart, testSetCount) {
  */
 exports.partitions = function(dataset, numOfPartitions, callback) {
 	var shuffledDataset = _.shuffle(dataset);
+	partitions_consistent(dataset, numOfPartitions, callback)
+}
+
+/**
+ * Create several different partitions of the given dataset to train and test without doing shuffling
+ * Useful for cross-validation in Threshold classifier.
+ * 
+*/
+
+exports.partitions_consistent = function(dataset, numOfPartitions, callback) {
 	var testSetCount = dataset.length / numOfPartitions;
 	
 	for (var iPartition=0; iPartition<numOfPartitions; ++iPartition) {
 		var testSetStart = iPartition*testSetCount;
-		var partition = exports.partition(shuffledDataset, testSetStart, testSetCount);
+		var partition = exports.partition(dataset, testSetStart, testSetCount);
 		callback(partition.train, partition.test, iPartition);
 	}
 }

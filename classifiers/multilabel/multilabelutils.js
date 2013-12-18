@@ -46,7 +46,7 @@ module.exports = {
 			} else {
 				results = [];
 				scoresVector.forEach(function(pair) {
-					if (pair[1]>threshold)
+					if (pair[1]>=threshold)
 						results.push(pair[0]);
 				});
 			}

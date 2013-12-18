@@ -91,9 +91,6 @@ Adaboost.prototype = {
 
 		if (this.set_of_labels.length == 1) {return this.set_of_labels[0]}
 
-		try {fs.unlinkSync('agent.output')} catch (rmErr) {  }
-		try {fs.unlinkSync('agent.test')} catch (rmErr) {  }
-		
 		fs.writeFileSync("./"+this.folder+"/"+this.assigner+".test", sample.replace(/\,/g,'')+"\n")
 		var result = execSync.run("./icsiboost -S ./"+this.folder+"/"+this.assigner +" -W "+this.ngram_length+" -N "+this.text_expert+" -C < ./"+this.folder+"/"+this.assigner+".test > ./"+this.folder+"/"+this.assigner+".output")
 		var stats = fs.readFileSync("./"+this.folder+"/"+this.assigner+".output", "utf8");

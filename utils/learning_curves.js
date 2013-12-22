@@ -1,7 +1,10 @@
-/**
- * Draw a learning curves
- * 
- * @author Vasily Konovalov
+/*
+	Draw learning curves of classifiers
+	A "learning curve" is a graph of the performance of a certain classifier, as a function of the number of training instances.
+	You can draw learning curves of several classifiers on the same graph, for the sake of comparison.
+	You can measure the performance can using several parameters, such as: accuracy, F1, etc.
+	The graphs are drawn by "gnuplot", so you must have gnuplot installed in order to use this unit.
+	@author Vasily Konovalov
  */
 
 var _ = require('underscore')._;
@@ -18,9 +21,9 @@ var trainAndTest = require('./trainAndTest').trainAndTest;
    The example of the input is following.
 
 classifiers  = {
-	HomerWinnow: classifier.HomerWinnow, 
-	Adaboost: classifier.AdaboostClassifier, 
-	Winnow: classifier.WinnowClassifier };
+	HomerWinnow: HomerWinnow, 
+	Adaboost: AdaboostClassifier, 
+	Winnow: WinnowClassifier };
 
 parameters = ['F1','TP','FP','FN','Accuracy','Precision','Recall']
 */

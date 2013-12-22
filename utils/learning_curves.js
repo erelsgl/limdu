@@ -26,7 +26,7 @@ parameters = ['F1','TP','FP','FN','Accuracy','Precision','Recall']
 */
 module.exports.learning_curves = function(classifiers, dataset, parameters, step) {
 
-	dir = "./learning_curves"
+	dir = "./learning_curves/"
 
 	var result = execSync.run("gnuplot -V");
 	if (result !=0 ) {
@@ -45,7 +45,7 @@ module.exports.learning_curves = function(classifiers, dataset, parameters, step
 		{
 			console.log("The existing report is found. If you want to draw a learning curves, remove the existing report")
 			_.each(content, function(value, key, list) {
-				value = "./learning_curves/"+value
+				value = dir+value
 				command = "gnuplot -p -e \"set key autotitle columnhead; set title \'"+value+"\'; plot for [i=2:20] \'"+value+"\' using 1:i with lines\""
 				result = execSync.run(command)
 	    	})
@@ -63,7 +63,7 @@ module.exports.learning_curves = function(classifiers, dataset, parameters, step
 	header = "train\t" + (Object.keys(classifiers)).join("\t")+"\n";
 
 	_.each(parameters,  function(value, key, list){ 
-		fs.writeFileSync("./learning_curves/"+value, header, 'utf-8', function(err) {console.log("error "+err); return 0 })
+		fs.writeFileSync(dir+value, header, 'utf-8', function(err) {console.log("error "+err); return 0 })
 	})
 
 	while (index < train.length)
@@ -78,7 +78,7 @@ module.exports.learning_curves = function(classifiers, dataset, parameters, step
 		
 		_.each(parameters, function(value, key, list){
 			valuestring = mytrain.length +"\t"+ (_.pluck(report, value)).join("\t") +"\n" ;
-			fs.appendFileSync("learning_curves/"+value, valuestring,'utf8', function (err) {console.log("error "+err); return 0 })
+			fs.appendFileSync(dir+value, valuestring,'utf8', function (err) {console.log("error "+err); return 0 })
 		})
 	}
 }

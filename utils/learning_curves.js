@@ -21,9 +21,9 @@ var trainAndTest = require('./trainAndTest').trainAndTest;
    The example of the input is following.
 
 classifiers  = {
-	HomerWinnow: HomerWinnow, 
-	Adaboost: AdaboostClassifier, 
-	Winnow: WinnowClassifier };
+	Adaboost: limdu.classifiers.multilabel.Adaboost, 
+	PassiveAggressive: limdu.classifiers.multilabel.PassiveAggressive
+	};
 
 parameters = ['F1','TP','FP','FN','Accuracy','Precision','Recall']
 */

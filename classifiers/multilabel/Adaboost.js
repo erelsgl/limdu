@@ -50,6 +50,7 @@ Adaboost.prototype = {
 	},
 
 	trainBatch : function(dataset) {
+
 		set_of_labels = []
 		_.times(1, function(){dataset = _.shuffle(dataset)})
 		_.each(dataset, function(value, key, list){ 
@@ -60,7 +61,7 @@ Adaboost.prototype = {
 
 		this.set_of_labels = _.uniq(set_of_labels)
 
-		if (set_of_labels.length == 1) { return }
+		if (this.set_of_labels.length == 1) {return 0}
 
 		dataset = _.map(dataset, function(value){ 
 			values = []

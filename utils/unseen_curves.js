@@ -5,7 +5,10 @@
 	@params dataset - dataset
 
 	The size of seen vocabulary is iteratively increased by the sentence from the dataset. 
-	On every sentence the ration of unseen words in the seen vocabulary is calculated.
+	On every sentence the ratio of unseen words in the seen vocabulary is calculated.
+
+	gnuplot has to be installed
+	http://www.gnuplot.info/
 
 	@author Vasily Konovalov
  */
@@ -42,9 +45,6 @@ function tokenizedataset(dataset)
     return _.uniq(vocabulary);
 }
 
-module.exports.stringifyClass = function (aClass) {
-	return (_(aClass).isString()? aClass: JSON.stringify(aClass));
-}
 /*
 	@params dataset - dataset.
 	The plot files is stored in the directory unseen_words_curve.

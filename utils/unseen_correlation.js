@@ -1,7 +1,7 @@
 /*
 	Correlation between unseen words and False Negative 
 
-	The assumption is previously unseen word mostly might cause false negative type of mistake.
+	The assumption is that previously unseen word mostly might cause false negative type of mistake.
 	Module does cross-validation on the given dataset, in the test utterances where there is 
 	unseen words and false negative mistake the the dict is build, where the key is a word and 
 	the value is the list of false negative mistakes.
@@ -14,10 +14,7 @@ var fs = require('fs');
 var execSync = require('execSync')
 var partitions = require('./partitions');
 var trainAndTest = require('./trainAndTest').trainAndTest;
-var natural = require('natural');
 var trainAndTest_hash= require('./trainAndTest').trainAndTest_hash;
-
-var tokenizer = new natural.WordPunctTokenizer();
 
 function normalizer(sentence) {
 	if (typeof sentence == 'undefined')
@@ -28,37 +25,43 @@ function normalizer(sentence) {
 		}
 }
 
-function tokenizedataset(dataset)
+function tokenizedataset(dataset, tokenize)
 { 
 	vocabulary = []
 	for (var sample in dataset) 
     {
-    		if (dataset[sample].length!=0)
-    	   	{
-    	   	var words = tokenizer.tokenize(normalizer(dataset[sample]['input']));
-	    	vocabulary = vocabulary.concat(words);
-	    	}
+		if (dataset[sample].length!=0)
+	   	{
+	   	var words = tokenize(normalizer(dataset[sample]['input']));
+    	vocabulary = vocabulary.concat(words);
+    	}
 	 }
     return _.uniq(vocabulary);
 }
 
+module.exports.tokenize = function(str)
+	{
+		pattern = new RegExp(/(\w+|\!|\'|\"")/i);
+		str = str.split(pattern)
+		return _.without(str,'',' ')
+	}
 /*
 	@params dataset - dataset to estimate the correlation
 	@params classifier - classifier to estimate false negative mistakes.
 
 	*/
-module.exports.unseen_correlation = function(dataset, classifier) {
+module.exports.unseen_correlation = function(dataset, classifier, tokenize) {
 	unseen_correlation = {}
 
 	partitions.partitions(dataset, 5, function(trainSet, testSet, index) { 
-		unseen_vocabulary = tokenizedataset(testSet)
-		seen_vocabulary = tokenizedataset(trainSet)
+		unseen_vocabulary = tokenizedataset(testSet, tokenize)
+		seen_vocabulary = tokenizedataset(trainSet, tokenize)
 		var stats  = trainAndTest_hash(classifier, trainSet, testSet, 5);
 	
 	_.each(stats['data'],  function(report, key, list){ 
 		if (report['explanations']['FN'].length > 0)
 			{
-			unseen_words = _.difference(tokenizer.tokenize(normalizer(report['input'])), seen_vocabulary)
+			unseen_words = _.difference(tokenize(normalizer(report['input'])), seen_vocabulary)
 			_.each(unseen_words, function(word, key, list) {
 	    		if (!(word in unseen_correlation))
 	    			{

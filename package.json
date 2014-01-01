@@ -10,7 +10,7 @@
   "dependencies": {
     "underscore": "*",
     "sprintf": "*",
-
+    "natural": "*",
     "svm": "*",
     "temp": "*",
     "execSync": "*",

@@ -27,6 +27,11 @@ classifiers  = {
 
 parameters = ['F1','TP','FP','FN','Accuracy','Precision','Recall']
 */
+
+module.exports.stringifyClass = function (aClass) {
+	return (_(aClass).isString()? aClass: JSON.stringify(aClass));
+}
+
 module.exports.learning_curves = function(classifiers, dataset, parameters, step) {
 
 	dir = "./learning_curves/"

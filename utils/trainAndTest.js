@@ -84,6 +84,45 @@ module.exports.test_hash = function(
 
 
 
+module.exports.test_hash_innertest = function(classifier, testSet, verbosity, microAverage, macroSum) 
+	{
+	var stat_hash = {}
+	var sentence_hash = {}
+	var data_stats = []
+	var currentStats = new PrecisionRecall();
+	var indexes = []
+	var startTime = new Date();
+
+	for (var i=0; i<testSet.length; ++i) 
+	{
+		// var expectedClasses = normalizeClasses(testSet[i].output);
+		var actualClasses = classifier.classify(testSet[i].input);
+		var expectedClasses = classifier.transformtest(testSet[i].output);
+
+		var explanations = currentStats.addCasesHash(expectedClasses, actualClasses, (verbosity>2));
+
+		var sentence_hash = {}
+		sentence_hash['input'] = testSet[i].input;
+		sentence_hash['expected'] = expectedClasses;
+		sentence_hash['classified'] = actualClasses;
+		sentence_hash['explanations'] = explanations;
+		
+		if (microAverage) microAverage.addCases(expectedClasses, actualClasses);
+
+		data_stats.push(sentence_hash);
+	}
+	
+	currentStats.calculateStats();
+	if (macroSum) hash.add(macroSum, currentStats.fullStats());
+
+	 stat_hash['stats'] = currentStats;
+	 stat_hash['data'] = data_stats;
+	 stat_hash['test_time'] = new Date()-startTime;
+
+	return stat_hash;
+};
+
+
 /**
  * Test the given classifier on the given test-set.
  * @param classifier a (trained) classifier.
@@ -206,6 +245,19 @@ module.exports.trainAndTest_hash = function(
 		stat_hash['train_time'] = new Date()-startTime;
 		return stat_hash;
 };
+
+module.exports.trainAndTest_hash_innertest = function(
+		classifierType, 
+		trainSet, testSet, 
+		verbosity, microAverage, macroSum) {
+		var startTime = new Date();
+		var classifier = new classifierType();
+		classifier.trainBatch(trainSet);
+		stat_hash = module.exports.test_hash_innertest(classifier, testSet, verbosity, microAverage, macroSum);
+		stat_hash['train_time'] = new Date()-startTime;
+		return stat_hash;
+};
+
 
 /**
  * Test the given classifier-type on the given train-set and test-set.

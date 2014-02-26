@@ -1,5 +1,6 @@
 var hash = require("./hash");
 var sprintf = require('sprintf').sprintf;
+var _ = require('underscore')._;
 
 /**
  * PrecisionRecall - an object for tracking results of experiments: precision, recall, f1, and execution time.
@@ -15,6 +16,7 @@ var PrecisionRecall = function() {
 	this.FN = 0;
 	this.TRUE = 0;
 	this.startTime = new Date();
+	this.labels = {}
 }
 
 PrecisionRecall.prototype = {
@@ -33,6 +35,52 @@ PrecisionRecall.prototype = {
 		if (!expected && !actual) this.TN++;
 		if (expected==actual) this.TRUE++;
 	},
+
+	/**
+	 * Record the result of a new classes experiment per labels.
+	 *
+	 * @param expectedClasses - the expected set of classes (as an array or a hash).
+	 * @param actualClasses   - the actual   set of classes (as an array or a hash).
+	 * @return an array of explanations "FALSE POSITIVE", "FALSE NEGATIVE", and maybe also "TRUE POSITIVE"
+	 */
+
+addCasesLabels: function (expectedClasses, actualClasses ) {
+		var explanations = [];
+		actualClasses = hash.normalized(actualClasses);
+		expectedClasses = hash.normalized(expectedClasses);
+
+		var allTrue = true;
+		for (var actualClass in actualClasses) {
+		
+			if (!(actualClass in this.labels)) {
+				this.labels[actualClass]={}
+				this.labels[actualClass]['TP']=0
+				this.labels[actualClass]['FP']=0
+				this.labels[actualClass]['FN']=0
+				}
+
+			if (actualClass in expectedClasses) { 
+				this.labels[actualClass]['TP'] += 1 
+
+			} else {
+				this.labels[actualClass]['FP'] += 1 
+			}
+		}
+		for (var expectedClass in expectedClasses) {
+
+			if (!(expectedClass in this.labels)) {
+				this.labels[expectedClass]={}
+				this.labels[expectedClass]['TP']=0
+				this.labels[expectedClass]['FP']=0
+				this.labels[expectedClass]['FN']=0
+				}
+
+			if (!(expectedClass in actualClasses)) {
+				this.labels[expectedClass]['FN'] += 1 
+			}
+		}
+	},
+
 
 	/**
 	 * Record the result of a new classes experiment.
@@ -131,6 +179,45 @@ PrecisionRecall.prototype = {
 		this.timePerSampleMillis = this.timeMillis / this.count;
 		this.shortStatsString = sprintf("Accuracy=%d/%d=%1.0f%% HammingGain=1-%d/%d=%1.0f%% Precision=%1.0f%% Recall=%1.0f%% F1=%1.0f%% timePerSample=%1.0f[ms]",
 				this.TRUE, this.count, this.Accuracy*100, (this.FN+this.FP), (this.FN+this.TP), this.HammingGain*100, this.Precision*100, this.Recall*100, this.F1*100, this.timePerSampleMillis);
+
+
+
+		// if there are any data per labels calculate it
+		label_output = []
+		label_hash = {}
+
+		for (label in this.labels)
+			{
+			this.labels[label]['Recall'] = this.labels[label]['TP'] / (this.labels[label]['TP'] + this.labels[label]['FN']);
+			this.labels[label]['Precision'] = this.labels[label]['TP'] / (this.labels[label]['TP'] + this.labels[label]['FP']);
+			this.labels[label]['F1'] = 2 / (1/this.labels[label]['Recall'] + 1/this.labels[label]['Precision'])
+			this.labels[label]['Frequency'] = (this.labels[label]['TP'] +this.labels[label]['FN'] )/(this.TP+this.FN)
+
+			if (!this.labels[label]['F1']) 
+				{
+					this.labels[label]['F1'] = -1
+				}
+			else
+				{
+					label_output.push([label, this.labels[label]['F1'], this.labels[label]['Frequency']])
+				}
+
+			
+			}
+
+			label_output = _.sortBy(label_output, function(item){ return item[1]; });
+
+		
+		for (label in label_output)
+			{
+			label_hash[label_output[label][0]] = {}
+			label_hash[label_output[label][0]]['F1'] = label_output[label][1]
+			label_hash[label_output[label][0]]['Frequency'] = label_output[label][2]
+			}
+
+		
+		this.label_output = label_hash
+		
 		return this;
 	},
 	

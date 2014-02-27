@@ -44,17 +44,13 @@ var PartialClassification = function(opts) {
 		console.dir(opts);
 		throw new Error("opts.multilabelClassifierType is null");
 	}
-
 	this.multilabelClassifierType = opts.multilabelClassifierType;
 	this.splitLabel = opts.splitLabel || function(label)      {return label.split(/@/);}
 	this.joinLabel  = opts.joinLabel  || function(superlabel) {return superlabel.join("@");}
-	
 	// this.classifier1 =  new this.multilabelClassifierType();
 	// this.classifier2 =  new this.multilabelClassifierType();
 	// this.classifier3 =  new this.multilabelClassifierType();
-
 	this.classifier = []
-
 	this.allClasses = {}
 }
 
@@ -67,71 +63,49 @@ PartialClassification.prototype = {
 
 	trainBatch : function(dataset) {
 		
-		console.log(dataset[2].output)
-
-		
-
 		classifier = new this.multilabelClassifierType();
 
-		dataset = dataset.map(function(datum) {
-			var normalizedLabels = multilabelutils.normalizeOutputLabels(datum.output);
-			
-			
-		label = []
-		_(3).times(function(n){ 
-						
-				label = label.concat(_.uniq(_.map(normalizedLabels.map(this.splitLabel), function(num){ return [num[n]];})))
-			}
-
-			
-		, this);
-
-		return {
-				input: datum.input,
-				output: _.uniq(label, false, _.difference(a, b).length == 0)
-				}
-
-		}, this);
-
-		// console.log(JSON.stringify(dataset))
-		// process.exit(0)
-		console.log(dataset[2].input)
-		console.log(dataset[2].output)
-		process.exit(0)
+		dataset = this.transformdataset(dataset)
+		
 		classifier.trainBatch(dataset)
 		this.classifier.push(classifier)
- 		
 
-
-	// console.log("done")
-	// process.exit(0)
-		// console.log(dataset.output)
-		// process.exit(0)
 	},
 
 	classify: function(sample, explain) {
+		value = []
+	 _.each(this.classifier, function(classif, key, list){
+	 	value = value.concat(classif.classify(sample)) 	
+	 	})
+	 return value
+ 	},
 
+
+	convertstring: function(sample)	{
+
+		var normalizedLabels = multilabelutils.normalizeOutputLabels(sample);
+
+		label = []
+		_(3).times(function(n){ 
+				label = label.concat(_.uniq(_.map(normalizedLabels.map(this.splitLabel), function(num){ return num[n];})))
+			}
+		, this)
+
+		label = _.filter(label, function(num){ if ( typeof num !== 'undefined' ) {return [num];} })
+
+		return _.map(_.uniq(label), function(num){ return [num];})
+	
 	},
 
-	transformtest: function(sample) {
+	transformdataset: function(dataset) {
 		
-		var normalizedLabels = multilabelutils.normalizeOutputLabels(sample);
-		
-		if (normalizedLabels.length == 0)
-			{
-			return normalizedLabels;
-			}
-		
-		label = []
-		_(3).times(function(n){
-			// for (var i in normalizedLabels)
-			{
-			
-			label = label.concat(_.uniq(_.map(normalizedLabels.map(this.splitLabel), function(num){ return [num[n]];})))
-			}
+		dataset = dataset.map(function(datum) {
+		return {
+				input: datum.input,
+				output: this.convertstring(datum.output)
+		}
 		}, this)
-
-		return _.uniq(label);
+		return dataset	
 	},
 	
 	getAllClasses: function() {

@@ -180,8 +180,6 @@ addCasesLabels: function (expectedClasses, actualClasses ) {
 		this.shortStatsString = sprintf("Accuracy=%d/%d=%1.0f%% HammingGain=1-%d/%d=%1.0f%% Precision=%1.0f%% Recall=%1.0f%% F1=%1.0f%% timePerSample=%1.0f[ms]",
 				this.TRUE, this.count, this.Accuracy*100, (this.FN+this.FP), (this.FN+this.TP), this.HammingGain*100, this.Precision*100, this.Recall*100, this.F1*100, this.timePerSampleMillis);
 
-
-
 		// if there are any data per labels calculate it
 		label_output = []
 		label_hash = {}
@@ -199,7 +197,7 @@ addCasesLabels: function (expectedClasses, actualClasses ) {
 				}
 			else
 				{
-					label_output.push([label, this.labels[label]['F1'], this.labels[label]['Frequency']])
+					label_output.push([label, this.labels[label]['F1'], this.labels[label]['Frequency'], this.labels[label]['TP'] + this.labels[label]['FN']])
 				}
 
 			
@@ -213,6 +211,7 @@ addCasesLabels: function (expectedClasses, actualClasses ) {
 			label_hash[label_output[label][0]] = {}
 			label_hash[label_output[label][0]]['F1'] = label_output[label][1]
 			label_hash[label_output[label][0]]['Frequency'] = label_output[label][2]
+			label_hash[label_output[label][0]]['Occurences'] = label_output[label][3]
 			}
 
 		

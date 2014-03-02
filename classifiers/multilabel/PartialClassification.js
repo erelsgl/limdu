@@ -30,10 +30,44 @@ PartialClassification.prototype = {
 	},
 
 	trainBatch : function(dataset) {
-		classifier = new this.multilabelClassifierType();
-		dataset = this.transformdataset(dataset)
-		classifier.trainBatch(dataset)
-		this.classifier.push(classifier)
+		dataset = dataset.map(function(datum) {
+			var normalizedLabels = multilabelutils.normalizeOutputLabels(datum.output);
+			return {
+				input: datum.input,
+				output: this.splitLabel(normalizedLabels)
+			}
+		}, this);
+
+		// console.log(JSON.stringify(dataset, null, 4));
+		
+		_(3).times(function(n){
+
+			data = dataset.map(function(datum) {
+				return {
+					input: datum.input,
+					output: datum.output[n]
+				}
+			}, this);
+
+			// console.log(JSON.stringify(data, null, 4));
+
+			classifier = new this.multilabelClassifierType();
+			classifier.trainBatch(data)
+			this.classifier.push(classifier)
+
+			}, this)
+		
+	},
+
+	toFormat: function(dataset) {
+		dataset = dataset.map(function(datum) {
+			var normalizedLabels = multilabelutils.normalizeOutputLabels(datum.output);
+			return {
+				input: datum.input,
+				output: _.flatten(this.splitLabel(normalizedLabels))
+			}
+		}, this);
+		return dataset
 	},
 
 	classify: function(sample, explain) {
@@ -43,33 +77,6 @@ PartialClassification.prototype = {
 	 	})
 	 return value
  	},
-
-
-	convertstring: function(sample)	{
-
-		var normalizedLabels = multilabelutils.normalizeOutputLabels(sample);
-
-		label = []
-		_(3).times(function(n){ 
-				label = label.concat(_.uniq(_.map(normalizedLabels.map(this.splitLabel), function(num){ return num[n];})))
-			}
-		, this)
-
-		label = _.filter(label, function(num){ if ( typeof num !== 'undefined' ) {return [num];} })
-
-		return _.map(_.uniq(label), function(num){ return [num];})
-	
-	},
-
-	transformdataset: function(dataset) {
-		dataset = dataset.map(function(datum) {
-		return {
-				input: datum.input,
-				output: this.convertstring(datum.output)
-		}
-		}, this)
-		return dataset	
-	},
 	
 	getAllClasses: function() {
 	},

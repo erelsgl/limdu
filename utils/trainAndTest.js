@@ -54,6 +54,10 @@ module.exports.test_hash = function(
 	var indexes = []
 	var startTime = new Date();
 
+	if (typeof classifier.classifier.toFormat === 'function') {
+		testSet = classifier.classifier.toFormat(testSet)
+    }
+
 	for (var i=0; i<testSet.length; ++i) 
 	{
 		var expectedClasses = normalizeClasses(testSet[i].output);
@@ -98,6 +102,11 @@ module.exports.test_hash = function(
 module.exports.test = function(
 	classifier, testSet, 
 	verbosity, microAverage, macroSum) {
+
+	if (typeof classifier.classifier.toFormat === 'function') {
+		testSet = classifier.classifier.toFormat(testSet)
+    }
+
 	var currentStats = new PrecisionRecall();
 	for (var i=0; i<testSet.length; ++i) {
 		var expectedClasses = normalizeClasses(testSet[i].output);

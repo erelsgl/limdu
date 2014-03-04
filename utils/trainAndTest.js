@@ -17,9 +17,12 @@ var PrecisionRecall = require("./PrecisionRecall");
  */
 module.exports.testLite = function(classifier, dataset, explain) {
 	var currentStats = new PrecisionRecall();
+	if (typeof classifier.classifier.toFormat === 'function') {
+		dataset = classifier.classifier.toFormat(dataset)
+    }
 	for (var i=0; i<dataset.length; ++i) {
 		var expectedClasses = normalizeClasses(dataset[i].output); 
-		var actualClassesWithExplanations = classifier.classify(dataset[i].input, explain);
+		var actualClassesWithExplanations = classifier.classify(dataset[i].input, explain);		
 		actualClasses = (actualClassesWithExplanations.classes? actualClassesWithExplanations.classes: actualClassesWithExplanations);
 		actualClasses.sort();
 		if (!_(expectedClasses).isEqual(actualClasses)) {

@@ -1,13 +1,13 @@
 var sprintf = require("sprintf").sprintf;
 var _ = require("underscore")._;
-var partitions = require('../../utils/partitions');
 var multilabelutils = require('./multilabelutils');
 
 /**
- *  PartialClassification is a test classifier that learns and classifies the components \
- * of the labels separately, for example, a labels consist of 3 part: intent, attribute, value
- * so there are a classifier for intent, attribute and value.
- *
+ *  PartialClassification is a test classifier that learns and classifies the components
+ * of the labels separately according to the splitLabel routine. One of the examples could be 
+ * classifying intent, attribute, value separately by three different classifiers.
+ * When performing test by trainAndTest module, there is a check for toFormat routine, if it exists
+ * then pretest format converting occurs.
  */
 
 var PartialClassification = function(opts) {
@@ -21,7 +21,6 @@ var PartialClassification = function(opts) {
 	this.splitLabel = opts.splitLabel || function(label)      {return label.split(/@/);}
 	this.classifier = []
 }
-
 
 PartialClassification.prototype = {
 
@@ -38,8 +37,7 @@ PartialClassification.prototype = {
 			}
 		}, this);
 
-		// console.log(JSON.stringify(dataset, null, 4));
-		
+
 		_(3).times(function(n){
 
 			data = dataset.map(function(datum) {
@@ -48,8 +46,6 @@ PartialClassification.prototype = {
 					output: datum.output[n]
 				}
 			}, this);
-
-			// console.log(JSON.stringify(data, null, 4));
 
 			classifier = new this.multilabelClassifierType();
 			classifier.trainBatch(data)
@@ -72,10 +68,10 @@ PartialClassification.prototype = {
 
 	classify: function(sample, explain) {
 		value = []
-	 _.each(this.classifier, function(classif, key, list){
-	 	value = value.concat(classif.classify(sample)) 	
+	 	_.each(this.classifier, function(classif, key, list){
+	 		value = value.concat(classif.classify(sample, explain)) 	
 	 	})
-	 return value
+	 	return value
  	},
 	
 	getAllClasses: function() {

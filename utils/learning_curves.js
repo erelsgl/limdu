@@ -93,22 +93,9 @@ module.exports.learning_curves = function(classifiers, dataset, parameters, step
 
 		command = "gnuplot -p -e \"reset; set term png truecolor; set grid ytics; set grid xtics; set key bottom right; set output \'"+dir + value+".png\'; set key autotitle columnhead; set title \'"+value+"\'; plot for [i=2:20] \'"+dir+value+"\' using 1:i with lines\""
 	
-		// # command1 = "reset; set term png truecolor; set output 'cluster"+str(i)+".png'; set title 'cluster "+str(i)+" - "+topics[besttop]+"'; set ylabel 'Articles';set xlabel 'Topics'; set style fill transparent solid 0.5 noborder; set boxwidth 0.95 relative; plot 'cluster"+str(i)+"' using 2:xtic(1) with boxes lc rgb'green' notitle"
-		// # command1 = "reset; set term png truecolor; set output '"+value+".png'; set title '"+value+"'; set ylabel '"+value+"';set xlabel 'size'; plot for [i=2:20] \'"+value+"\' using 1:i with lines\"
-    	// # call(['gnuplot', '-p', '-e', command1])
-		// gnuplot -p -e "reset; set term png truecolor; set output './learning_curves/Recall.png'; set key autotitle columnhead; set title 'Recall'; plot for [i=2:20] './learning_curves/Recall' using 1:i with lines"
-		// command = "gnuplot -p -e \"set key autotitle columnhead; set title \'"+value+"\'; plot for [i=2:20] \'"+value+"\' using 1:i with lines\""
-
 		result = execSync.run(command)
-
 		})
-
-		
-
 	}
-
-
-	
 }
 
 // command = "gnuplot -p -e \"set key autotitle columnhead; set title \'"+value+"\'; plot \'"+value+"\' using 1:2  with lines, \'"+value+"\' using 1:3 with lines, \'"+value+"\' using 1:4 with lines\""

@@ -42,23 +42,23 @@ module.exports.learning_curves = function(classifiers, dataset, parameters, step
 		return 0
 	}
 
-	try { content = fs.readdirSync(dir) }
+	// try { content = fs.readdirSync(dir) }
 
-	catch (e)
-		{	fs.mkdirSync(dir);
-			content = fs.readdirSync(dir)				
-		}
+	// catch (e)
+	// 	{	fs.mkdirSync(dir);
+	// 		content = fs.readdirSync(dir)				
+	// 	}
 	
-		if (content.length !=0)
-		{
-			console.log("The existing report is found. If you want to draw a learning curves, remove the existing report")
-			_.each(content, function(value, key, list) {
-				value = dir+value
-				command = "gnuplot -p -e \"set key autotitle columnhead; set title \'"+value+"\'; plot for [i=2:20] \'"+value+"\' using 1:i with lines\""
-				result = execSync.run(command)
-	    	})
-	  		return 0
-		}
+	// 	if (content.length !=0)
+	// 	{
+	// 		console.log("The existing report is found. If you want to draw a learning curves, remove the existing report")
+	// 		_.each(content, function(value, key, list) {
+	// 			value = dir+value
+	// 			command = "gnuplot -p -e \"set key autotitle columnhead; set title \'"+value+"\'; plot for [i=2:20] \'"+value+"\' using 1:i with lines\""
+	// 			result = execSync.run(command)
+	//     	})
+	//   		return 0
+	// 	}
 		
 	dataset = _.shuffle(dataset)
 
@@ -87,6 +87,13 @@ module.exports.learning_curves = function(classifiers, dataset, parameters, step
 		_.each(parameters, function(value, key, list){
 			valuestring = mytrain.length +"\t"+ (_.pluck(report, value)).join("\t") +"\n" ;
 			fs.appendFileSync(dir+value, valuestring,'utf8', function (err) {console.log("error "+err); return 0 })
+		})
+
+		_.each(parameters, function(value, key, list){
+
+		command = "gnuplot -p -e \"reset; set term png truecolor; set grid ytics; set grid xtics; set key bottom right; set output \'"+dir + value+".png\'; set key autotitle columnhead; set title \'"+value+"\'; plot for [i=2:20] \'"+dir+value+"\' using 1:i with lines\""
+	
+		result = execSync.run(command)
 		})
 	}
 }

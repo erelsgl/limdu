@@ -8,6 +8,9 @@ var multilabelutils = require('./multilabelutils');
  * classifying intent, attribute, value separately by three different classifiers.
  * When performing test by trainAndTest module, there is a check for toFormat routine, if it exists
  * then pretest format converting occurs.
+ *
+ * @author Vasily Konovalov
+ * @since March 2014
  */
 
 var PartialClassification = function(opts) {
@@ -25,22 +28,25 @@ var PartialClassification = function(opts) {
 PartialClassification.prototype = {
 
 	trainOnline: function(sample, labels) {
-
+		throw new Error("PartialClassification does not support online training");
 	},
 
 	trainBatch : function(dataset) {
+
+		num_of_classifiers = 0
 		dataset = dataset.map(function(datum) {
 			var normalizedLabels = multilabelutils.normalizeOutputLabels(datum.output);
+			num_of_classifiers =  Math.max(num_of_classifiers, (this.splitLabel(normalizedLabels)).length)
 			return {
 				input: datum.input,
 				output: this.splitLabel(normalizedLabels)
 			}
 		}, this);
 
-
-		_(3).times(function(n){
+		_(num_of_classifiers).times(function(n){
 
 			data = dataset.map(function(datum) {
+
 				return {
 					input: datum.input,
 					output: datum.output[n]
@@ -58,10 +64,12 @@ PartialClassification.prototype = {
 	toFormat: function(dataset) {
 		dataset = dataset.map(function(datum) {
 			var normalizedLabels = multilabelutils.normalizeOutputLabels(datum.output);
+
 			return {
 				input: datum.input,
 				output: _.flatten(this.splitLabel(normalizedLabels))
 			}
+
 		}, this);
 		return dataset
 	},
@@ -75,6 +83,7 @@ PartialClassification.prototype = {
  	},
 	
 	getAllClasses: function() {
+		throw new Error("No implementation in PartialClassification");
 	},
 
 	stringifyClass: function (aClass) {
@@ -82,13 +91,15 @@ PartialClassification.prototype = {
 	},
 
 	toJSON : function() {
+		throw new Error("No implementation in PartialClassification");
 	},
 
 	fromJSON : function(json) {
+		throw new Error("No implementation in PartialClassification");
 	},
 	
 	setFeatureLookupTable: function(featureLookupTable) {
-	
+		throw new Error("No implementation in PartialClassification");
 	},
 }
 

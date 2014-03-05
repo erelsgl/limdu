@@ -17,9 +17,12 @@ var PrecisionRecall = require("./PrecisionRecall");
  */
 module.exports.testLite = function(classifier, dataset, explain) {
 	var currentStats = new PrecisionRecall();
+	if (typeof classifier.classifier.toFormat === 'function') {
+		dataset = classifier.classifier.toFormat(dataset)
+    }
 	for (var i=0; i<dataset.length; ++i) {
 		var expectedClasses = normalizeClasses(dataset[i].output); 
-		var actualClassesWithExplanations = classifier.classify(dataset[i].input, explain);
+		var actualClassesWithExplanations = classifier.classify(dataset[i].input, explain);		
 		actualClasses = (actualClassesWithExplanations.classes? actualClassesWithExplanations.classes: actualClassesWithExplanations);
 		actualClasses.sort();
 		if (!_(expectedClasses).isEqual(actualClasses)) {
@@ -53,6 +56,10 @@ module.exports.test_hash = function(
 	var currentStats = new PrecisionRecall();
 	var indexes = []
 	var startTime = new Date();
+
+	if (typeof classifier.classifier.toFormat === 'function') {
+		testSet = classifier.classifier.toFormat(testSet)
+    }
 
 	for (var i=0; i<testSet.length; ++i) 
 	{
@@ -98,6 +105,11 @@ module.exports.test_hash = function(
 module.exports.test = function(
 	classifier, testSet, 
 	verbosity, microAverage, macroSum) {
+
+	if (typeof classifier.classifier.toFormat === 'function') {
+		testSet = classifier.classifier.toFormat(testSet)
+    }
+
 	var currentStats = new PrecisionRecall();
 	for (var i=0; i<testSet.length; ++i) {
 		var expectedClasses = normalizeClasses(testSet[i].output);

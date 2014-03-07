@@ -1,6 +1,8 @@
 var ftrs = require('../features');
 var _ = require('underscore')._;
 var hash = require('../utils/hash');
+var multilabelutils = require('./multilabel/multilabelutils');
+
 
 /**
  * EnhancedClassifier - wraps any classifier with feature-extractors and feature-lookup-tables.
@@ -43,6 +45,8 @@ var EnhancedClassifier = function(opts) {
 
 	this.spellChecker = opts.spellChecker;
 	this.pastTrainingSamples = opts.pastTrainingSamples;
+
+	this.OutputSplitLabel = opts.OutputSplitLabel
 }
 
 EnhancedClassifier.prototype = {
@@ -295,6 +299,12 @@ EnhancedClassifier.prototype = {
 				classes = this.labelLookupTable.numberToFeature(classes);
 			}
 		}
+
+		if (typeof this.OutputSplitLabel === 'function') {
+			var normalizedLabels = multilabelutils.normalizeOutputLabels(classes);
+			classes = _.compact(_.flatten(this.OutputSplitLabel(normalizedLabels)))
+		}
+		
 		if (explain>0) 
 			return {
 				classes: classes,

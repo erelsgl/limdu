@@ -34,13 +34,9 @@ PartialClassification.prototype = {
 	trainBatch : function(dataset) {
 
 		num_of_classifiers = 0
-		dataset = dataset.map(function(datum) {
-			var normalizedLabels = multilabelutils.normalizeOutputLabels(datum.output);
-			num_of_classifiers =  Math.max(num_of_classifiers, (this.splitLabel(normalizedLabels)).length)
-			return {
-				input: datum.input,
-				output: this.splitLabel(normalizedLabels)
-			}
+
+		_.each(dataset, function(value, key, list){
+			num_of_classifiers =  Math.max(num_of_classifiers, (value['output']).length)
 		}, this);
 
 		_(num_of_classifiers).times(function(n){
@@ -56,22 +52,8 @@ PartialClassification.prototype = {
 			classifier = new this.multilabelClassifierType();
 			classifier.trainBatch(data)
 			this.classifier.push(classifier)
-
 			}, this)
 		
-	},
-
-	toFormat: function(dataset) {
-		dataset = dataset.map(function(datum) {
-			var normalizedLabels = multilabelutils.normalizeOutputLabels(datum.output);
-
-			return {
-				input: datum.input,
-				output: _.flatten(this.splitLabel(normalizedLabels))
-			}
-
-		}, this);
-		return dataset
 	},
 
 	classify: function(sample, explain) {

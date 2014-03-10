@@ -47,7 +47,10 @@ var EnhancedClassifier = function(opts) {
 	this.pastTrainingSamples = opts.pastTrainingSamples;
 
 	this.OutputSplitLabel = opts.OutputSplitLabel
+	this.InputSplitLabel = opts.InputSplitLabel
+
 }
+
 
 EnhancedClassifier.prototype = {
 
@@ -214,6 +217,16 @@ EnhancedClassifier.prototype = {
 		var featureLookupTable = this.featureLookupTable;
 		var pastTrainingSamples = this.pastTrainingSamples;
 
+		if (typeof this.InputSplitLabel === 'function') {
+		dataset = dataset.map(function(datum) {
+			var normalizedLabels = multilabelutils.normalizeOutputLabels(datum.output);
+			return {
+				input: datum.input,
+				output: _.flatten(this.InputSplitLabel(normalizedLabels))
+			}
+		}, this);
+		}
+
 		dataset = dataset.map(function(datum) {
 			datum.output = normalizeClasses(datum.output, this.labelLookupTable);
 			if (pastTrainingSamples && dataset!=pastTrainingSamples)
@@ -233,6 +246,7 @@ EnhancedClassifier.prototype = {
 			if (featureLookupTable)
 				datum.input = featureLookupTable.hashToArray(datum.input);
 		}, this);
+
 		this.classifier.trainBatch(dataset);
 	},
 
@@ -254,6 +268,20 @@ EnhancedClassifier.prototype = {
 				classification.explanation['SpellCorrectedFeatures']=JSON.stringify(features);
 		}
 		return classification;
+	},
+
+	outputToFormat: function(dataset) {
+
+		dataset = dataset.map(function(datum) {
+		var normalizedLabels = multilabelutils.normalizeOutputLabels(datum.output);
+
+		return {
+			input: datum.input,
+			output: _.flatten(this.OutputSplitLabel(normalizedLabels))
+		}
+		}, this);
+		return dataset
+
 	},
 
 	/**
@@ -300,11 +328,11 @@ EnhancedClassifier.prototype = {
 			}
 		}
 
-		if (typeof this.OutputSplitLabel === 'function') {
+		if ((typeof this.OutputSplitLabel === 'function') && (typeof this.InputSplitLabel != 'function')) {
 			var normalizedLabels = multilabelutils.normalizeOutputLabels(classes);
 			classes = _.compact(_.flatten(this.OutputSplitLabel(normalizedLabels)))
 		}
-		
+
 		if (explain>0) 
 			return {
 				classes: classes,

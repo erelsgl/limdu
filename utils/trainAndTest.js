@@ -57,8 +57,8 @@ module.exports.test_hash = function(
 	var indexes = []
 	var startTime = new Date();
 
-	if (typeof classifier.classifier.toFormat === 'function') {
-		testSet = classifier.classifier.toFormat(testSet)
+	if (typeof classifier.OutputSplitLabel === 'function') {
+		testSet = classifier.outputToFormat(testSet)
     }
 
 	for (var i=0; i<testSet.length; ++i) 

@@ -11,7 +11,7 @@ var _ = require('underscore')._;
 var fs = require('fs');
 var execSync = require('execSync')
 var partitions = require('./partitions');
-var trainAndTest = require('./trainAndTest').trainAndTest;
+var trainAndTest_hash = require('./trainAndTest').trainAndTest_hash;
 
 /* @params classifiers - classifier for learning curves
    @params dataset - dataset for evaluation, 20% is takes for evaluation
@@ -32,7 +32,7 @@ module.exports.stringifyClass = function (aClass) {
 	return (_(aClass).isString()? aClass: JSON.stringify(aClass));
 }
 
-module.exports.learning_curves = function(classifiers, dataset, parameters, step) {
+module.exports.learning_curves = function(classifiers, dataset, parameters, step, numOfFolds) {
 
 	dir = "./learning_curves/"
 
@@ -42,61 +42,43 @@ module.exports.learning_curves = function(classifiers, dataset, parameters, step
 		return 0
 	}
 
-	// try { content = fs.readdirSync(dir) }
-
-	// catch (e)
-	// 	{	fs.mkdirSync(dir);
-	// 		content = fs.readdirSync(dir)				
-	// 	}
-	
-	// 	if (content.length !=0)
-	// 	{
-	// 		console.log("The existing report is found. If you want to draw a learning curves, remove the existing report")
-	// 		_.each(content, function(value, key, list) {
-	// 			value = dir+value
-	// 			command = "gnuplot -p -e \"set key autotitle columnhead; set title \'"+value+"\'; plot for [i=2:20] \'"+value+"\' using 1:i with lines\""
-	// 			result = execSync.run(command)
-	//     	})
-	//   		return 0
-	// 	}
-		
-	dataset = _.shuffle(dataset)
-
-	dataset = partitions.partition(dataset, 1, Math.round(dataset.length*0.2))
-	train = dataset['train']
-	test = dataset['test']	
-
-	index = step
-		
-	header = "train\t" + (Object.keys(classifiers)).join("\t")+"\n";
-
+	plotfor = "plot "
+	_(numOfFolds).times(function(n){
+		header = "train\t" + (Object.keys(classifiers)).join(n+"\t")+n+"\n";
 	_.each(parameters,  function(value, key, list){ 
-		fs.writeFileSync(dir+value, header, 'utf-8', function(err) {console.log("error "+err); return 0 })
-	})
+		plotfor = plotfor + " for [i=2:"+ (_.size(classifiers) + 1)+"] \'"+dir+value+"-fold"+n+"\' using 1:i with lines, "
+		fs.writeFileSync(dir+value+"-fold"+n, header, 'utf-8', function(err) {console.log("error "+err); return 0 })
+		},this)
+	},this)
 
-	while (index < train.length)
-  	{
+	plotfor = plotfor.substring(0,plotfor.length-2);
+
+	partitions.partitions(dataset, numOfFolds, function(train, test, fold) {
+		index = step		
+
+		while (index < train.length)
+  		{
+
   		report = []
 	  	mytrain = train.slice(0, index)
 	  	index += step
-	  	
-	    _.each(classifiers, function(value, key, list) {
-	    	report.push(trainAndTest(value, mytrain, test).fullStats())
+
+	    _.each(classifiers, function(value, key, list) { 	
+	    	stats = trainAndTest_hash(value, mytrain, test, 0)
+	    	report.push(stats[0]['stats'])
 	    })
 		
 		_.each(parameters, function(value, key, list){
 			valuestring = mytrain.length +"\t"+ (_.pluck(report, value)).join("\t") +"\n" ;
-			fs.appendFileSync(dir+value, valuestring,'utf8', function (err) {console.log("error "+err); return 0 })
-		})
+			fs.appendFileSync(dir+value+"-fold"+fold, valuestring,'utf8', function (err) {console.log("error "+err); return 0 })
+		},this)
 
 		_.each(parameters, function(value, key, list){
+			command = "gnuplot -p -e \"reset; set term png truecolor; set grid ytics; set grid xtics; set key bottom right; set output \'"+dir + value+".png\'; set key autotitle columnhead; "+plotfor +"\""
+			result = execSync.run(command)
+		}, this)
+		}
 
-		command = "gnuplot -p -e \"reset; set term png truecolor; set grid ytics; set grid xtics; set key bottom right; set output \'"+dir + value+".png\'; set key autotitle columnhead; set title \'"+value+"\'; plot for [i=2:20] \'"+dir+value+"\' using 1:i with lines\""
-	
-		result = execSync.run(command)
-		})
-	}
+		});
+
 }
-
-// command = "gnuplot -p -e \"set key autotitle columnhead; set title \'"+value+"\'; plot \'"+value+"\' using 1:2  with lines, \'"+value+"\' using 1:3 with lines, \'"+value+"\' using 1:4 with lines\""
-// plot for [i=2:10] "Accuracy" using 1:i with lines

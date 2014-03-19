@@ -17,12 +17,14 @@ var PrecisionRecall = require("./PrecisionRecall");
  */
 module.exports.testLite = function(classifier, dataset, explain) {
 	var currentStats = new PrecisionRecall();
-	if (typeof classifier.classifier.toFormat === 'function') {
-		dataset = classifier.classifier.toFormat(dataset)
+	
+	if (typeof classifier.OutputSplitLabel === 'function') {
+		dataset = classifier.outputToFormat(dataset)
     }
+
 	for (var i=0; i<dataset.length; ++i) {
 		var expectedClasses = normalizeClasses(dataset[i].output); 
-		var actualClassesWithExplanations = classifier.classify(dataset[i].input, explain);		
+		var actualClassesWithExplanations = classifier.classify(dataset[i].input, explain, dataset[i].input);		
 		actualClasses = (actualClassesWithExplanations.classes? actualClassesWithExplanations.classes: actualClassesWithExplanations);
 		actualClasses.sort();
 		if (!_(expectedClasses).isEqual(actualClasses)) {
@@ -53,43 +55,69 @@ module.exports.test_hash = function(
 	var stat_hash = {}
 	var sentence_hash = {}
 	var data_stats = []
-	var currentStats = new PrecisionRecall();
+	var currentStats = []
+	var data_stats = []
 	var indexes = []
 	var startTime = new Date();
 
-	if (typeof classifier.OutputSplitLabel === 'function') {
+	if ((typeof classifier.TestSplitLabel === 'function')) {
 		testSet = classifier.outputToFormat(testSet)
     }
 
 	for (var i=0; i<testSet.length; ++i) 
 	{
-		var expectedClasses = normalizeClasses(testSet[i].output);
+
+		// var expectedClasses = normalizeClasses(testSet[i].output);
+		var expectedClasses = testSet[i].output
+
+		expectedClasses = []
+
+		if (!(testSet[i].output[0] instanceof Array))
+			expectedClasses.push(testSet[i].output)
+		else
+			expectedClasses = testSet[i].output
+
 		var actualClasses = classifier.classify(testSet[i].input);
-
-		var explanations = currentStats.addCasesHash(expectedClasses, actualClasses, (verbosity>2));
-
-		var sentence_hash = {}
-		sentence_hash['input'] = testSet[i].input;
-		sentence_hash['expected'] = expectedClasses;
-		sentence_hash['classified'] = actualClasses;
-		sentence_hash['explanations'] = explanations;
 		
-		if (microAverage) microAverage.addCases(expectedClasses, actualClasses);
+		// console.log(testSet[i].input)
+		// 	console.log("ac")
+		// console.log(actualClasses)
+		// 		console.log("ex")
+		// console.log(expectedClasses)
 
-		currentStats.addCasesLabels(expectedClasses, actualClasses);
+		_(expectedClasses.length).times(function(n){
+			if (currentStats.length<n+1) 
+				{	
+				currentStats.push(new PrecisionRecall())
+				data_stats.push([])
+				}
 
+			var sentence_hash = {}
+			data_stats[n].push(sentence_hash);
+			explanation = currentStats[n].addCasesHash(expectedClasses[n], actualClasses[n], (verbosity>2));
+			currentStats[n].addCasesLabels(expectedClasses[n], actualClasses[n]);
+			sentence_hash['input'] = testSet[i].input;
+			sentence_hash['expected'] = expectedClasses[n];
+			sentence_hash['classified'] = actualClasses[n];
+			sentence_hash['explanation'] = explanation;
 
-		data_stats.push(sentence_hash);
+			})	
+		
+		// if (microAverage) microAverage.addCases(expectedClasses, actualClasses);
+
 	}
 	
-	currentStats.calculateStats();
-	if (macroSum) hash.add(macroSum, currentStats.fullStats());
+	testResult = []
 
-	 stat_hash['stats'] = currentStats;
-	 stat_hash['data'] = data_stats;
-	 stat_hash['test_time'] = new Date()-startTime;
+		_(expectedClasses.length).times(function(n){
+		classifierstats = {}
+		classifierstats['stats'] = currentStats[n].retrieveStats()
+		classifierstats['labels'] = currentStats[n].retrieveLabels()
+		classifierstats['data'] = data_stats[n]
+		testResult.push(classifierstats)
+		}, this)
 
-	return stat_hash;
+	return testResult
 };
 
 
@@ -106,8 +134,8 @@ module.exports.test = function(
 	classifier, testSet, 
 	verbosity, microAverage, macroSum) {
 
-	if (typeof classifier.classifier.toFormat === 'function') {
-		testSet = classifier.classifier.toFormat(testSet)
+	if (typeof classifier.OutputSplitLabel === 'function') {
+		testSet = classifier.outputToFormat(testSet)
     }
 
 	var currentStats = new PrecisionRecall();
@@ -217,9 +245,20 @@ module.exports.trainAndTest_hash = function(
 		verbosity, microAverage, macroSum) {
 		var startTime = new Date();
 		var classifier = new classifierType();
-		classifier.trainBatch(trainSet);
-		stat_hash = module.exports.test_hash(classifier, testSet, verbosity, microAverage, macroSum);
-		stat_hash['train_time'] = new Date()-startTime;
+
+		testSet1 = []
+		_.each(testSet, function(value, key, list){
+			testSet1.push(_.clone(value))
+			})
+
+		trainSet1 = []
+		_.each(trainSet, function(value, key, list){
+			trainSet1.push(_.clone(value))
+			})
+		
+		classifier.trainBatch(trainSet1);
+		stat_hash = module.exports.test_hash(classifier, testSet1, verbosity, microAverage, macroSum);
+		// stat_hash['train_time'] = new Date()-startTime;
 		return stat_hash;
 };
 

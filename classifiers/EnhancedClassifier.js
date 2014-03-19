@@ -21,7 +21,12 @@ var multilabelutils = require('./multilabel/multilabelutils');
  * * 'pastTrainingSamples' - an array that keeps all past training samples, to enable retraining.
  * * 'spellChecker' - an initialized spell checker from the 'wordsworth' package, to spell-check features during classification.
  * * 'bias' - a 'bias' feature with a constant value (usually 1).
- */
+ * * 'InputSplitLabel' - a method for special separation of input labels before training
+ * * 'OutputSplitLabel' - a method for special separation of output labesl after classification.
+ * * 'TestSplitLabel' - a method for special separation before a testing
+ * *  'Observalbe' - a tree of label of training data 
+*/
+
 var EnhancedClassifier = function(opts) {
 	if (!opts.classifierType) {
 		console.dir(opts);
@@ -46,8 +51,11 @@ var EnhancedClassifier = function(opts) {
 	this.spellChecker = opts.spellChecker;
 	this.pastTrainingSamples = opts.pastTrainingSamples;
 
-	this.OutputSplitLabel = opts.OutputSplitLabel
 	this.InputSplitLabel = opts.InputSplitLabel
+	this.OutputSplitLabel = opts.OutputSplitLabel
+	this.TestSplitLabel = opts.TestSplitLabel
+
+	this.Observable = []
 
 }
 
@@ -97,7 +105,7 @@ EnhancedClassifier.prototype = {
 	normalizedSample: function(sample) {
 		if (this.normalizers) {
 			try {
-				for (var i in this.normalizers) {
+				for (var i in this.normalizers) {					
 					sample = this.normalizers[i](sample);
 				}
 			} catch (err) {
@@ -208,6 +216,21 @@ EnhancedClassifier.prototype = {
 			this.pastTrainingSamples.push({input: sample, output: classes});
 	},
 
+
+	splitJson: function(json) {
+		return this.splitJsonRecursive(_.isString(json) && /{.*}/.test(json)?
+		JSON.parse(json):
+		json);
+	},
+ 
+	splitJsonRecursive: function(json) {
+		if (!_.isObject(json))
+			return [json];
+		var firstKey = Object.keys(json)[0];
+		var rest = this.splitJsonRecursive(json[firstKey]);
+		rest.unshift(firstKey);
+		return rest;
+	},
 	/**
 	 * Batch training: 
 	 * Train the classifier with all the given documents.
@@ -216,19 +239,51 @@ EnhancedClassifier.prototype = {
 	trainBatch: function(dataset) {
 		var featureLookupTable = this.featureLookupTable;
 		var pastTrainingSamples = this.pastTrainingSamples;
+		
+		// if (typeof this.InputSplitLabel === 'function') {
+		// dataset = dataset.map(function(datum) {
+		// 	var normalizedLabels = multilabelutils.normalizeOutputLabels(datum.output);
+		// 	process.exit(0)
+		// 	return {
+		// 		input: datum.input,
+		// 		output: (this.InputSplitLabel(normalizedLabels))
+		// 	}
+		// }, this);
+		// }
+			Observable = {}
 
-		if (typeof this.InputSplitLabel === 'function') {
-		dataset = dataset.map(function(datum) {
-			var normalizedLabels = multilabelutils.normalizeOutputLabels(datum.output);
-			return {
-				input: datum.input,
-				output: _.flatten(this.InputSplitLabel(normalizedLabels))
+			// if (this.classifier.setObservable)
+				// {
+				_.each(dataset, function(datum, key, list){
+				_.each(multilabelutils.normalizeOutputLabels(datum.output), function(label, key, list){
+					_.each(this.splitJson(label), function(element, key, list){
+						if (key==0)
+							if (!(element in Observable))
+									Observable[element] = {}
+						if (key==1)
+							if (!(element in Observable[list[key-1]]))
+									Observable[list[key-1]][element] = {}
+						if (key==2)
+							if (!(element in Observable[list[key-2]][list[key-1]]))
+									Observable[list[key-2]][list[key-1]][element] = {}
+
+					}, this)
+				}, this);
+			}, this)
+		
+			this.Observable = Observable;
+			// }
+
+			dataset = dataset.map(function(datum) {
+
+			if (typeof this.InputSplitLabel === 'function') {
+				datum.output = (this.InputSplitLabel(multilabelutils.normalizeOutputLabels(datum.output)))	
 			}
-		}, this);
-		}
+			else
+			{
+				datum.output = normalizeClasses(datum.output, this.labelLookupTable);
+			}
 
-		dataset = dataset.map(function(datum) {
-			datum.output = normalizeClasses(datum.output, this.labelLookupTable);
 			if (pastTrainingSamples && dataset!=pastTrainingSamples)
 				pastTrainingSamples.push(datum);
 			datum = _(datum).clone();
@@ -246,6 +301,8 @@ EnhancedClassifier.prototype = {
 			if (featureLookupTable)
 				datum.input = featureLookupTable.hashToArray(datum.input);
 		}, this);
+
+
 
 		this.classifier.trainBatch(dataset);
 	},
@@ -271,13 +328,11 @@ EnhancedClassifier.prototype = {
 	},
 
 	outputToFormat: function(dataset) {
-
 		dataset = dataset.map(function(datum) {
 		var normalizedLabels = multilabelutils.normalizeOutputLabels(datum.output);
-
 		return {
 			input: datum.input,
-			output: _.flatten(this.OutputSplitLabel(normalizedLabels))
+			output: this.TestSplitLabel(normalizedLabels)
 		}
 		}, this);
 		return dataset
@@ -296,24 +351,34 @@ EnhancedClassifier.prototype = {
 			var classes = (explain>0? classesWithExplanation.classes: classesWithExplanation);
 			var explanations = (explain>0? classesWithExplanation.explanation: null);
 		} else {
-			var parts = 	this.inputSplitter(sample);
-			var accumulatedClasses = {};
+			var parts = this.inputSplitter(sample);
+			// var accumulatedClasses = {};
+			var accumulatedClasses = [];
 			var explanations = [];
 			parts.forEach(function(part) {
 				if (part.length==0) return;
 				var classesWithExplanation = this.classifyPart(part, explain, continuous_output);
 				var classes = (explain>0? classesWithExplanation.classes: classesWithExplanation);
-				for (var i in classes)
-					accumulatedClasses[classes[i]]=true;
+				// for (var i in classes)
+				// 	accumulatedClasses[classes[i]]=true;
+				accumulatedClasses.push(classes)
 				if (explain>0) {
 					explanations.push(part);
 					explanations.push(classesWithExplanation.explanation);
 				}
-				//console.log(part+" "+JSON.stringify(accumulatedClasses));
 			}, this);
-			classes = Object.keys(accumulatedClasses);
+    		classes = []
+    	
+			if (accumulatedClasses[0][0] instanceof Array)
+				_(accumulatedClasses[0].length).times(function(n){
+					classes.push(_.flatten(_.pluck(accumulatedClasses,n)))
+				 });
+			else
+			{
+				classes.push(_.flatten(accumulatedClasses))
+			}
 		}
-		
+
 		if (this.labelLookupTable) {
 			if (Array.isArray(classes)) {
 				classes = classes.map(function(label) {
@@ -328,11 +393,10 @@ EnhancedClassifier.prototype = {
 			}
 		}
 
-		if ((typeof this.OutputSplitLabel === 'function') && (typeof this.InputSplitLabel != 'function')) {
-			var normalizedLabels = multilabelutils.normalizeOutputLabels(classes);
-			classes = _.compact(_.flatten(this.OutputSplitLabel(normalizedLabels)))
+		if ((typeof this.OutputSplitLabel === 'function')) {
+			classes = this.OutputSplitLabel(classes, this.Observable)
 		}
-
+	
 		if (explain>0) 
 			return {
 				classes: classes,

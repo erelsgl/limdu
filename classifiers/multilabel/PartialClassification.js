@@ -20,18 +20,26 @@ var PartialClassification = function(opts) {
 		console.dir(opts);
 		throw new Error("opts.multilabelClassifierType is null");
 	}
-	this.multilabelClassifierType = opts.multilabelClassifierType;
+
+	if (!opts.numberofclassifiers) {
+		console.dir(opts);
+		throw new Error("opts.numberofclassifiers is null");
+	}
+
 	this.splitLabel = opts.splitLabel || function(label)      {return label.split(/@/);}
-	
-	classifier = []
-	_(3).times(function(n){ 
-		 classif = new opts.multilabelClassifierType();
-		classifier.push(classif);
- 	});
-	this.classifier = classifier
+	this.classifier = this.intializeClassifiers(opts.numberofclassifiers, opts.multilabelClassifierType)
 }
 
 PartialClassification.prototype = {
+
+	intializeClassifiers: function(numberofclassifiers, multilabelClassifierType) {
+		classifier = []
+	_(numberofclassifiers).times(function(n){ 
+		classif = new multilabelClassifierType;
+		classifier.push(classif);
+ 	});
+ 	return classifier
+	},
 
 	trainOnline: function(sample, labels) {
 		throw new Error("PartialClassification does not support online training");

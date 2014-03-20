@@ -117,6 +117,7 @@ ThresholdClassifier.prototype = {
 		for (var i=0; i<dataset.length; ++i) 
 		{
  			var scoresVector = this.multiclassClassifier.classify(dataset[i].input, false, true);
+
  			for (score in scoresVector)
  			{
  				if (dataset[i].output.indexOf(scoresVector[score][0])>-1)
@@ -150,6 +151,7 @@ ThresholdClassifier.prototype = {
 	@param FN false negative
 	*/
 	CalculatePerformance: function(list_of_scores, testSet, FN){
+
 		current_set=[]
 
 		TRUE = 0
@@ -187,6 +189,7 @@ ThresholdClassifier.prototype = {
  			}
 
 			optial_measure=0
+			index=Object.keys(result)[0]
 			for (i in result)
 			{
 				if (result[i][this.evaluateMeasureToMaximize] >= optial_measure)
@@ -195,7 +198,7 @@ ThresholdClassifier.prototype = {
 					optial_measure = result[i][this.evaluateMeasureToMaximize]
 				}
 			}
-			 			
+
  			return result[index]
  		
 	},

@@ -368,17 +368,16 @@ EnhancedClassifier.prototype = {
 				}
 			}, this);
     		classes = []
-    	
 			if (accumulatedClasses[0][0] instanceof Array)
 				_(accumulatedClasses[0].length).times(function(n){
 					classes.push(_.flatten(_.pluck(accumulatedClasses,n)))
 				 });
 			else
 			{
-				classes.push(_.flatten(accumulatedClasses))
+				classes = _.flatten(accumulatedClasses)
 			}
 		}
-
+		
 		if (this.labelLookupTable) {
 			if (Array.isArray(classes)) {
 				classes = classes.map(function(label) {

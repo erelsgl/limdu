@@ -73,17 +73,34 @@ module.exports.test_hash = function(
 		expectedClasses = []
 
 		if (!(testSet[i].output[0] instanceof Array))
+			{
+				// console.log("insofarr")
 			expectedClasses.push(testSet[i].output)
+			}
 		else
+			{
 			expectedClasses = testSet[i].output
+			}
 
-		var actualClasses = classifier.classify(testSet[i].input);
-		
-		// console.log(testSet[i].input)
-		// 	console.log("ac")
-		// console.log(actualClasses)
-		// 		console.log("ex")
-		// console.log(expectedClasses)
+		actualClasses = []
+		var classified = classifier.classify(testSet[i].input);
+
+		if (typeof classified != 'undefined') // Any scope
+		{
+		if (!(classified[0] instanceof Array))
+			{
+				// console.log("insofarr")
+			actualClasses.push(classified)
+			}
+		else
+			{
+			actualClasses = classified
+			}
+		}
+		else
+			{
+				actualClasses.push(classified)
+			}
 
 		_(expectedClasses.length).times(function(n){
 			if (currentStats.length<n+1) 
@@ -111,9 +128,9 @@ module.exports.test_hash = function(
 
 		_(expectedClasses.length).times(function(n){
 		classifierstats = {}
-		classifierstats['stats'] = currentStats[n].retrieveStats()
 		classifierstats['labels'] = currentStats[n].retrieveLabels()
 		classifierstats['data'] = data_stats[n]
+		classifierstats['stats'] = currentStats[n].retrieveStats()
 		testResult.push(classifierstats)
 		}, this)
 

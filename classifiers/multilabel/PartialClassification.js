@@ -71,7 +71,8 @@ PartialClassification.prototype = {
 		
 	 	_.each(this.classifier, function(classif, key, list){
 	 		value = classif.classify(sample, explain) 
-	 	 	if (value.length!=0) values.push(_.flatten(value))
+	 	 	// if (value.length!=0) 
+	 	 	values.push(_.flatten(value))
 	 	})
 
 	 		return values

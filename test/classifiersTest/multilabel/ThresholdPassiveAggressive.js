@@ -20,10 +20,11 @@ var ThresholdPassiveAggressive = classifiers.multilabel.ThresholdClassifier.bind
 		multiclassClassifierType: classifier,
         devsetsize: 1,  // validationset equal to trainset
         evaluateMeasureToMaximize: testutils.F1_evaluation,
+	numOfFoldsForThresholdCalculation: 1
 });
 
 dataset = []
-_.times(50, function(e) { dataset.push({'input':wordcounts(random.random_string(5)), 'output':[{'class':Math.round(Math.random())}]}) })
+_.times(500, function(e) { dataset.push({'input':wordcounts(random.random_string(5)), 'output':[{'class':Math.round(Math.random())}]}) })
 
 describe('Threshold classifier', function() {
 

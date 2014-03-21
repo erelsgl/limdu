@@ -26,7 +26,7 @@ var PartialClassification = function(opts) {
 		throw new Error("opts.numberofclassifiers is null");
 	}
 
-	this.splitLabel = opts.splitLabel || function(label)      {return label.split(/@/);}
+	// this.splitLabel = opts.splitLabel || function(label)      {return label.split(/@/);}
 	this.classifier = this.intializeClassifiers(opts.numberofclassifiers, opts.multilabelClassifierType)
 }
 

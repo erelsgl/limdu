@@ -51,7 +51,7 @@ addCasesLabels: function (expectedClasses, actualClasses ) {
 
 		var allTrue = true;
 		for (var actualClass in actualClasses) {
-		
+
 			if (!(actualClass in this.labels)) {
 				this.labels[actualClass]={}
 				this.labels[actualClass]['TP']=0
@@ -80,7 +80,6 @@ addCasesLabels: function (expectedClasses, actualClasses ) {
 			}
 		}
 	},
-
 
 	/**
 	 * Record the result of a new classes experiment.
@@ -160,14 +159,60 @@ addCasesLabels: function (expectedClasses, actualClasses ) {
 			this.TRUE++;
 		}
 		this.count++;
+
 		return explanations;
 	},
 	
-	
-	/**
-	 * After the experiment is done, call this method to calculate the performance statistics.
-	 */
-	calculateStats: function() {
+	retrieveLabels: function()
+	{
+		// if there are any data per labels calculate it
+		label_output = []
+		label_hash = {}
+
+		// console.log(this.labels)
+		// process.exit(0)
+
+		_.each(Object.keys(this.labels), function(label, key, list){ 
+			
+			this.labels[label]['Recall'] = this.labels[label]['TP'] / (this.labels[label]['TP'] + this.labels[label]['FN']);
+			this.labels[label]['Precision'] = this.labels[label]['TP'] / (this.labels[label]['TP'] + this.labels[label]['FP']);
+			this.labels[label]['F1'] = 2 / (1/this.labels[label]['Recall'] + 1/this.labels[label]['Precision'])
+			this.labels[label]['Frequency'] = (this.labels[label]['TP'] +this.labels[label]['FN'] )/(this.TP+this.FN)
+
+			if (!this.labels[label]['F1']) this.labels[label]['F1'] = -1
+							
+			label_output.push([label, this.labels[label]['F1'], this.labels[label]['Frequency'], this.labels[label]['TP'] + this.labels[label]['FN']])
+					
+			}, this)
+
+			label_output = _.sortBy(label_output, function(item){ return item[1]; });
+
+		for (label in label_output)
+			{
+			label_hash[label_output[label][0]] = {}
+			label_hash[label_output[label][0]]['F1'] = label_output[label][1]
+			label_hash[label_output[label][0]]['Frequency'] = label_output[label][2]
+			label_hash[label_output[label][0]]['Occurences'] = label_output[label][3]
+			}
+
+		return label_hash
+	},
+
+	retrieveStats: function()
+	{
+		this.calculateStatsNoReturn()
+		stats = {}
+		stats['Accuracy'] = this.Accuracy
+		stats['HammingLoss'] = this.HammingLoss
+		stats['HammingGain'] = this.HammingGain
+		stats['Precision'] = this.Precision
+		stats['Recall'] = this.Recall
+		stats['F1'] = this.F1
+		stats['shortStatsString'] = this.shortStatsString
+		return stats
+	},
+
+	calculateStatsNoReturn: function() {
 		this.Accuracy = (this.TRUE) / (this.count);
 		this.HammingLoss = (this.FN+this.FP) / (this.FN+this.TP); // "the percentage of the wrong labels to the total number of labels"
 		this.HammingGain = 1-this.HammingLoss;
@@ -179,44 +224,13 @@ addCasesLabels: function (expectedClasses, actualClasses ) {
 		this.timePerSampleMillis = this.timeMillis / this.count;
 		this.shortStatsString = sprintf("Accuracy=%d/%d=%1.0f%% HammingGain=1-%d/%d=%1.0f%% Precision=%1.0f%% Recall=%1.0f%% F1=%1.0f%% timePerSample=%1.0f[ms]",
 				this.TRUE, this.count, this.Accuracy*100, (this.FN+this.FP), (this.FN+this.TP), this.HammingGain*100, this.Precision*100, this.Recall*100, this.F1*100, this.timePerSampleMillis);
+		},
 
-		// if there are any data per labels calculate it
-		label_output = []
-		label_hash = {}
-
-		for (label in this.labels)
-			{
-			this.labels[label]['Recall'] = this.labels[label]['TP'] / (this.labels[label]['TP'] + this.labels[label]['FN']);
-			this.labels[label]['Precision'] = this.labels[label]['TP'] / (this.labels[label]['TP'] + this.labels[label]['FP']);
-			this.labels[label]['F1'] = 2 / (1/this.labels[label]['Recall'] + 1/this.labels[label]['Precision'])
-			this.labels[label]['Frequency'] = (this.labels[label]['TP'] +this.labels[label]['FN'] )/(this.TP+this.FN)
-
-			if (!this.labels[label]['F1']) 
-				{
-					this.labels[label]['F1'] = -1
-				}
-			else
-				{
-					label_output.push([label, this.labels[label]['F1'], this.labels[label]['Frequency'], this.labels[label]['TP'] + this.labels[label]['FN']])
-				}
-
-			
-			}
-
-			label_output = _.sortBy(label_output, function(item){ return item[1]; });
-
-		
-		for (label in label_output)
-			{
-			label_hash[label_output[label][0]] = {}
-			label_hash[label_output[label][0]]['F1'] = label_output[label][1]
-			label_hash[label_output[label][0]]['Frequency'] = label_output[label][2]
-			label_hash[label_output[label][0]]['Occurences'] = label_output[label][3]
-			}
-
-		
-		this.label_output = label_hash
-		
+	/**
+	 * After the experiment is done, call this method to calculate the performance statistics.
+	 */
+	calculateStats: function() {
+		this.calculateStatsNoReturn()
 		return this;
 	},
 	

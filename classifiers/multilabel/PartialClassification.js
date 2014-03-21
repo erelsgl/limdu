@@ -20,74 +20,81 @@ var PartialClassification = function(opts) {
 		console.dir(opts);
 		throw new Error("opts.multilabelClassifierType is null");
 	}
-	this.multilabelClassifierType = opts.multilabelClassifierType;
-	this.splitLabel = opts.splitLabel || function(label)      {return label.split(/@/);}
-	this.classifier = []
+
+	if (!opts.numberofclassifiers) {
+		console.dir(opts);
+		throw new Error("opts.numberofclassifiers is null");
+	}
+
+	// this.splitLabel = opts.splitLabel || function(label)      {return label.split(/@/);}
+	this.classifier = this.intializeClassifiers(opts.numberofclassifiers, opts.multilabelClassifierType)
 }
 
 PartialClassification.prototype = {
+
+	intializeClassifiers: function(numberofclassifiers, multilabelClassifierType) {
+		classifier = []
+	_(numberofclassifiers).times(function(n){ 
+		classif = new multilabelClassifierType;
+		classifier.push(classif);
+ 	});
+ 	return classifier
+	},
 
 	trainOnline: function(sample, labels) {
 		throw new Error("PartialClassification does not support online training");
 	},
 
 	trainBatch : function(dataset) {
-
 		num_of_classifiers = 0
-		dataset = dataset.map(function(datum) {
-			var normalizedLabels = multilabelutils.normalizeOutputLabels(datum.output);
-			num_of_classifiers =  Math.max(num_of_classifiers, (this.splitLabel(normalizedLabels)).length)
-			return {
-				input: datum.input,
-				output: this.splitLabel(normalizedLabels)
-			}
+
+		_.each(dataset, function(value, key, list){
+			num_of_classifiers =  Math.max(num_of_classifiers, (value['output']).length)
 		}, this);
 
+			
 		_(num_of_classifiers).times(function(n){
+			data = []
+			_.each(dataset, function(value, key, list){
+				if (value.output.length - 1 >= n)
+					{
+						value1 = _.clone(value)
+						value1['output'] = value.output[n]
+						data.push(value1)
+					}
 
-			data = dataset.map(function(datum) {
+			 },this)
 
-				return {
-					input: datum.input,
-					output: datum.output[n]
-				}
-			}, this);
-
-			classifier = new this.multilabelClassifierType();
-			classifier.trainBatch(data)
-			this.classifier.push(classifier)
-
+			// classifier = new this.multilabelClassifierType();
+			this.classifier[n].trainBatch(data)
+			// classifier.trainBatch(data)
+			// this.classifier.push(classifier)
 			}, this)
+	
+	},
+
+	classify: function(sample, explain, continuous_output) {
+		explain = 0
+		values = []
 		
-	},
-
-	toFormat: function(dataset) {
-		dataset = dataset.map(function(datum) {
-			var normalizedLabels = multilabelutils.normalizeOutputLabels(datum.output);
-
-			return {
-				input: datum.input,
-				output: _.flatten(this.splitLabel(normalizedLabels))
-			}
-
-		}, this);
-		return dataset
-	},
-
-	classify: function(sample, explain) {
-		value = []
 	 	_.each(this.classifier, function(classif, key, list){
-	 		value = value.concat(classif.classify(sample, explain)) 	
+	 		value = classif.classify(sample, explain) 
+	 	 	// if (value.length!=0) 
+	 	 	values.push(_.flatten(value))
 	 	})
-	 	return value
+
+	 		return values
+ 	},
+
+
+ 	setFeatureLookupTable: function(featureLookupTable) {
+ 		_.each(this.classifier, function(classif, key, list){
+	 		classif.setFeatureLookupTable(featureLookupTable)
+	 	})
  	},
 	
 	getAllClasses: function() {
 		throw new Error("No implementation in PartialClassification");
-	},
-
-	stringifyClass: function (aClass) {
-		return (_(aClass).isString()? aClass: JSON.stringify(aClass));
 	},
 
 	toJSON : function() {
@@ -98,9 +105,6 @@ PartialClassification.prototype = {
 		throw new Error("No implementation in PartialClassification");
 	},
 	
-	setFeatureLookupTable: function(featureLookupTable) {
-		throw new Error("No implementation in PartialClassification");
-	},
 }
 
 module.exports = PartialClassification;

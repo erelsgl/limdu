@@ -74,16 +74,42 @@ PartialClassification.prototype = {
 	},
 
 	classify: function(sample, explain, continuous_output) {
-		explain = 0
-		values = []
+				
+		labels = []
+		explanation = []
 		
 	 	_.each(this.classifier, function(classif, key, list){
-	 		value = classif.classify(sample, explain) 
-	 	 	// if (value.length!=0) 
-	 	 	values.push(_.flatten(value))
+	 		value = classif.classify(sample, explain)
+	 	 	if (explain>0)
+	 	 		labels.push(value.classes)
+	 	 	else
+ 				labels.push(value)
+	 	 	explanation.push(value.explanation)
 	 	})
+  			
+		if (explain>0)
+			{
+				positive = {}
+				negative = {}
 
-	 		return values
+				_.each(_.pluck(explanation, 'positive'), function(value, key, list){ 
+					positive = _.extend(positive, value)
+					}, this)
+
+				_.each(_.pluck(explanation, 'negative'), function(value, key, list){ 
+					negative = _.extend(negative, value)
+					}, this)
+			}
+
+		return (explain>0?
+			{
+				classes: labels, 
+				explanation: {
+					positive: positive, 
+					negative: negative, 
+				}
+			}:
+			labels);
  	},
 
 

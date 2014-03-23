@@ -85,9 +85,10 @@ module.exports.classifyWithModelMap = function (modelMap, bias, features, explai
 		explanations.splice(explain, explanations.length-explain);  // "explain" is the max length of explanation.
 		
 		if (!this.detailed_explanations) {
-			var sprintf = require('sprintf').sprintf;
+			// var sprintf = require('sprintf').sprintf;
 			explanations = explanations.map(function(e) {
-				return sprintf("%s%+1.2f", e.feature, e.relevance);
+				// return sprintf("%s%+1.2f", e.feature, e.relevance);
+				return [e.feature, e.relevance];
 			});
 		}
 		return {

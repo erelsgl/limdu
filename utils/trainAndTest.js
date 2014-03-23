@@ -9,32 +9,93 @@ var _ = require('underscore')._;
 var util = require('util');
 var hash = require('./hash');
 var PrecisionRecall = require("./PrecisionRecall");
+var list = require('./list');
 
 /**
  * A short light-weight test function. Tests the given classifier on the given dataset, and 
  * writes a short summary of the mistakes and total performance.
  * @param explain level of explanations for mistakes (0 for none) 
  */
-module.exports.testLite = function(classifier, dataset, explain) {
+
+module.exports.testLite = function(classifier, testSet, explain) {
 	var currentStats = new PrecisionRecall();
 	
-	if (typeof classifier.OutputSplitLabel === 'function') {
-		dataset = classifier.outputToFormat(dataset)
+ 	labeltree = {}
+
+    if ((typeof classifier.TestSplitLabel === 'function')) {
+		testSet = classifier.outputToFormat(testSet)
     }
 
-	for (var i=0; i<dataset.length; ++i) {
-		var expectedClasses = normalizeClasses(dataset[i].output); 
-		var actualClassesWithExplanations = classifier.classify(dataset[i].input, explain, dataset[i].input);		
-		actualClasses = (actualClassesWithExplanations.classes? actualClassesWithExplanations.classes: actualClassesWithExplanations);
-		actualClasses.sort();
-		if (!_(expectedClasses).isEqual(actualClasses)) {
-			console.log(
-				"\t"+JSON.stringify(dataset[i].input)+":"+
-				" expected "+expectedClasses+
-				" but got "+(explain>0? JSON.stringify(actualClassesWithExplanations,null,"\t"): actualClasses));
+    for (var i=0; i<testSet.length; ++i) {
+		expectedClasses = list.listembed(testSet[i].output)
+		classified = classifier.classify(testSet[i].input, 10, testSet[i].input);
+		actualClasses = list.listembed(classified)
+
+		for (type in  classified.explanation)
+		{
+			for (label in classified.explanation[type])
+				{
+					if (!(label in labeltree))
+						{
+						labeltree[label] = {}
+						labeltree[label]['positive'] = {}
+						labeltree[label]['negative'] = {}
+						}
+
+					_.each(classified.explanation[type][label], function(value, key, list){ 
+						if (!(value[0] in labeltree[label][type]))
+							{
+							labeltree[label][type][value[0]] = {}
+							labeltree[label][type][value[0]]['count'] = 0
+							labeltree[label][type][value[0]]['weight'] = 0
+							}
+
+						labeltree[label][type][value[0]]['count'] = labeltree[label][type][value[0]]['count']+ 1
+						labeltree[label][type][value[0]]['weight'] = labeltree[label][type][value[0]]['weight'] + value[1]
+						}, this)
+				}
 		}
-		currentStats.addCases(expectedClasses, actualClasses);
+		
+		// var expectedClasses = normalizeClasses(dataset[i].output); 
+		// var actualClassesWithExplanations = classifier.classify(dataset[i].input, explain, dataset[i].input);		
+		// actualClasses = (actualClassesWithExplanations.classes? actualClassesWithExplanations.classes: actualClassesWithExplanations);
+		// actualClasses.sort();
+		// if (!_(expectedClasses).isEqual(actualClasses)) {
+		// 	console.log(
+		// 		"\t"+JSON.stringify(dataset[i].input)+":"+
+		// 		" expected "+expectedClasses+
+		// 		" but got "+(explain>0? JSON.stringify(actualClassesWithExplanations,null,"\t"): actualClasses));
+		// }
+		// currentStats.addCases(expectedClasses, actualClasses);
 	}
+
+	for (label in labeltree)
+	{
+		for (type in labeltree[label])
+		{
+			lis = []
+
+			for (label1 in labeltree[label][type])
+			{
+				lis.push([label1,labeltree[label][type][label1]['count'], labeltree[label][type][label1]['weight']])
+			}
+
+		labeltree[label][type]['LIST'] = _.sortBy(lis, function(num){ return Math.abs(num[2]); });
+		}
+	}
+
+
+	for (label in labeltree)
+	{
+		for (type in labeltree[label])
+		{
+		console.log(label+" "+type)
+		console.log(JSON.stringify(labeltree[label][type]['LIST'].reverse().slice(0,10), null, 4))
+		}
+
+	}
+
+
 	console.log("SUMMARY: "+currentStats.calculateStats().shortStats());
 	return currentStats;
 };
@@ -66,41 +127,9 @@ module.exports.test_hash = function(
 
 	for (var i=0; i<testSet.length; ++i) 
 	{
-
-		// var expectedClasses = normalizeClasses(testSet[i].output);
-		var expectedClasses = testSet[i].output
-
-		expectedClasses = []
-
-		if (!(testSet[i].output[0] instanceof Array))
-			{
-				// console.log("insofarr")
-			expectedClasses.push(testSet[i].output)
-			}
-		else
-			{
-			expectedClasses = testSet[i].output
-			}
-
-		actualClasses = []
-		var classified = classifier.classify(testSet[i].input);
-
-		if (typeof classified != 'undefined') // Any scope
-		{
-		if (!(classified[0] instanceof Array))
-			{
-				// console.log("insofarr")
-			actualClasses.push(classified)
-			}
-		else
-			{
-			actualClasses = classified
-			}
-		}
-		else
-			{
-				actualClasses.push(classified)
-			}
+		expectedClasses = list.listembed(testSet[i].output)
+		classified = classifier.classify(testSet[i].input)
+		actualClasses = list.listembed(classified)
 
 		_(expectedClasses.length).times(function(n){
 			if (currentStats.length<n+1) 

@@ -117,14 +117,17 @@ BinaryRelevance.prototype = {
 			var classifier = this.mapClassnameToClassifier[label];
 			var scoreWithExplain = classifier.classify(sample, explain, withScores);
 			var score = scoreWithExplain.explanation?  scoreWithExplain.classification: scoreWithExplain;
-
 		
-			var explanations_string = ((scoreWithExplain.explanation && explain>0)?
-				// cannot use .join here
-					scoreWithExplain.explanation.reduce(function(a,b) {
-						return a + " " + b;
-					}, ""):
-					null);
+			// var explanations_string = ((scoreWithExplain.explanation && explain>0)?
+			// 	// cannot use .join here
+			// 		// scoreWithExplain.explanation.reduce(function(a,b) {
+			// 		// 	// return a + " " + b;
+			// 		// 	return [a,b];
+			// 		// }, ""):
+			// 		// null);
+			// 		scoreWithExplain.explanation)
+
+			explanations_string = scoreWithExplain.explanation
 			
 			if (withScores) {
 				var labelAndScore = [label, score];

@@ -44,7 +44,7 @@ module.exports.learning_curves = function(classifiers, dataset, parameters, step
 
 	plotfor = "plot "
 	_(numOfFolds).times(function(n){
-		header = "train\t" + (Object.keys(classifiers)).join(n+"\t")+n+"\n";
+		header = "train\t" + (Object.keys(classifiers)).join(+"-fold"+n+"\t")+"-fold"+n+"\n";
 	_.each(parameters,  function(value, key, list){ 
 		plotfor = plotfor + " for [i=2:"+ (_.size(classifiers) + 1)+"] \'"+dir+value+"-fold"+n+"\' using 1:i with lines linecolor i, "
 		fs.writeFileSync(dir+value+"-fold"+n, header, 'utf-8', function(err) {console.log("error "+err); return 0 })

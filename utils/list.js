@@ -40,3 +40,18 @@ exports.is_equal_set = function(set1, set2)
 	else
 		{return false}
 	}
+
+exports.listembed = function(label)
+	{
+		if (typeof label != 'undefined')
+		{
+			if (!(label[0] instanceof Array))
+				return [label]
+			else 
+				return label
+		}
+		else
+		{
+			return [label]
+		}
+	}

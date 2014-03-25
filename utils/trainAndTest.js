@@ -6,7 +6,7 @@
  */
 
 var _ = require('underscore')._;
-var util = require('util');
+var utils = require('./bars');
 var hash = require('./hash');
 var PrecisionRecall = require("./PrecisionRecall");
 var list = require('./list');
@@ -100,6 +100,21 @@ module.exports.testLite = function(classifier, testSet, explain) {
 	return currentStats;
 };
 
+module.exports.testLite1 = function(classifier, testSet, explain) {
+	var currentStats = new PrecisionRecall();
+    labeltree = utils.labeltree(testSet)
+
+    ambig = []
+    for (var i=0; i<testSet.length; ++i) {
+    	expectedClasses = testSet[i].output
+		actualClasses = classifier.classify(testSet[i].input);
+		amb = utils.intent_attr_label_ambiguity(actualClasses, labeltree)
+		if (amb.length >0) ambig.push(amb)
+    }
+    // console.log(JSON.stringify(ambig, null, 4))
+ 	console.log(ambig.length)
+    // process.exit(0)
+}
 /**
  * Test the given classifier on the given test-set, the result is detailed with with all input data.
  * the method is still in developemnt and the output data might be changed
@@ -259,9 +274,13 @@ module.exports.splitToEasyAndHard = function(classifier, dataset) {
  */
 module.exports.trainAndTestLite = function(
 		createNewClassifierFunction, 
-		trainSet, testSet, 
+		trainSet1, testSet1, 
 		verbosity, microAverage, macroSum) {
 		// TRAIN:
+
+		trainSet = utils.clonedataset(trainSet1)
+		testSet = utils.clonedataset(testSet1)
+
 		var classifier = createNewClassifierFunction();
 
 		if (verbosity>0) console.log("\nstart training on "+trainSet.length+" samples, "+(trainSet.allClasses? trainSet.allClasses.length+' classes': ''));
@@ -271,7 +290,7 @@ module.exports.trainAndTestLite = function(
 		if (verbosity>0) console.log("end training on "+trainSet.length+" samples, "+(trainSet.allClasses? trainSet.allClasses.length+' classes, ': '')+elapsedTime+" [ms]");
 	
 		// TEST:
-		return module.exports.testLite(classifier, testSet, /*explain=*/verbosity-1);
+		return module.exports.testLite1(classifier, testSet, /*explain=*/verbosity-1);
 };
 
 /**
@@ -292,16 +311,9 @@ module.exports.trainAndTest_hash = function(
 		var startTime = new Date();
 		var classifier = new classifierType();
 
-		testSet1 = []
-		_.each(testSet, function(value, key, list){
-			testSet1.push(_.clone(value))
-			})
+		testSet1 = utils.clonedataset(testSet)
+		trainSet1 = utils.clonedataset(trainSet)
 
-		trainSet1 = []
-		_.each(trainSet, function(value, key, list){
-			trainSet1.push(_.clone(value))
-			})
-		
 		classifier.trainBatch(trainSet1);
 		stat_hash = module.exports.test_hash(classifier, testSet1, verbosity, microAverage, macroSum);
 		// stat_hash['train_time'] = new Date()-startTime;

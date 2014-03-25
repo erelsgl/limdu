@@ -336,7 +336,6 @@ EnhancedClassifier.prototype = {
 		}
 		}, this);
 		return dataset
-
 	},
 
 	/**
@@ -393,7 +392,7 @@ EnhancedClassifier.prototype = {
 		}
 
 		if ((typeof this.OutputSplitLabel === 'function')) {
-			classes = this.OutputSplitLabel(classes, this.Observable)
+			classes = this.OutputSplitLabel(classes, this.Observable, sample, explanations)
 		}
 	
 		if (explain>0) 

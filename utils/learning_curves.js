@@ -65,7 +65,7 @@ module.exports.learning_curves = function(classifiers, dataset, parameters, step
 	  	index += step
 
 	    _.each(classifiers, function(value, key, list) { 	
-	    	stats = trainAndTest_hash(value, mytrain, test, 0)
+	    	stats = trainAndTest_hash(value, mytrain, test, 5)
 	    	report.push(stats[2]['stats'])
 	    })
 		

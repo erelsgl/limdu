@@ -1,6 +1,8 @@
 var ftrs = require('../features');
 var _ = require('underscore')._;
 var hash = require('../utils/hash');
+var util = require('../utils/bars');
+
 var multilabelutils = require('./multilabel/multilabelutils');
 
 
@@ -367,6 +369,8 @@ EnhancedClassifier.prototype = {
 				}
 			}, this);
     		classes = []
+    		if (accumulatedClasses[0])
+    		{
 			if (accumulatedClasses[0][0] instanceof Array)
 				_(accumulatedClasses[0].length).times(function(n){
 					classes.push(_.flatten(_.pluck(accumulatedClasses,n)))
@@ -374,6 +378,7 @@ EnhancedClassifier.prototype = {
 			else
 			{
 				classes = _.flatten(accumulatedClasses)
+			}
 			}
 		}
 		
@@ -391,8 +396,20 @@ EnhancedClassifier.prototype = {
 			}
 		}
 
+
 		if ((typeof this.OutputSplitLabel === 'function')) {
+			// am = util.intent_attr_label_ambiguity(classes)
+			// if (am.length > 0)
+			// {
+			// console.log(sample)
+			// console.log(classes)
 			classes = this.OutputSplitLabel(classes, this.Observable, sample, explanations)
+			// this.OutputSplitLabel(classes, this.Observable, sample, explanations)
+			// }
+			// util.intent_attr_label_ambiguity(classes)
+			// classes = this.OutputSplitLabel(classes, this.Observable, sample, explanations)
+			// console.log(classes)
+			// process.exit(0)
 		}
 	
 		if (explain>0) 

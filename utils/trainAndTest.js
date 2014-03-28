@@ -29,6 +29,9 @@ module.exports.testLite = function(classifier, testSet, explain) {
     for (var i=0; i<testSet.length; ++i) {
 		expectedClasses = list.listembed(testSet[i].output)
 		classified = classifier.classify(testSet[i].input, 10, testSet[i].input);
+
+		// console.log(JSON.stringify(classified, null, 4))
+		// process.exit(0)
 		actualClasses = list.listembed(classified)
 
 		for (type in  classified.explanation)
@@ -136,6 +139,8 @@ module.exports.test_hash = function(
 	var indexes = []
 	var startTime = new Date();
 
+	testSetOriginal = utils.clonedataset(testSet)
+
 	if ((typeof classifier.TestSplitLabel === 'function')) {
 		testSet = classifier.outputToFormat(testSet)
     }
@@ -143,6 +148,7 @@ module.exports.test_hash = function(
 	for (var i=0; i<testSet.length; ++i) 
 	{
 		expectedClasses = list.listembed(testSet[i].output)
+		// classified = classifier.classify(testSet[i].input, 5, testSet[i].input)
 		classified = classifier.classify(testSet[i].input)
 		actualClasses = list.listembed(classified)
 
@@ -161,7 +167,8 @@ module.exports.test_hash = function(
 			sentence_hash['expected'] = expectedClasses[n];
 			sentence_hash['classified'] = actualClasses[n];
 			sentence_hash['explanation'] = explanation;
-
+			sentence_hash['expected original'] = testSetOriginal[i]['output']
+			sentence_hash['classified original'] = actualClasses
 			})	
 		
 		// if (microAverage) microAverage.addCases(expectedClasses, actualClasses);
@@ -290,7 +297,7 @@ module.exports.trainAndTestLite = function(
 		if (verbosity>0) console.log("end training on "+trainSet.length+" samples, "+(trainSet.allClasses? trainSet.allClasses.length+' classes, ': '')+elapsedTime+" [ms]");
 	
 		// TEST:
-		return module.exports.testLite1(classifier, testSet, /*explain=*/verbosity-1);
+		return module.exports.testLite(classifier, testSet, /*explain=*/verbosity-1);
 };
 
 /**

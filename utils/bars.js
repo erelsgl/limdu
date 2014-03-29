@@ -1,5 +1,13 @@
 /*
-	This module was created as a utils for limdu, many of the routines were copied from train.js of nlu-server
+	This module was created as a utils for limdu, many of the routines were copied from train.js of nlu-server.
+	The main function of the following methods is helping to represent the analysis of given data.
+	This module contains: 
+		* the hierarchical representation of the labels.
+		* routines for aggregating statistics after cross - validation.
+		* routine for building confusion matrix.
+		* auxiliary routine for building table in html format.
+		* routine for building intent attribute distribution.
+		* etc.
 
 	@author Vasily Konovalov
  */
@@ -60,6 +68,119 @@ labeltree = { Offer:
      'Promotion Possibilities': {} },
   Append: { previous: {} },
   Quit: { true: {} } }
+
+module.exports.aggregate_results = function(stats)
+{
+	results = _.reduce(stats, function(memo, obj) {
+	  return {
+	    F1: memo.F1 + obj.F1,
+	    Precision: memo.Precision + obj.Precision,
+	    Recall: memo.Recall + obj.Recall,
+	    Accuracy: memo.Accuracy + obj.Accuracy,
+	  };
+	}, {F1: 0, Precision: 0, Recall: 0, Accuracy: 0})
+
+	_.each(results, function(value, key, list){ 
+		results[key] = value/stats.length
+		}, this)
+	return results
+}
+
+
+/*@input - array of hashes, as a input given after cross -  validation
+@output - hash that aggregates all statistics from the input*/
+module.exports.aggregate_two_nested = function(stats)
+{
+	b = _.reduce(stats, function(memo, obj) {
+	h = _.clone(memo)
+
+	_.each(obj, function(value, label, list){ 
+		if (!(label in h ))
+			h[label] = {}
+		_.each(_.keys(value), function(param, key, list){ 
+			if (param in h[label])
+				h[label][param] = h[label][param] + obj[label][param]
+			else
+				h[label][param] = obj[label][param]
+  		}, this)
+	}, this)
+
+	return h
+	}, {}, this)
+
+	_.each(b, function(value, key, list){ 
+		_.each(value, function(value1, key1, list){ 
+			b[key][key1] = value1/stats.length
+		}, this)
+	}, this)
+	return b
+}
+
+/*@input - stats from test
+@output - confusion matrix in multi-label case*/
+module.exports.confusion_matrix = function(stats)
+{	
+	matrix = {}
+	_.each(stats['data'], function(value, key, list){ 
+		_.each(value['explanation']['TP'], function(value1, key, list){ 
+			if (!(value1 in matrix))
+				matrix[value1] = {}
+			if (!(value1 in matrix[value1]))
+				matrix[value1][value1] = 0
+			matrix[value1][value1] = matrix[value1][value1] + 1
+		}, this)
+
+		_.each(value['explanation']['FP'], function(value1, key, list){ 
+			_.each(value['explanation']['TP'].concat(value['explanation']['FN']), function(value2, key, list){ 
+				if (!(value2 in matrix))
+					matrix[value2] = {}
+				if (!(value1 in matrix[value2]))
+					matrix[value2][value1] = 0
+				matrix[value2][value1] = matrix[value2][value1] + 1
+			}, this)
+		}, this)
+
+		_.each(value['explanation']['FN'], function(value1, key, list){ 
+			if (!(value1 in matrix))
+				matrix[value1] = {}
+			if (!("nolabel" in matrix[value1]))
+				matrix[value1]["nolabel"] = 0
+			matrix[value1]["nolabel"] = matrix[value1]["nolabel"] + 1
+			
+		}, this)			
+
+	}, this)
+
+	return matrix
+}
+
+/*@input - hash that represents table
+@output - html table*/
+module.exports.hash_to_htmltable = function(labelhash)
+{
+	keys = []
+	_.each(labelhash, function(value, key, list){ 
+		_.each(value, function(value1, key1, list){ 
+			keys.push(key1)
+			}, this)
+		}, this)
+
+	labelheader = Object.keys(labelhash)
+	labelheader.push("nolabel")
+
+	console.log("<html><body><table border=1 style='border-collapse: collapse'>")
+	console.log("<th><td>"+((labelheader)).join("</td><td>")+"</td></th>")
+
+_.each(labelhash, function(value, key, list){
+	console.log("<tr><td>"+	(buildstringnosum(key, value, labelheader)).join("</td><td>")+"</td></tr>")
+	}, this)
+
+		console.log("</table>")
+		console.log()
+		process.exit(0)
+
+}
+
 
 // @stats - dataset in the format after test_hash, i.e. the hash with parameters 'data', 'stats', 'labels'
 // output is the data labels where there is an error
@@ -176,6 +297,20 @@ function buildstring(intent, valhash, labelheader)
 	str.push(sum)
 	return str
 }
+
+
+function buildstringnosum(intent, valhash, labelheader)
+{
+	str = [intent]
+	_.each(labelheader, function(value, key, list){ 
+		if (value in valhash)
+			str.push(valhash[value])
+		else
+			str.push(0)
+		}, this)
+	return str
+}
+
 /*
 @input - data - dataset
 @output - set of graphs with distributions of intent and attributes.*/
@@ -368,6 +503,18 @@ module.exports.clonedataset = function(set)
 	return set1
 }
 
+function Compensate(json) {
+		// console.log(json)
+	js = splitJson(json)
+	if ((js.length == 2) && (js[1].toString()[0] != js[1].toString()[0].toUpperCase()))
+		{
+		js.push(js[1])
+		js[1] = ""
+		}
+	return js
+}
+
+
 function splitJson(json) {
 	return splitJsonRecursive(_.isString(json) && /{.*}/.test(json)?
 		JSON.parse(json):
@@ -387,7 +534,7 @@ function splitPartEqually(json) {
 	label = []	
 	_(3).times(function(n){
 		buf = []
-		_.each(json.map(splitJson), function(value, key, list){
+		_.each(json.map(Compensate), function(value, key, list){
 			if (value.length>n)
 			{
 			if (_.compact(value[n].toString()).length != 0)

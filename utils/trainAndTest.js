@@ -168,7 +168,7 @@ module.exports.test_hash = function(
 			sentence_hash['classified'] = actualClasses[n];
 			sentence_hash['explanation'] = explanation;
 			sentence_hash['expected original'] = testSetOriginal[i]['output']
-			sentence_hash['classified original'] = actualClasses
+			sentence_hash['classified original'] = classified
 			})	
 		
 		// if (microAverage) microAverage.addCases(expectedClasses, actualClasses);

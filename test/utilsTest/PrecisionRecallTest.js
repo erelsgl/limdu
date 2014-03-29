@@ -25,4 +25,19 @@ describe('PrecisionRecall object', function() {
 		pr.HammingLoss.should.equal(3/5);
 		pr.HammingGain.should.equal(2/5);
 	});
+
+	it('correctly calculates precision, recall, accuracy in hash format.', function() {
+		stats = pr.addCasesHash([1,2], [1,2], 1);
+		stats = pr.addCasesHash([1,2,3,4,5], [1,3,5,7], 1);
+		
+		_.difference(stats['TP'], ['1','3','5']).length.should.equal(0)
+		_.difference(stats['FP'], ['7','1']).length.should.equal(0)
+		_.difference(stats['FN'], ['2','','4']).length.should.equal(0)
+		
+		results = pr.retrieveStats()
+		
+		results['Accuracy'].should.equal(1/3)
+		results['Precision'].should.equal(0.8)
+		results['Recall'].should.equal(2/3)
+	});
 })

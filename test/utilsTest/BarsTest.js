@@ -81,4 +81,45 @@ describe('Bars utilities', function() {
 		result['label4']['param2'].should.equal(1.5);
 		result['label4']['param4'].should.equal(3.5);
 	});
+
+	it('correctly computes comfusion matrix', function() {
+	stats = {'data':[
+		{
+			'explanation':{
+				'TP':['Offer'],
+				'FP':['Insist'],
+			}
+		},
+
+		{
+			'explanation':{
+				'TP':['Accept'],
+				'FN':['Reject']
+			}
+		},
+
+		{
+			'explanation':{
+				'TP':['Offer', 'Insist'],
+				'FP':['Accept'],
+				'FN':['Query']
+			}
+		},
+
+	]}
+
+	matrix = mlutils.bars.confusion_matrix(stats)
+
+	matrix['Offer']['Offer'].should.equal(2)
+	matrix['Offer']['Insist'].should.equal(1)
+	matrix['Offer']['Accept'].should.equal(1)
+	matrix['Accept']['Accept'].should.equal(1)
+	matrix['Reject']['nolabel'].should.equal(1)
+	matrix['Insist']['Insist'].should.equal(1)
+	matrix['Insist']['Accept'].should.equal(1)
+	matrix['Query']['Accept'].should.equal(1)
+	matrix['Query']['nolabel'].should.equal(1)
+
+	})
+
 })

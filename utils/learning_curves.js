@@ -28,6 +28,27 @@ classifiers  = {
 parameters = ['F1','TP','FP','FN','Accuracy','Precision','Recall']
 */
 
+
+function checkGnuPlot()
+	{
+		var result = execSync.run("gnuplot -V");
+		if (result !=0 ) {
+			console.log("gnuplot is not found")
+			return 0
+		}
+	}
+
+function extractturns(dataset)
+	{
+		data = []
+		_.each(dataset, function(value, key, list){ 
+			_.each(value['turns'], function(set, key, list){ 
+				data.push(set)
+				}, this)
+		}, this)
+		return data
+	}
+
 module.exports.stringifyClass = function (aClass) {
 	return (_(aClass).isString()? aClass: JSON.stringify(aClass));
 }
@@ -36,11 +57,13 @@ module.exports.learning_curves = function(classifiers, dataset, parameters, step
 
 	dir = "./learning_curves/"
 
-	var result = execSync.run("gnuplot -V");
-	if (result !=0 ) {
-		console.log("gnuplot is not found")
-		return 0
-	}
+	// var result = execSync.run("gnuplot -V");
+	// if (result !=0 ) {
+	// 	console.log("gnuplot is not found")
+	// 	return 0
+	// }
+
+	checkGnuPlot
 
 	plotfor = "plot "
 	_(numOfFolds).times(function(n){
@@ -71,6 +94,57 @@ module.exports.learning_curves = function(classifiers, dataset, parameters, step
 		
 		_.each(parameters, function(value, key, list){
 			valuestring = mytrain.length +"\t"+ (_.pluck(report, value)).join("\t") +"\n" ;
+			fs.appendFileSync(dir+value+"-fold"+fold, valuestring,'utf8', function (err) {console.log("error "+err); return 0 })
+		},this)
+
+		_.each(parameters, function(value, key, list){
+			command = "gnuplot -p -e \"reset; set term png truecolor; set grid ytics; set grid xtics; set key bottom right; set output \'"+dir + value+".png\'; set key autotitle columnhead; "+plotfor +"\""
+			result = execSync.run(command)
+		}, this)
+		}
+
+		});
+
+}
+
+module.exports.learning_curves_dialogue = function(classifiers, dataset, parameters, step, numOfFolds) {
+
+
+	dir = "./learning_curves/"
+
+	checkGnuPlot
+
+	plotfor = "plot "
+	_(numOfFolds).times(function(n){
+		app = "-fold"+n+"\t"
+		header = "train\t" + (Object.keys(classifiers)).join(app)+"-fold"+n+"\n";
+	_.each(parameters,  function(value, key, list){ 
+		plotfor = plotfor + " for [i=2:"+ (_.size(classifiers) + 1)+"] \'"+dir+value+"-fold"+n+"\' using 1:i with lines linecolor i, "
+		fs.writeFileSync(dir+value+"-fold"+n, header, 'utf-8', function(err) {console.log("error "+err); return 0 })
+		},this)
+	},this)
+
+	plotfor = plotfor.substring(0,plotfor.length-2);
+
+	partitions.partitions(dataset, numOfFolds, function(train, test, fold) {
+		index = step
+		mytest = extractturns(test)	
+
+		while (index < train.length)
+  		{
+
+  		report = []
+	  	mytraindialogue = train.slice(0, index)
+	  	mytrain = extractturns(mytraindialogue)
+	  	index += step
+
+	    _.each(classifiers, function(value, key, list) { 	
+	    	stats = trainAndTest_hash(value, mytrain, mytest, 5)
+	    	report.push(stats[2]['stats'])
+	    })
+		
+		_.each(parameters, function(value, key, list){
+			valuestring = mytraindialogue.length +"\t"+ (_.pluck(report, value)).join("\t") +"\n" ;
 			fs.appendFileSync(dir+value+"-fold"+fold, valuestring,'utf8', function (err) {console.log("error "+err); return 0 })
 		},this)
 

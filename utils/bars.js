@@ -131,6 +131,8 @@ module.exports.confusion_matrix = function(stats)
 		}, this)
 
 		_.each(value['explanation']['FP'], function(value1, key, list){ 
+			if (!(value['explanation']['FN']))
+				value['explanation']['FN'] = []
 			_.each(value['explanation']['TP'].concat(value['explanation']['FN']), function(value2, key, list){ 
 				if (!(value2 in matrix))
 					matrix[value2] = {}

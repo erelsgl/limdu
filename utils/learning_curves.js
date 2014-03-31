@@ -78,6 +78,8 @@ module.exports.learning_curves = function(classifiers, dataset, parameters, step
 	},this)
 
 	plotfor = plotfor.substring(0,plotfor.length-2);
+	// console.log(plotfor)
+	// process.exit(0)
 
 	partitions.partitions(dataset, numOfFolds, function(train, test, fold) {
 		index = step
@@ -99,7 +101,7 @@ module.exports.learning_curves = function(classifiers, dataset, parameters, step
 
 	    _.each(classifiers, function(value, key, list) { 	
 	    	stats = trainAndTest_hash(value, mytrainset, test, 5)
-	    	report.push(stats[2]['stats'])
+	    	report.push(stats[0]['stats'])
 	    })
 		
 		_.each(parameters, function(value, key, list){
@@ -108,6 +110,14 @@ module.exports.learning_curves = function(classifiers, dataset, parameters, step
 		},this)
 
 		_.each(parameters, function(value, key, list){
+			plotfor = "plot "
+			_(numOfFolds).times(function(n){
+			// _.each(parameters,  function(value, key, list){ 
+				plotfor = plotfor + " for [i=2:"+ (_.size(classifiers) + 1)+"] \'"+dir+value+"-fold"+n+"\' using 1:i with lines linecolor i, "
+				// fs.writeFileSync(dir+value+"-fold"+n, header, 'utf-8', function(err) {console.log("error "+err); return 0 })
+				// },this)
+			},this)
+			plotfor = plotfor.substring(0,plotfor.length-2);
 			command = "gnuplot -p -e \"reset; set term png truecolor; set grid ytics; set grid xtics; set key bottom right; set output \'"+dir + value+".png\'; set key autotitle columnhead; "+plotfor +"\""
 			result = execSync.run(command)
 		}, this)

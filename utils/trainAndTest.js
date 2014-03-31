@@ -276,7 +276,7 @@ module.exports.splitToEasyAndHard = function(classifier, dataset) {
  * @param createNewClassifierFunction a function that creates a new, empty, untrained classifier
  * @param trainSet, testSet arrays with objects of the format: {input: "sample1", output: "class1"}
  * @param verbosity [int] level of details in log (0 = no log)
- * @param microAverage, macroSum [output] - objects of type PrecisionRecall, used to return the results. 
+ * @param microAverage, vmacroSum [output] - objects of type PrecisionRecall, used to return the results. 
  * @return the currentStats.
  */
 module.exports.trainAndTestLite = function(
@@ -300,6 +300,25 @@ module.exports.trainAndTestLite = function(
 		return module.exports.testLite(classifier, testSet, /*explain=*/verbosity-1);
 };
 
+function label_enrichment(dataset, func)
+	{	
+		aggreg = []
+
+		_.each(dataset, function(value, key, list){ 
+			_.each(func(value.output), function(value1, key1, list){
+				if (aggreg.length<=key1)
+					aggreg.push([])
+				aggreg[key1] = aggreg[key1].concat(value1) 
+				}, this)
+		}, this)
+
+		_.each(aggreg, function(value, key, list){ 
+			aggreg[key] = _.countBy(value, function(num) {return num});
+			}, this)
+
+		return aggreg
+	}
+
 /**
  * Test the given classifier-type on the given train-set and test-set and return a hash.
  * The only difference between trainAndTest_hash and trainAndTest is trainAndTest_hash doesn't allow inner console.log 
@@ -317,13 +336,32 @@ module.exports.trainAndTest_hash = function(
 		verbosity, microAverage, macroSum) {
 		var startTime = new Date();
 		var classifier = new classifierType();
+		TrainCountEmbed = true
 
 		testSet1 = utils.clonedataset(testSet)
 		trainSet1 = utils.clonedataset(trainSet)
 
+		if ((typeof classifier.InputSplitLabel === 'function')) {
+ 			agghash = label_enrichment(trainSet1, classifier.InputSplitLabel)
+ 		}
+
 		classifier.trainBatch(trainSet1);
 		stat_hash = module.exports.test_hash(classifier, testSet1, verbosity, microAverage, macroSum);
 		// stat_hash['train_time'] = new Date()-startTime;
+
+
+		if (TrainCountEmbed)
+		{
+		_.each(stat_hash, function(value, key, list){ 
+			_.each(agghash, function(value1, key1, list){ 
+				_.each(value1, function(count, label, list){
+					if (label in value['labels'])
+						stat_hash[key]['labels'][label]['Train'] = count 
+					}, this)
+				}, this)
+			}, this)
+		}
+
 		return stat_hash;
 };
 

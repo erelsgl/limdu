@@ -232,11 +232,18 @@ module.exports.bars_original = function(data)
 		aggreglist.push([key,value])
 		}, this)
 
-	aggregarray = _.sortBy(aggreglist, function(num){ return num[1]});
+	aggregarray = _.sortBy(aggreglist, function(num){ return num[0]});
 
-	_.each(aggregarray, function(value, key, list){ 
-			console.log(value[0]+"\t"+value[1])
+
+	_.each(aggregarray, function(value, key, list){
+		console.log(value[0])
 		}, this)
+
+	process.exit(0)
+
+	// _.each(aggregarray, function(value, key, list){ 
+	// 		console.log(value[0]+"\t"+value[1])
+	// 	}, this)
 }
 
 /*@input - dataset

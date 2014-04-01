@@ -125,7 +125,7 @@ WARNING: The internal format of the explanations might change without notice. Th
 In addition to Winnow and NeuralNetwork, version 0.2 includes the following binary classifiers:
 
 * Bayesian - uses [classifier.js, by Heather Arthur](https://github.com/harthur/classifier). 
-* Perceptron - Loosely based on [perceptron.js, by  by John Chesley](https://github.com/chesles/perceptron).
+* Perceptron - Loosely based on [perceptron.js, by John Chesley](https://github.com/chesles/perceptron).
 * SVM - uses [svm.js, by Andrej Karpathy](https://github.com/karpathy/svmjs). 
 * Linear SVM - wrappers around SVM-Perf and Lib-Linear (see below).
 * Decision Tree - based on [node-decision-tree-id3 by Ankit Kuwadekar](https://github.com/bugless/nodejs-decision-tree-id3) or [ID3-Decision-Tree by Will Kurt](https://github.com/willkurt/ID3-Decision-Tree).

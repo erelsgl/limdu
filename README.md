@@ -71,7 +71,9 @@ Credit: this example uses [brain.js, by Heather Arthur](https://github.com/harth
 	console.dir(birdClassifier.classify({'wings': 1, 'flight': 0, 'beak': 1, 'chicken': 1})); // now, chicken is correctly classified as a bird, although it does not fly.  
 	console.dir(birdClassifier.classify({'wings': 1, 'flight': 0, 'beak': 1, 'chicken': 1}, /*explanation level=*/4)); // why?  because it has wings and beak.
 
-Credit: this example uses Modified Balanced Margin Winnow ([Carvalho and Cohen, 2006](http://www.citeulike.org/user/erelsegal-halevi/article/2243777)):
+Credit: this example uses Modified Balanced Margin Winnow ([Carvalho and Cohen, 2006](http://www.citeulike.org/user/erelsegal-halevi/article/2243777)). 
+
+The "explanation" feature is explained below.
 
 
 ### Binding
@@ -116,7 +118,7 @@ While for the winnow classifier it returns the relevance (feature-value times fe
 	{ classification: 1,
 		explanation: [ 'bias+1.12', 'r+1.08', 'g+0.25', 'b+0.00' ] }
 
-WARNING: The inner format of the explanations might change without notice. The explanations should be used for presentation purposes only (and not, for example, for extracting the actual numbers). 
+WARNING: The internal format of the explanations might change without notice. The explanations should be used for presentation purposes only (and not, for example, for extracting the actual numbers). 
 
 ### Other Binary Classifiers
 
@@ -196,7 +198,7 @@ This library is still under construction, and not all features work for all clas
 	console.dir(intentClassifier.classify("I want an apple and a banana"));  // ['apl','bnn']
 	console.dir(intentClassifier.classify("I WANT AN APPLE AND A BANANA"));  // []
 	
-As you can see from the last example, by default feature extraction is case-insensitive. 
+As you can see from the last example, by default feature extraction is case-sensitive. 
 We will take care of this in the next example.
 
 Instead of defining your own feature extractor, you can use those already bundled with limdu:
@@ -330,7 +332,7 @@ On the remote server, do the following:
 	intentClassifierCopy.trainOnline("I want an elm tree", "elm");
 	intentClassifierCopy.classifyAndLog("I want doughnut and elm tree");  // ['dnt','elm']
 
-CAUTION: Serialization was not tested for all possible combinations of classifiers and enhancements. Use carefully!
+CAUTION: Serialization was not tested for all possible combinations of classifiers and enhancements. Test well before use!
 
 ## Cross-validation
 

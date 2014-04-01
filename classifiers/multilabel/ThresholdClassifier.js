@@ -170,7 +170,7 @@ ThresholdClassifier.prototype = {
 
 			index_in_testSet = list_of_scores[th][3]
 
-			if (ulist.is_equal_set(current_set[index_in_testSet], testSet[index_in_testSet]['output'])) 
+			if (_.isEqual(current_set[index_in_testSet], testSet[index_in_testSet]['output'])) 
 			{TRUE-=1}
 			
 			if (!current_set[index_in_testSet])
@@ -178,7 +178,7 @@ ThresholdClassifier.prototype = {
 			else
 			{current_set[index_in_testSet].push(list_of_scores[th][0])}
 
- 			if (ulist.is_equal_set(current_set[index_in_testSet], testSet[index_in_testSet]['output'])) 
+ 			if (_.isEqual(current_set[index_in_testSet], testSet[index_in_testSet]['output'])) 
 			{TRUE+=1 }
 			
  			PRF = calculate_PRF(TP, FP, FN)

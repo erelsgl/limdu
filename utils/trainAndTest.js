@@ -6,7 +6,7 @@
  */
 
 var _ = require('underscore')._;
-var util = require('util');
+var utils = require('./bars');
 var hash = require('./hash');
 var PrecisionRecall = require("./PrecisionRecall");
 var list = require('./list');
@@ -29,6 +29,9 @@ module.exports.testLite = function(classifier, testSet, explain) {
     for (var i=0; i<testSet.length; ++i) {
 		expectedClasses = list.listembed(testSet[i].output)
 		classified = classifier.classify(testSet[i].input, 10, testSet[i].input);
+
+		// console.log(JSON.stringify(classified, null, 4))
+		// process.exit(0)
 		actualClasses = list.listembed(classified)
 
 		for (type in  classified.explanation)
@@ -100,6 +103,21 @@ module.exports.testLite = function(classifier, testSet, explain) {
 	return currentStats;
 };
 
+module.exports.testLite1 = function(classifier, testSet, explain) {
+	var currentStats = new PrecisionRecall();
+    labeltree = utils.labeltree(testSet)
+
+    ambig = []
+    for (var i=0; i<testSet.length; ++i) {
+    	expectedClasses = testSet[i].output
+		actualClasses = classifier.classify(testSet[i].input);
+		amb = utils.intent_attr_label_ambiguity(actualClasses, labeltree)
+		if (amb.length >0) ambig.push(amb)
+    }
+    // console.log(JSON.stringify(ambig, null, 4))
+ 	console.log(ambig.length)
+    // process.exit(0)
+}
 /**
  * Test the given classifier on the given test-set, the result is detailed with with all input data.
  * the method is still in developemnt and the output data might be changed
@@ -121,6 +139,8 @@ module.exports.test_hash = function(
 	var indexes = []
 	var startTime = new Date();
 
+	testSetOriginal = utils.clonedataset(testSet)
+
 	if ((typeof classifier.TestSplitLabel === 'function')) {
 		testSet = classifier.outputToFormat(testSet)
     }
@@ -128,6 +148,7 @@ module.exports.test_hash = function(
 	for (var i=0; i<testSet.length; ++i) 
 	{
 		expectedClasses = list.listembed(testSet[i].output)
+		classified = classifier.classify(testSet[i].input, 50, testSet[i].input)
 		classified = classifier.classify(testSet[i].input)
 		actualClasses = list.listembed(classified)
 
@@ -146,7 +167,8 @@ module.exports.test_hash = function(
 			sentence_hash['expected'] = expectedClasses[n];
 			sentence_hash['classified'] = actualClasses[n];
 			sentence_hash['explanation'] = explanation;
-
+			sentence_hash['expected original'] = testSetOriginal[i]['output']
+			sentence_hash['classified original'] = classified
 			})	
 		
 		// if (microAverage) microAverage.addCases(expectedClasses, actualClasses);
@@ -254,14 +276,18 @@ module.exports.splitToEasyAndHard = function(classifier, dataset) {
  * @param createNewClassifierFunction a function that creates a new, empty, untrained classifier
  * @param trainSet, testSet arrays with objects of the format: {input: "sample1", output: "class1"}
  * @param verbosity [int] level of details in log (0 = no log)
- * @param microAverage, macroSum [output] - objects of type PrecisionRecall, used to return the results. 
+ * @param microAverage, vmacroSum [output] - objects of type PrecisionRecall, used to return the results. 
  * @return the currentStats.
  */
 module.exports.trainAndTestLite = function(
 		createNewClassifierFunction, 
-		trainSet, testSet, 
+		trainSet1, testSet1, 
 		verbosity, microAverage, macroSum) {
 		// TRAIN:
+
+		trainSet = utils.clonedataset(trainSet1)
+		testSet = utils.clonedataset(testSet1)
+
 		var classifier = createNewClassifierFunction();
 
 		if (verbosity>0) console.log("\nstart training on "+trainSet.length+" samples, "+(trainSet.allClasses? trainSet.allClasses.length+' classes': ''));
@@ -273,6 +299,25 @@ module.exports.trainAndTestLite = function(
 		// TEST:
 		return module.exports.testLite(classifier, testSet, /*explain=*/verbosity-1);
 };
+
+function label_enrichment(dataset, func)
+	{	
+		aggreg = []
+
+		_.each(dataset, function(value, key, list){ 
+			_.each(func(value.output), function(value1, key1, list){
+				if (aggreg.length<=key1)
+					aggreg.push([])
+				aggreg[key1] = aggreg[key1].concat(value1) 
+				}, this)
+		}, this)
+
+		_.each(aggreg, function(value, key, list){ 
+			aggreg[key] = _.countBy(value, function(num) {return num});
+			}, this)
+
+		return aggreg
+	}
 
 /**
  * Test the given classifier-type on the given train-set and test-set and return a hash.
@@ -291,20 +336,32 @@ module.exports.trainAndTest_hash = function(
 		verbosity, microAverage, macroSum) {
 		var startTime = new Date();
 		var classifier = new classifierType();
+		TrainCountEmbed = true
 
-		testSet1 = []
-		_.each(testSet, function(value, key, list){
-			testSet1.push(_.clone(value))
-			})
+		testSet1 = utils.clonedataset(testSet)
+		trainSet1 = utils.clonedataset(trainSet)
 
-		trainSet1 = []
-		_.each(trainSet, function(value, key, list){
-			trainSet1.push(_.clone(value))
-			})
-		
+		// if ((typeof classifier.InputSplitLabel === 'function')) {
+ 	// 		agghash = label_enrichment(trainSet1, classifier.InputSplitLabel)
+ 	// 	}
+
 		classifier.trainBatch(trainSet1);
 		stat_hash = module.exports.test_hash(classifier, testSet1, verbosity, microAverage, macroSum);
 		// stat_hash['train_time'] = new Date()-startTime;
+
+
+		// if (TrainCountEmbed)
+		// {
+		// _.each(stat_hash, function(value, key, list){ 
+		// 	_.each(agghash, function(value1, key1, list){ 
+		// 		_.each(value1, function(count, label, list){
+		// 			if (label in value['labels'])
+		// 				stat_hash[key]['labels'][label]['Train'] = count 
+		// 			}, this)
+		// 		}, this)
+		// 	}, this)
+		// }
+
 		return stat_hash;
 };
 

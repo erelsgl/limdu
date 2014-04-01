@@ -28,19 +28,44 @@ classifiers  = {
 parameters = ['F1','TP','FP','FN','Accuracy','Precision','Recall']
 */
 
-module.exports.stringifyClass = function (aClass) {
-	return (_(aClass).isString()? aClass: JSON.stringify(aClass));
-}
+
+function checkGnuPlot()
+	{
+		var result = execSync.run("gnuplot -V");
+		if (result !=0 ) {
+			console.log("gnuplot is not found")
+			return 0
+		}
+	}
+
+function extractturns(dataset)
+	{
+		data = []
+		_.each(dataset, function(value, key, list){ 
+			_.each(value['turns'], function(set, key, list){ 
+				data.push(set)
+				}, this)
+		}, this)
+		return data
+	}
+
+function isDialogue(dataset)
+	{
+		if (dataset.length == 0)
+			return false
+
+		if ("id" in dataset[0])
+			return true
+		else
+			return false
+	}
 
 module.exports.learning_curves = function(classifiers, dataset, parameters, step, numOfFolds) {
 
 	dir = "./learning_curves/"
-
-	var result = execSync.run("gnuplot -V");
-	if (result !=0 ) {
-		console.log("gnuplot is not found")
-		return 0
-	}
+	checkGnuPlot
+	if (dataset.length == 0)
+		{return}
 
 	plotfor = "plot "
 	_(numOfFolds).times(function(n){
@@ -53,20 +78,30 @@ module.exports.learning_curves = function(classifiers, dataset, parameters, step
 	},this)
 
 	plotfor = plotfor.substring(0,plotfor.length-2);
+	// console.log(plotfor)
+	// process.exit(0)
 
 	partitions.partitions(dataset, numOfFolds, function(train, test, fold) {
-		index = step		
+		index = step
+
+		if (isDialogue(test))
+			test = extractturns(test)	
 
 		while (index < train.length)
   		{
 
   		report = []
 	  	mytrain = train.slice(0, index)
+	  	if (isDialogue(mytrain))	
+	  		mytrainset = extractturns(mytrain)
+	  	else
+	  		mytrainset = mytrain
+
 	  	index += step
 
 	    _.each(classifiers, function(value, key, list) { 	
-	    	stats = trainAndTest_hash(value, mytrain, test, 0)
-	    	report.push(stats[0]['stats'])
+	    	stats = trainAndTest_hash(value, mytrainset, test, 5)
+	    	report.push(stats[1]['stats'])
 	    })
 		
 		_.each(parameters, function(value, key, list){
@@ -75,6 +110,14 @@ module.exports.learning_curves = function(classifiers, dataset, parameters, step
 		},this)
 
 		_.each(parameters, function(value, key, list){
+			plotfor = "plot "
+			_(numOfFolds).times(function(n){
+			// _.each(parameters,  function(value, key, list){ 
+				plotfor = plotfor + " for [i=2:"+ (_.size(classifiers) + 1)+"] \'"+dir+value+"-fold"+n+"\' using 1:i with lines linecolor i, "
+				// fs.writeFileSync(dir+value+"-fold"+n, header, 'utf-8', function(err) {console.log("error "+err); return 0 })
+				// },this)
+			},this)
+			plotfor = plotfor.substring(0,plotfor.length-2);
 			command = "gnuplot -p -e \"reset; set term png truecolor; set grid ytics; set grid xtics; set key bottom right; set output \'"+dir + value+".png\'; set key autotitle columnhead; "+plotfor +"\""
 			result = execSync.run(command)
 		}, this)

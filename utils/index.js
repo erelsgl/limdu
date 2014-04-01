@@ -3,6 +3,7 @@ module.exports = {
 	hash: require("./hash"),
 	partitions: require("./partitions"),
 	PrecisionRecall: require("./PrecisionRecall"),
+	bars: require("./bars.js"),
 	testLite: trainAndTest.testLite,
 	test: trainAndTest.test,
 	compare: trainAndTest.compare,

@@ -31,16 +31,6 @@ exports.average = function(list)
 		return sum/list.length
 	}
 
-exports.is_equal_set = function(set1, set2)
-	{
-	if ((!set1) && (set2)) {return false}
-	if (set1.length != set2.length) {return false}
-	if ((_.difference(set1, set2).length==0) && (_.difference(set2, set1).length==0))
-		{return true}
-	else
-		{return false}
-	}
-
 exports.listembed = function(label)
 	{
 		if (typeof label != 'undefined')

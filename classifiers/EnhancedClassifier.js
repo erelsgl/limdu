@@ -1,6 +1,8 @@
 var ftrs = require('../features');
 var _ = require('underscore')._;
 var hash = require('../utils/hash');
+var util = require('../utils/bars');
+
 var multilabelutils = require('./multilabel/multilabelutils');
 
 
@@ -336,7 +338,6 @@ EnhancedClassifier.prototype = {
 		}
 		}, this);
 		return dataset
-
 	},
 
 	/**
@@ -368,6 +369,8 @@ EnhancedClassifier.prototype = {
 				}
 			}, this);
     		classes = []
+    		if (accumulatedClasses[0])
+    		{
 			if (accumulatedClasses[0][0] instanceof Array)
 				_(accumulatedClasses[0].length).times(function(n){
 					classes.push(_.flatten(_.pluck(accumulatedClasses,n)))
@@ -376,7 +379,12 @@ EnhancedClassifier.prototype = {
 			{
 				classes = _.flatten(accumulatedClasses)
 			}
+			}
 		}
+		
+		// console.log(accumulatedClasses)		
+		// console.log(sample)
+		// console.log(classes)
 		
 		if (this.labelLookupTable) {
 			if (Array.isArray(classes)) {
@@ -392,8 +400,36 @@ EnhancedClassifier.prototype = {
 			}
 		}
 
+
 		if ((typeof this.OutputSplitLabel === 'function')) {
-			classes = this.OutputSplitLabel(classes, this.Observable)
+			//  am = util.intent_attr_label_ambiguity(classes)
+			//  if (am.length > 0)
+			//  {
+			// console.log(classes)
+			// console.log(sample)
+
+			// if (explanations)
+			// {
+			// 	_.each(explanations['positive'], function(value, label, list){ 
+			// 		score = []
+			// 		_.each(sample.replace(/\,/g,"").split(" "), function(value1, key, list){ 
+			// 			_.each(value, function(word, key, list){ 
+			// 				if (word[0] == value1)
+			// 					score.push([value1, word[1]])	
+			// 				}, this)
+			// 		}, this)
+			// 			console.log(label)
+			// 			console.log(score)
+			// 	}, this)
+			// }
+
+			// console.log("____________________________________")
+			// console.log()
+			
+			//  }
+			classes = this.OutputSplitLabel(classes, this.Observable, sample, explanations)
+
+			
 		}
 	
 		if (explain>0) 

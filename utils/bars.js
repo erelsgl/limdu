@@ -450,7 +450,7 @@ module.exports.extend_dict = function(aggreg, current)
 
 /*@output - is the label in the separate format (intent, attribute, value), observable - tree of the labels
 output - list of the ambiguities for intents and labels.*/
-module.exports.intent_attr_label_ambiguity = function(output)
+module.exports.intent_attr_label_ambiguity = function(output, labeltree)
 	{
 	Observable = labeltree
 	ambiguity = []

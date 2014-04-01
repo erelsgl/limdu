@@ -382,6 +382,10 @@ EnhancedClassifier.prototype = {
 			}
 		}
 		
+		// console.log(accumulatedClasses)		
+		// console.log(sample)
+		// console.log(classes)
+		
 		if (this.labelLookupTable) {
 			if (Array.isArray(classes)) {
 				classes = classes.map(function(label) {
@@ -398,18 +402,34 @@ EnhancedClassifier.prototype = {
 
 
 		if ((typeof this.OutputSplitLabel === 'function')) {
-			// am = util.intent_attr_label_ambiguity(classes)
-			// if (am.length > 0)
-			// {
+			//  am = util.intent_attr_label_ambiguity(classes)
+			//  if (am.length > 0)
+			//  {
+			// console.log(classes)
 			// console.log(sample)
-			// console.log(classes)
-			classes = this.OutputSplitLabel(classes, this.Observable, sample, explanations)
-			// this.OutputSplitLabel(classes, this.Observable, sample, explanations)
+
+			// if (explanations)
+			// {
+			// 	_.each(explanations['positive'], function(value, label, list){ 
+			// 		score = []
+			// 		_.each(sample.replace(/\,/g,"").split(" "), function(value1, key, list){ 
+			// 			_.each(value, function(word, key, list){ 
+			// 				if (word[0] == value1)
+			// 					score.push([value1, word[1]])	
+			// 				}, this)
+			// 		}, this)
+			// 			console.log(label)
+			// 			console.log(score)
+			// 	}, this)
 			// }
-			// util.intent_attr_label_ambiguity(classes)
-			// classes = this.OutputSplitLabel(classes, this.Observable, sample, explanations)
-			// console.log(classes)
-			// process.exit(0)
+
+			// console.log("____________________________________")
+			// console.log()
+			
+			//  }
+			classes = this.OutputSplitLabel(classes, this.Observable, sample, explanations)
+
+			
 		}
 	
 		if (explain>0) 

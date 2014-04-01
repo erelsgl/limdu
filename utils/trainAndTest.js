@@ -148,7 +148,7 @@ module.exports.test_hash = function(
 	for (var i=0; i<testSet.length; ++i) 
 	{
 		expectedClasses = list.listembed(testSet[i].output)
-		// classified = classifier.classify(testSet[i].input, 5, testSet[i].input)
+		classified = classifier.classify(testSet[i].input, 50, testSet[i].input)
 		classified = classifier.classify(testSet[i].input)
 		actualClasses = list.listembed(classified)
 
@@ -341,26 +341,26 @@ module.exports.trainAndTest_hash = function(
 		testSet1 = utils.clonedataset(testSet)
 		trainSet1 = utils.clonedataset(trainSet)
 
-		if ((typeof classifier.InputSplitLabel === 'function')) {
- 			agghash = label_enrichment(trainSet1, classifier.InputSplitLabel)
- 		}
+		// if ((typeof classifier.InputSplitLabel === 'function')) {
+ 	// 		agghash = label_enrichment(trainSet1, classifier.InputSplitLabel)
+ 	// 	}
 
 		classifier.trainBatch(trainSet1);
 		stat_hash = module.exports.test_hash(classifier, testSet1, verbosity, microAverage, macroSum);
 		// stat_hash['train_time'] = new Date()-startTime;
 
 
-		if (TrainCountEmbed)
-		{
-		_.each(stat_hash, function(value, key, list){ 
-			_.each(agghash, function(value1, key1, list){ 
-				_.each(value1, function(count, label, list){
-					if (label in value['labels'])
-						stat_hash[key]['labels'][label]['Train'] = count 
-					}, this)
-				}, this)
-			}, this)
-		}
+		// if (TrainCountEmbed)
+		// {
+		// _.each(stat_hash, function(value, key, list){ 
+		// 	_.each(agghash, function(value1, key1, list){ 
+		// 		_.each(value1, function(count, label, list){
+		// 			if (label in value['labels'])
+		// 				stat_hash[key]['labels'][label]['Train'] = count 
+		// 			}, this)
+		// 		}, this)
+		// 	}, this)
+		// }
 
 		return stat_hash;
 };

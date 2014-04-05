@@ -4,18 +4,130 @@
  * @author Erel Segal-Halevi
  * @since 2013-06
  */
-
+var fs = require('fs');
 var _ = require('underscore')._;
 var utils = require('./bars');
 var hash = require('./hash');
 var PrecisionRecall = require("./PrecisionRecall");
 var list = require('./list');
+var execSync = require('execSync')
+var util = require('../utils/bars');
+
 
 /**
  * A short light-weight test function. Tests the given classifier on the given dataset, and 
  * writes a short summary of the mistakes and total performance.
  * @param explain level of explanations for mistakes (0 for none) 
  */
+
+module.exports.testLite2 = function(classifier, testSet1, explain) {
+
+	// testSetOriginal = utils.clonedataset(testSet)
+
+	if ((typeof classifier.TestSplitLabel === 'function')) {
+		testSet = classifier.outputToFormat(testSet1)
+    }
+
+	for (var i=0; i<testSet.length; ++i) 
+	{
+		// expectedClasses = list.listembed(testSet[i].output)
+		classified = classifier.classify(testSet[i].input, 50, testSet[i].input)
+		// classified = classifier.classify(testSet[i].input)
+		// actualClasses = list.listembed(classified)
+		classes = classified.classes
+		sample = testSet[i].input
+		explanations = classified.explanation
+		correct = testSet[i].output
+
+
+		am = util.intent_attr_label_ambiguity(classes)
+	 	if (am.length > 0)
+	 	{
+		console.log(classes)
+		console.log(sample)
+
+		senid = "./image/"+Date.now()
+
+		if (explanations)
+		{
+			senlabel ={}
+			_.each(explanations['positive'], function(value, label, list){
+				// _.each(sample.replace(/\,/g,"").split(" "), function(value1, key, list){ 
+				_.each(classifier.sampleToFeatures(sample, this.featureExtractors), function(value5, value1, list){ 
+					_.each(value, function(word, key, list){ 
+						if (word[0] == value1)
+							{
+							if (word[0].split(" ").length>1)
+								{
+								if (!(label+"2" in senlabel))	
+									senlabel[label+"2"] = {}
+
+								if (!(word[0].split(" ")[0] in senlabel[label+"2"]))
+									senlabel[label+"2"][word[0].split(" ")[0]] = 0
+
+								if (!(word[0].split(" ")[1] in senlabel[label+"2"]))
+									senlabel[label+"2"][word[0].split(" ")[1]] = 0
+
+									senlabel[label+"2"][word[0].split(" ")[0]] = senlabel[label+"2"][word[0].split(" ")[0]] + word[1]
+									senlabel[label+"2"][word[0].split(" ")[1]] = senlabel[label+"2"][word[0].split(" ")[1]] + word[1]
+
+								}
+							else
+								{
+								if (!(label in senlabel))	
+								senlabel[label] = {}
+								
+								senlabel[label][word[0]]= word[1]
+								}
+							}
+						}, this)
+				}, this)
+			}, this)
+		}
+		
+		labellist = Object.keys(senlabel)
+		_.each(labellist, function(value, key, list){ 
+			labellist[key] = "\""+value+"\""
+			}, this)
+
+		fs.writeFileSync(senid, "word\tword\t"+labellist.join("\t") + "\n", 'utf-8', function(err) {console.log("error "+err); return 0 })
+
+		samplelist = []
+		// samplelist.push("[start]")
+		samplelist = samplelist.concat(sample.replace(/\,/g,"").split(" "))
+		// samplelist.push("[end]")
+
+		_(samplelist.length).times(function(n){ 
+			row = []
+			_.each(senlabel, function(value, key, list){ 
+	
+				if (key.indexOf("2")==-1)
+				{
+					if (samplelist[n] in value)
+						row.push(value[samplelist[n]])
+					else
+						row.push(0)
+				}
+
+				
+				}, this)
+		fs.appendFileSync(senid, n+"\t"+samplelist[n]+"\t"+row.join("\t")+"\n",'utf8', function (err) {console.log("error "+err); return 0 })
+
+		});
+
+		// command = "gnuplot -p -e \"reset; set term png truecolor  size 800,600; set grid ytics; set grid xtics; set title \'"+sample+"-"+JSON.stringify(correct).replace(/[\",\']/g,"")+"\';set key bottom right; set output \'"+senid+".png\'; set key autotitle columnhead; plot for [i=2:"+(labellist.length+1)+"] \'"+senid+"\' using 1:i with lines linecolor i\""
+		command = "gnuplot -p -e \"reset; set term png truecolor  size 800,600; set grid ytics; set grid xtics; set title \'"+sample+"\\"+JSON.stringify(correct).replace(/[\",\']/g,"")+"\';set key top right; set output \'"+senid+".png\'; set key autotitle columnhead; plot for [i=3:"+(labellist.length+2)+"] \'"+senid+"\' using 1:i:xticlabels(2) smooth frequency with boxes\""
+		
+		result = execSync.run(command)
+			console.log(command)
+
+		console.log(result)
+		console.log("____________________________________")
+		console.log()
+		
+		}
+	}
+}
 
 module.exports.testLite = function(classifier, testSet, explain) {
 	var currentStats = new PrecisionRecall();
@@ -129,7 +241,7 @@ module.exports.testLite1 = function(classifier, testSet, explain) {
  * @author Vasily Konovalov
  */
 module.exports.test_hash = function(
-	classifier, testSet, 
+	classifier, testSet1, 
 	verbosity, microAverage, macroSum) {
 	var stat_hash = {}
 	var sentence_hash = {}
@@ -139,16 +251,16 @@ module.exports.test_hash = function(
 	var indexes = []
 	var startTime = new Date();
 
-	testSetOriginal = utils.clonedataset(testSet)
+	testSetOriginal = utils.clonedataset(testSet1)
 
 	if ((typeof classifier.TestSplitLabel === 'function')) {
-		testSet = classifier.outputToFormat(testSet)
+		testSet = classifier.outputToFormat(testSet1)
     }
 
 	for (var i=0; i<testSet.length; ++i) 
 	{
 		expectedClasses = list.listembed(testSet[i].output)
-		classified = classifier.classify(testSet[i].input, 50, testSet[i].input)
+		// classified = classifier.classify(testSet[i].input, 50, testSet[i].input)
 		classified = classifier.classify(testSet[i].input)
 		actualClasses = list.listembed(classified)
 
@@ -297,7 +409,7 @@ module.exports.trainAndTestLite = function(
 		if (verbosity>0) console.log("end training on "+trainSet.length+" samples, "+(trainSet.allClasses? trainSet.allClasses.length+' classes, ': '')+elapsedTime+" [ms]");
 	
 		// TEST:
-		return module.exports.testLite(classifier, testSet, /*explain=*/verbosity-1);
+		return module.exports.testLite2(classifier, testSet, /*explain=*/verbosity-1);
 };
 
 function label_enrichment(dataset, func)

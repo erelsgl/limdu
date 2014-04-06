@@ -450,7 +450,7 @@ module.exports.extend_dict = function(aggreg, current)
 
 /*@output - is the label in the separate format (intent, attribute, value), observable - tree of the labels
 output - list of the ambiguities for intents and labels.*/
-module.exports.intent_attr_label_ambiguity = function(output, labeltree)
+module.exports.intent_attr_label_ambiguity = function(output)
 	{
 	Observable = labeltree
 	ambiguity = []
@@ -475,30 +475,22 @@ module.exports.intent_attr_label_ambiguity = function(output, labeltree)
 	}
 
 /*the same as previous but for the dataset
-*/module.exports.intent_attr_dataste_ambiguity = function(data, Observable)
+*/module.exports.intent_attr_dataset_ambiguity = function(data)
 	{
-	ambiguity = []
-	_.each(data, function(value, key, list){ 
-			output = (Hierarchy.splitPartEqually(multilabelutils.normalizeOutputLabels(value.output)))	
-			_.each(output[1], function(attr, key, list){
-				listt = []
-				_.each(output[0], function(intent, key, list){
-					if (Object.keys(Observable[intent]).indexOf(attr) != -1)
-						{
-						listt.push(intent)
-						} 
-					}, this)
 
-				if (listt.length >= 2)
-					{
-						amb = {}
-						amb['attr'] = attr
-						amb['list'] = listt
-						ambiguity.push(amb)
-					}
-				}, this)
+	Observable = labeltree
+	ambiguityset = []
+	_.each(data, function(value, key, list){ 
+			output = (splitPartEqually(multilabelutils.normalizeOutputLabels(value.output)))
+			ambig = this.intent_attr_label_ambiguity(output)
+			if (ambig.length != 0)
+			ambiguityset.push({'input': value['input'],
+							'output': value['output'],
+							'conversion': output,
+							'ambiguity':ambig})
 		}, this)
-	return ambiguity
+
+	return ambiguityset
 }
 
 /*testSet - dataset

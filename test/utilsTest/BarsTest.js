@@ -122,4 +122,33 @@ describe('Bars utilities', function() {
 
 	})
 
+	it('correctly computes ambiguity between labels', function() {
+		amb	= mlutils.bars.intent_attr_label_ambiguity([['Offer', 'Reject', 'Greet'],['Salary', 'Working Hours'],['20,000']])
+		amb.length.should.equal(2)
+		amb[0]['attr'].should.equal('Salary')
+		amb[1]['attr'].should.equal('Working Hours')
+		_.isEqual(amb[0]['list'], ['Offer','Reject']).should.equal(true)
+		_.isEqual(amb[1]['list'], ['Offer','Reject']).should.equal(true)
+	})
+
+	it('correctly computes ambiguity in dataset', function() {
+		dataset = [{
+					'input': "",
+					'output': [ '{"Insist":"Working Hours"}','{"Offer":{"Job Description":"Programmer"}}','{"Offer":{"Working Hours":"10 hours"}}' ]
+				}]
+
+		amba = mlutils.bars.intent_attr_dataset_ambiguity(dataset)
+		amba[0]['ambiguity'].length.should.equal(2)
+		amba[0]['ambiguity'][0]['attr'].should.equal("Working Hours")
+		amba[0]['ambiguity'][1]['attr'].should.equal("Job Description")
+
+		dataset = [{
+					'input': "",
+					'output': [ '{"Insist":"Working Hours"}','{"Greet":true}' ]
+				}]
+
+		amba = mlutils.bars.intent_attr_dataset_ambiguity(dataset)
+		amba.length.should.equal(0)
+		
+	})	
 })

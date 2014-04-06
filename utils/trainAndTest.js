@@ -4,6 +4,7 @@
  * @author Erel Segal-Halevi
  * @since 2013-06
  */
+var DefaultDict = require('defaultdict')
 var fs = require('fs');
 var _ = require('underscore')._;
 var utils = require('./bars');
@@ -38,7 +39,12 @@ module.exports.testLite2 = function(classifier, testSet1, explain) {
 		sample = testSet[i].input
 		explanations = classified.explanation
 		correct = testSet[i].output
-
+		inputngrams = classifier.sampleToFeatures(classifier.normalizedSample(sample), classifier.featureExtractors)
+		inputnormal = classifier.normalizedSample(sample), classifier.featureExtractors
+		inputnormal = inputnormal.replace(/\,/g," ,")
+		inputnormal = inputnormal.replace(/\./g," .")
+		inputnormal = inputnormal.replace(/\?/g," ?")
+		inputnormal = inputnormal.replace(/\!/g," !")
 
 		am = util.intent_attr_label_ambiguity(classes)
 	 	if (am.length > 0)
@@ -50,40 +56,25 @@ module.exports.testLite2 = function(classifier, testSet1, explain) {
 
 		if (explanations)
 		{
-			senlabel ={}
+			senlabel =  {}
+
 			_.each(explanations['positive'], function(value, label, list){
 				// _.each(sample.replace(/\,/g,"").split(" "), function(value1, key, list){ 
-				_.each(classifier.sampleToFeatures(sample, this.featureExtractors), function(value5, value1, list){ 
-					_.each(value, function(word, key, list){ 
-						if (word[0] == value1)
-							{
-							if (word[0].split(" ").length>1)
-								{
-								if (!(label+"2" in senlabel))	
-									senlabel[label+"2"] = {}
+				_.each(inputngrams, function(value1, feature, list){ 
+					var element = _.find(value, function(num){ return num[0]==feature; });
+					if (element)
+						{
+						if (!(label in senlabel))
+							senlabel[label] =  new DefaultDict(0);
 
-								if (!(word[0].split(" ")[0] in senlabel[label+"2"]))
-									senlabel[label+"2"][word[0].split(" ")[0]] = 0
-
-								if (!(word[0].split(" ")[1] in senlabel[label+"2"]))
-									senlabel[label+"2"][word[0].split(" ")[1]] = 0
-
-									senlabel[label+"2"][word[0].split(" ")[0]] = senlabel[label+"2"][word[0].split(" ")[0]] + word[1]
-									senlabel[label+"2"][word[0].split(" ")[1]] = senlabel[label+"2"][word[0].split(" ")[1]] + word[1]
-
-								}
-							else
-								{
-								if (!(label in senlabel))	
-								senlabel[label] = {}
-								
-								senlabel[label][word[0]]= word[1]
-								}
-							}
-						}, this)
+						senlabel[label].set(feature, senlabel[label].get(feature) + element[1])
+						}
 				}, this)
 			}, this)
 		}
+
+		// console.log(senlabel)
+		// process.exit(0)
 		
 		labellist = Object.keys(senlabel)
 		_.each(labellist, function(value, key, list){ 
@@ -92,30 +83,39 @@ module.exports.testLite2 = function(classifier, testSet1, explain) {
 
 		fs.writeFileSync(senid, "word\tword\t"+labellist.join("\t") + "\n", 'utf-8', function(err) {console.log("error "+err); return 0 })
 
-		samplelist = []
+		// samplelist = classifier.sampleToFeatures(sample, classifier.featureExtractors)
 		// samplelist.push("[start]")
-		samplelist = samplelist.concat(sample.replace(/\,/g,"").split(" "))
+		// samplelist = samplelist.concat(sample.replace(/\,/g,"").split(" "))
 		// samplelist.push("[end]")
 
-		_(samplelist.length).times(function(n){ 
+		// _(Object.keys(samplelist).length).times(function(n){ 
+			n = 0
+
+		
+		
+		console.log(inputngrams)
+		console.log(inputnormal.split(" "))
+
+		_.each(inputnormal.split(" "), function(value, key, list){ 
 			row = []
-			_.each(senlabel, function(value, key, list){ 
-	
-				if (key.indexOf("2")==-1)
-				{
-					if (samplelist[n] in value)
-						row.push(value[samplelist[n]])
+			console.log(value)
+			if (value.indexOf(" ")==-1)
+			{
+				_.each(senlabel, function(value1, key1, list){ 
+					if (value in value1['_'])
+						row.push(value1['_'][value])
 					else
 						row.push(0)
-				}
-
-				
 				}, this)
-		fs.appendFileSync(senid, n+"\t"+samplelist[n]+"\t"+row.join("\t")+"\n",'utf8', function (err) {console.log("error "+err); return 0 })
-
-		});
-
-		// command = "gnuplot -p -e \"reset; set term png truecolor  size 800,600; set grid ytics; set grid xtics; set title \'"+sample+"-"+JSON.stringify(correct).replace(/[\",\']/g,"")+"\';set key bottom right; set output \'"+senid+".png\'; set key autotitle columnhead; plot for [i=2:"+(labellist.length+1)+"] \'"+senid+"\' using 1:i with lines linecolor i\""
+			n ++ 
+			fs.appendFileSync(senid, n+"\t"+value+"\t"+row.join("\t")+"\n",'utf8', function (err) {console.log("error "+err); return 0 })
+			}
+		}, this)
+		// });
+		
+		
+		
+			// command = "gnuplot -p -e \"reset; set term png truecolor  size 800,600; set grid ytics; set grid xtics; set title \'"+sample+"-"+JSON.stringify(correct).replace(/[\",\']/g,"")+"\';set key bottom right; set output \'"+senid+".png\'; set key autotitle columnhead; plot for [i=2:"+(labellist.length+1)+"] \'"+senid+"\' using 1:i with lines linecolor i\""
 		command = "gnuplot -p -e \"reset; set term png truecolor  size 800,600; set grid ytics; set grid xtics; set title \'"+sample+"\\"+JSON.stringify(correct).replace(/[\",\']/g,"")+"\';set key top right; set output \'"+senid+".png\'; set key autotitle columnhead; plot for [i=3:"+(labellist.length+2)+"] \'"+senid+"\' using 1:i:xticlabels(2) smooth frequency with boxes\""
 		
 		result = execSync.run(command)

@@ -402,35 +402,8 @@ EnhancedClassifier.prototype = {
 
 
 		if ((typeof this.OutputSplitLabel === 'function')) {
-			//  am = util.intent_attr_label_ambiguity(classes)
-			//  if (am.length > 0)
-			//  {
-			// console.log(classes)
-			// console.log(sample)
-
-			// if (explanations)
-			// {
-			// 	_.each(explanations['positive'], function(value, label, list){ 
-			// 		score = []
-			// 		_.each(sample.replace(/\,/g,"").split(" "), function(value1, key, list){ 
-			// 			_.each(value, function(word, key, list){ 
-			// 				if (word[0] == value1)
-			// 					score.push([value1, word[1]])	
-			// 				}, this)
-			// 		}, this)
-			// 			console.log(label)
-			// 			console.log(score)
-			// 	}, this)
-			// }
-
-			// console.log("____________________________________")
-			// console.log()
-			
-			//  }
 			classes = this.OutputSplitLabel(classes, this.Observable, sample, explanations)
-
-			
-		}
+			}
 	
 		if (explain>0) 
 			return {

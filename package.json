@@ -14,7 +14,7 @@
     "temp": "*",
     "execSync": "*",
     "brain": "*",
-    
+    "defaultdict": "*",
     "graph-paths": "latest",
     "languagemodel": "latest"
   },

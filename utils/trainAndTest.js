@@ -45,6 +45,10 @@ module.exports.testLite2 = function(classifier, testSet1, explain) {
 		inputnormal = inputnormal.replace(/\./g," .")
 		inputnormal = inputnormal.replace(/\?/g," ?")
 		inputnormal = inputnormal.replace(/\!/g," !")
+		inputnormal = inputnormal.replace(/\%/g," %")
+		inputnormal = inputnormal.replace(/\$/g," $")
+
+
 
 		am = util.intent_attr_label_ambiguity(classes)
 	 	if (am.length > 0)

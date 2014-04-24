@@ -21,118 +21,6 @@ var util = require('../utils/bars');
  * @param explain level of explanations for mistakes (0 for none) 
  */
 
-module.exports.testLite2 = function(classifier, testSet1, explain) {
-
-	// testSetOriginal = utils.clonedataset(testSet)
-
-	if ((typeof classifier.TestSplitLabel === 'function')) {
-		testSet = classifier.outputToFormat(testSet1)
-    }
-
-	for (var i=0; i<testSet.length; ++i) 
-	{
-		// expectedClasses = list.listembed(testSet[i].output)
-		classified = classifier.classify(testSet[i].input, 50, testSet[i].input)
-		// classified = classifier.classify(testSet[i].input)
-		// actualClasses = list.listembed(classified)
-		classes = classified.classes
-		sample = testSet[i].input
-		explanations = classified.explanation
-		correct = testSet[i].output
-		inputngrams = classifier.sampleToFeatures(classifier.normalizedSample(sample), classifier.featureExtractors)
-		inputnormal = classifier.normalizedSample(sample), classifier.featureExtractors
-		inputnormal = inputnormal.replace(/\,/g," ,")
-		inputnormal = inputnormal.replace(/\./g," .")
-		inputnormal = inputnormal.replace(/\?/g," ?")
-		inputnormal = inputnormal.replace(/\!/g," !")
-		inputnormal = inputnormal.replace(/\%/g," %")
-		inputnormal = inputnormal.replace(/\$/g," $")
-
-
-
-		am = util.intent_attr_label_ambiguity(classes)
-	 	if (am.length > 0)
-	 	{
-		console.log(classes)
-		console.log(sample)
-
-		senid = "./image/"+Date.now()
-
-		if (explanations)
-		{
-			senlabel =  {}
-
-			_.each(explanations['positive'], function(value, label, list){
-				// _.each(sample.replace(/\,/g,"").split(" "), function(value1, key, list){ 
-				_.each(inputngrams, function(value1, feature, list){ 
-					var element = _.find(value, function(num){ return num[0]==feature; });
-					if (element)
-						{
-						if (!(label in senlabel))
-							senlabel[label] =  new DefaultDict(0);
-
-						senlabel[label].set(feature, senlabel[label].get(feature) + element[1])
-						}
-				}, this)
-			}, this)
-		}
-
-		// console.log(senlabel)
-		// process.exit(0)
-		
-		labellist = Object.keys(senlabel)
-		_.each(labellist, function(value, key, list){ 
-			labellist[key] = "\""+value+"\""
-			}, this)
-
-		fs.writeFileSync(senid, "word\tword\t"+labellist.join("\t") + "\n", 'utf-8', function(err) {console.log("error "+err); return 0 })
-
-		// samplelist = classifier.sampleToFeatures(sample, classifier.featureExtractors)
-		// samplelist.push("[start]")
-		// samplelist = samplelist.concat(sample.replace(/\,/g,"").split(" "))
-		// samplelist.push("[end]")
-
-		// _(Object.keys(samplelist).length).times(function(n){ 
-			n = 0
-
-		
-		
-		console.log(inputngrams)
-		console.log(inputnormal.split(" "))
-
-		_.each(inputnormal.split(" "), function(value, key, list){ 
-			row = []
-			console.log(value)
-			if (value.indexOf(" ")==-1)
-			{
-				_.each(senlabel, function(value1, key1, list){ 
-					if (value in value1['_'])
-						row.push(value1['_'][value])
-					else
-						row.push(0)
-				}, this)
-			n ++ 
-			fs.appendFileSync(senid, n+"\t"+value+"\t"+row.join("\t")+"\n",'utf8', function (err) {console.log("error "+err); return 0 })
-			}
-		}, this)
-		// });
-		
-		
-		
-			// command = "gnuplot -p -e \"reset; set term png truecolor  size 800,600; set grid ytics; set grid xtics; set title \'"+sample+"-"+JSON.stringify(correct).replace(/[\",\']/g,"")+"\';set key bottom right; set output \'"+senid+".png\'; set key autotitle columnhead; plot for [i=2:"+(labellist.length+1)+"] \'"+senid+"\' using 1:i with lines linecolor i\""
-		command = "gnuplot -p -e \"reset; set term png truecolor  size 800,600; set grid ytics; set grid xtics; set title \'"+sample+"\\"+JSON.stringify(correct).replace(/[\",\']/g,"")+"\';set key top right; set output \'"+senid+".png\'; set key autotitle columnhead; plot for [i=3:"+(labellist.length+2)+"] \'"+senid+"\' using 1:i:xticlabels(2) smooth frequency with boxes\""
-		
-		result = execSync.run(command)
-			console.log(command)
-
-		console.log(result)
-		console.log("____________________________________")
-		console.log()
-		
-		}
-	}
-}
-
 module.exports.testLite = function(classifier, testSet, explain) {
 	var currentStats = new PrecisionRecall();
 	
@@ -144,10 +32,12 @@ module.exports.testLite = function(classifier, testSet, explain) {
 
     for (var i=0; i<testSet.length; ++i) {
 		expectedClasses = list.listembed(testSet[i].output)
-		classified = classifier.classify(testSet[i].input, 10, testSet[i].input);
+		// classified = classifier.classify(testSet[i].input, 10, testSet[i].input);
+		classified = classifier.classify(testSet[i].input);
 
 		// console.log(JSON.stringify(classified, null, 4))
 		// process.exit(0)
+
 		actualClasses = list.listembed(classified)
 
 		for (type in  classified.explanation)
@@ -254,20 +144,29 @@ module.exports.test_hash = function(
 	var data_stats = []
 	var indexes = []
 	var startTime = new Date();
+	var explain = 50;
 
 	testSetOriginal = utils.clonedataset(testSet1)
 
 	if ((typeof classifier.TestSplitLabel === 'function')) {
 		testSet = classifier.outputToFormat(testSet1)
     }
+    else
+    {
+    	testSet = testSet1
+    }
 
 	for (var i=0; i<testSet.length; ++i) 
 	{
 		expectedClasses = list.listembed(testSet[i].output)
 		// classified = classifier.classify(testSet[i].input, 50, testSet[i].input)
-		classified = classifier.classify(testSet[i].input)
-		actualClasses = list.listembed(classified)
+		classesWithExplanation = classifier.classify(testSet[i].input, explain, true, testSet[i].output)
 
+		if (explain > 0)
+			classes = classesWithExplanation.classes
+		else
+			classes = classesWithExplanation
+		actualClasses = list.listembed(classes)
 		_(expectedClasses.length).times(function(n){
 			if (currentStats.length<n+1) 
 				{	
@@ -277,14 +176,14 @@ module.exports.test_hash = function(
 
 			var sentence_hash = {}
 			data_stats[n].push(sentence_hash);
-			explanation = currentStats[n].addCasesHash(expectedClasses[n], actualClasses[n], (verbosity>2));
+			expl = currentStats[n].addCasesHash(expectedClasses[n], actualClasses[n], (verbosity>2));
 			currentStats[n].addCasesLabels(expectedClasses[n], actualClasses[n]);
 			sentence_hash['input'] = testSet[i].input;
 			sentence_hash['expected'] = expectedClasses[n];
 			sentence_hash['classified'] = actualClasses[n];
-			sentence_hash['explanation'] = explanation;
-			sentence_hash['expected original'] = testSetOriginal[i]['output']
-			sentence_hash['classified original'] = classified
+			sentence_hash['explanation'] = expl;
+			// sentence_hash['expected original'] = testSetOriginal[i]['output']
+			// sentence_hash['classified original'] = classified
 			})	
 		
 		// if (microAverage) microAverage.addCases(expectedClasses, actualClasses);
@@ -342,29 +241,126 @@ module.exports.test = function(
  * @param explain level of explanations for mistakes (0 for none) 
  */
 module.exports.compare = function(classifier1, classifier2, dataset, explain) {
-	for (var i=0; i<dataset.length; ++i) {
-		var expectedClasses = normalizeClasses(dataset[i].output); 
-		var actualClassesWithExplanations1 = classifier1.classify(dataset[i].input, explain);
-		var actualClassesWithExplanations2 = classifier2.classify(dataset[i].input, explain);
-		actualClasses1 = (explain>0? actualClassesWithExplanations1.classes: actualClassesWithExplanations1);
-		actualClasses2 = (explain>0? actualClassesWithExplanations2.classes: actualClassesWithExplanations2);
-		actualClasses1.sort();
-		actualClasses2.sort();
-		if (!_(actualClasses1).isEqual(actualClasses2)) {
-			console.log("\t"+JSON.stringify(dataset[i].input)+
-				" : classes1="+(explain>0? JSON.stringify(actualClassesWithExplanations1,null,"\t"): actualClasses1)+
-				" ; classes2="+(explain>0? JSON.stringify(actualClassesWithExplanations2,null,"\t"): actualClasses2)+
-				"");
-			if (_(actualClasses1).isEqual(expectedClasses)) {
-				console.log("\t\tClassifier1 is correct");
-			} else if (_(actualClasses2).isEqual(expectedClasses)) {
-				console.log("\t\tClassifier2 is correct");
-			} else {
-				console.log("\t\tboth are incorrect");
-			}
+	var currentStats = []
+	var data_stats = []
+
+
+	explain = 50
+	verbosity = explain
+
+	testSetOriginal = utils.clonedataset(dataset)
+
+	if ((typeof classifier1.TestSplitLabel === 'function')) {
+		testSet1 = classifier1.outputToFormat(dataset)
+    }
+    else
+    {
+    	testSet1 = dataset
+    }
+
+    if ((typeof classifier2.TestSplitLabel === 'function')) {
+		testSet2 = classifier2.outputToFormat(dataset)
+    }
+    else
+    {
+    	testSet2 = dataset
+    }
+
+
+	for (var i=0; i<testSetOriginal.length; ++i) 
+	{
+		expectedClasses = list.listembed(testSetOriginal[i].output)
+		// expectedClasses2 = list.listembed(testSet2[i].output)
+
+		// classified = classifier.classify(testSet[i].input, 50, testSet[i].input)
+		classesWithExplanation1 = classifier1.classify(testSet1[i].input, explain, true, testSet1[i].output)
+		classesWithExplanation2 = classifier2.classify(testSet2[i].input, explain, true, testSet2[i].output)
+
+
+		if (explain > 0)
+		{	
+			classes1 = classesWithExplanation1.classes
+			classes2 = classesWithExplanation2.classes
 		}
+		else
+		{
+			classes1 = classesWithExplanation1
+			classes2 = classesWithExplanation2
+		}
+
+		actualClasses1 = list.listembed(classes1)
+		actualClasses2 = list.listembed(classes2)
+
+		_(expectedClasses.length).times(function(n){
+			if (currentStats.length<n+1) 
+				{	
+				currentStats.push(new PrecisionRecall())
+				data_stats.push([])
+				}
+
+			var sentence_hash = {}
+			data_stats[n].push(sentence_hash);
+			expl1 = currentStats[n].addCasesHash(expectedClasses[n], actualClasses1[n], (verbosity>2));
+			expl2 = currentStats[n].addCasesHash(expectedClasses[n], actualClasses2[n], (verbosity>2));
+			// console.log(expl1)
+			// console.log(expl2)
+
+			if (!(_.isEqual(expl1,expl2)))
+				{
+					console.log(testSetOriginal[i].input)
+					console.log(expl1)
+					console.log(expl2)
+				}
+			// currentStats[n].addCasesLabels(expectedClasses[n], actualClasses[n]);
+			// sentence_hash['input'] = testSet[i].input;
+			// sentence_hash['expected'] = expectedClasses[n];
+			// sentence_hash['classified'] = actualClasses[n];
+			// sentence_hash['explanation'] = expl;
+			// sentence_hash['expected original'] = testSetOriginal[i]['output']
+			// sentence_hash['classified original'] = classified
+			})	
+		
+		// if (microAverage) microAverage.addCases(expectedClasses, actualClasses);
+
 	}
+	
+	// testResult = []
+
+		// _(expectedClasses.length).times(function(n){
+		// classifierstats = {}
+		// classifierstats['labels'] = currentStats[n].retrieveLabels()
+		// classifierstats['data'] = data_stats[n]
+		// classifierstats['stats'] = currentStats[n].retrieveStats()
+		// testResult.push(classifierstats)
+		// }, this)
+
+	// return testResult
 };
+
+
+	// for (var i=0; i<dataset.length; ++i) {
+	// 	var expectedClasses = normalizeClasses(dataset[i].output); 
+	// 	var actualClassesWithExplanations1 = classifier1.classify(dataset[i].input, explain);
+	// 	var actualClassesWithExplanations2 = classifier2.classify(dataset[i].input, explain);
+	// 	actualClasses1 = (explain>0? actualClassesWithExplanations1.classes: actualClassesWithExplanations1);
+	// 	actualClasses2 = (explain>0? actualClassesWithExplanations2.classes: actualClassesWithExplanations2);
+	// 	actualClasses1.sort();
+	// 	actualClasses2.sort();
+	// 	if (!_(actualClasses1).isEqual(actualClasses2)) {
+	// 		console.log("\t"+JSON.stringify(dataset[i].input)+
+	// 			" : classes1="+(explain>0? JSON.stringify(actualClassesWithExplanations1,null,"\t"): actualClasses1)+
+	// 			" ; classes2="+(explain>0? JSON.stringify(actualClassesWithExplanations2,null,"\t"): actualClasses2)+
+	// 			"");
+	// 		if (_(actualClasses1).isEqual(expectedClasses)) {
+	// 			console.log("\t\tClassifier1 is correct");
+	// 		} else if (_(actualClasses2).isEqual(expectedClasses)) {
+	// 			console.log("\t\tClassifier2 is correct");
+	// 		} else {
+	// 			console.log("\t\tboth are incorrect");
+// 			}
+// 		}
+// 	}
+// };
 
 /**easy
  * Split the given dataset to two datasets: 
@@ -413,7 +409,7 @@ module.exports.trainAndTestLite = function(
 		if (verbosity>0) console.log("end training on "+trainSet.length+" samples, "+(trainSet.allClasses? trainSet.allClasses.length+' classes, ': '')+elapsedTime+" [ms]");
 	
 		// TEST:
-		return module.exports.testLite2(classifier, testSet, /*explain=*/verbosity-1);
+		return module.exports.testLite(classifier, testSet, /*explain=*/verbosity-1);
 };
 
 function label_enrichment(dataset, func)
@@ -462,6 +458,7 @@ module.exports.trainAndTest_hash = function(
  	// 	}
 
 		classifier.trainBatch(trainSet1);
+
 		stat_hash = module.exports.test_hash(classifier, testSet1, verbosity, microAverage, macroSum);
 		// stat_hash['train_time'] = new Date()-startTime;
 
@@ -511,18 +508,21 @@ module.exports.trainAndCompare = function(
 		createNewClassifier1Function, createNewClassifier2Function,
 		trainSet, testSet, verbosity) {
 		// TRAIN:
-		var classifier1 = createNewClassifier1Function();
-		var classifier2 = createNewClassifier2Function();
+		var classifier1 = new createNewClassifier1Function();
+		var classifier2 = new createNewClassifier2Function();
+
+		trainSet1 = utils.clonedataset(trainSet)
+		trainSet2 = utils.clonedataset(trainSet)
 
 		if (verbosity>0) console.log("\nstart training on "+trainSet.length+" samples, "+(trainSet.allClasses? trainSet.allClasses.length+' classes': ''));
 		var startTime = new Date();
-		classifier1.trainBatch(trainSet);
+		classifier1.trainBatch(trainSet1);
 		var elapsedTime = new Date()-startTime;
 		if (verbosity>0) console.log("end training on "+trainSet.length+" samples, "+(trainSet.allClasses? trainSet.allClasses.length+' classes, ': '')+elapsedTime+" [ms]");
 
 		if (verbosity>0) console.log("start training on "+trainSet.length+" samples, "+(trainSet.allClasses? trainSet.allClasses.length+' classes': ''));
 		var startTime = new Date();
-		classifier2.trainBatch(trainSet);
+		classifier2.trainBatch(trainSet2);
 		var elapsedTime = new Date()-startTime;
 		if (verbosity>0) console.log("end training on "+trainSet.length+" samples, "+(trainSet.allClasses? trainSet.allClasses.length+' classes, ': '')+elapsedTime+" [ms]");
 	

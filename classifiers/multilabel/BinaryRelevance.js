@@ -104,56 +104,38 @@ BinaryRelevance.prototype = {
 	 * @return an array whose VALUES are the labels.
 	 */
 	classify: function(sample, explain, withScores) {
-		var labels = [];
-		if (explain>0) {
-			if (withScores) {
-				var explanations = [];
-			} else {
-				var positive_explanations = {};
-				var negative_explanations = {};
-			}
-		}
+		var labels = []
+		var scores = {}
+		var explanations = [];
+		var positive_explanations = {};
+		var negative_explanations = {};
+
 		for (var label in this.mapClassnameToClassifier) {
 			var classifier = this.mapClassnameToClassifier[label];
 			var scoreWithExplain = classifier.classify(sample, explain, withScores);
 			var score = scoreWithExplain.explanation?  scoreWithExplain.classification: scoreWithExplain;
-		
-			// var explanations_string = ((scoreWithExplain.explanation && explain>0)?
-			// 	// cannot use .join here
-			// 		// scoreWithExplain.explanation.reduce(function(a,b) {
-			// 		// 	// return a + " " + b;
-			// 		// 	return [a,b];
-			// 		// }, ""):
-			// 		// null);
-			// 		scoreWithExplain.explanation)
 
 			explanations_string = scoreWithExplain.explanation
-			
-			if (withScores) {
-				var labelAndScore = [label, score];
-				if (explanations_string) labelAndScore.push(explanations_string);
-				labels.push(labelAndScore);
-			} else if (score>0.5) {
-				labels.push(label);
+
+			// if (score>0.5)
+			if (score>0)
+				{
+				labels.push(label)
 				if (explanations_string) positive_explanations[label]=explanations_string;
-			} else {
+				}
+			else
+				{
 				if (explanations_string) negative_explanations[label]=explanations_string;
-			}
+				}
+
+			scores[label] = score
 		}
-		if (withScores) {
-			labels.sort(function(pair1, pair2) {return pair2[1]-pair1[1]});
-			if (explain>0) {
-				var explanations = [];
-				labels.forEach(function(datum) {
-					explanations.push(datum[0]+": score="+JSON.stringify(datum[1])+" features="+datum[2]);
-					datum.pop();
-				});
-			}
-		}
+
 		return (explain>0?
 			{
 				classes: labels, 
-				explanation: withScores? explanations: {
+				scores: scores,
+				explanation: {
 					positive: positive_explanations, 
 					negative: negative_explanations,
 				}

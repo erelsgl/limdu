@@ -7,6 +7,11 @@
 
 var should = require('should');
 var ftrs = require('../../features');
+var natural = require('../../node_modules/natural');
+var _ = require('underscore')._;
+
+var tokenizer = new natural.WordPunctTokenizer(); // WordTokenizer, TreebankWordTokenizer, WordPunctTokenizer
+
 
 describe('word unigram feature extractor', function() {
 	it('creates word unigram features', function() {
@@ -28,6 +33,18 @@ describe('word bigram feature extractor', function() {
 			'know [end]': 1 });
 	});
 })
+
+describe('word bigram feature extractor', function() {
+	it('creates word bigram features', function() {
+		var sentence = "pension,"
+		var features = {}
+		var words = tokenizer.tokenize(sentence);
+		ftrs.NGramsFromArray(1, 0, words, features, true); 
+		ftrs.NGramsFromArray(2, 0, words, features, true);
+		_.isEqual(features, { pension: 1, ',': 1, 'pension ,': 1 }).should.equal(true) 
+	});
+})
+
 
 describe('word trigram-with-gap feature extractor', function() {
 	it('creates word bigram features', function() {

@@ -33,8 +33,15 @@ exports.average = function(list)
 
 exports.listembed = function(label)
 	{
+		if (label === null)
+			return [[]]
 		if (typeof label != 'undefined')
 		{
+
+			if ((_.isObject(label))&&!(_.isArray(label)))
+			if ('classes' in JSON.parse(label))
+				label = label.classes
+
 			if (!(label[0] instanceof Array))
 				return [label]
 			else 

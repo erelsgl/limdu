@@ -7,6 +7,9 @@
 var should = require('should');
 var mlutils = require('../../utils');
 var _ = require('underscore');
+var classifiers = require('../../classifiers');
+var ftrs = require('../../features');
+
 
 describe('Bars utilities', function() {
 	
@@ -151,4 +154,74 @@ describe('Bars utilities', function() {
 		amba.length.should.equal(0)
 		
 	})	
+
+	it('correctly compuets explanation', function() {
+		explanation = ["how about 10000 nis",
+    {
+    	"positive": {
+    			"Offer": [["label1",3], ["label7",2], ["label3",3]],
+            	"Salary": [["label1",1], ["label2",5]]
+            	},
+     	"negative": {
+            	"Greet": [["label1",1], ["label2",2]],
+            	"Aceept": [["label1",1], ["label3",2]],
+        		}
+    },
+    	"blaasdasdada",
+	{
+    	"positive": {
+    			"Offer": [["label1",1], ["label2",2], ["label3",3]],
+            	"Salary": [["label1",1], ["label4",5]]
+            	},
+     	"negative": {
+            	"Greet": [["label1",1], ["label4",2]],
+            	"Aceept": [["label1",1], ["label3",2]],
+        		}
+    }]
+
+    original = {
+    "positive": {
+        "Offer": [["label1",4],["label7",2],["label3",6],["label2",2]],
+        "Salary": [["label1",2], ["label2",5],["label4",5]]
+    	},
+    "negative": {
+        "Greet": [["label1",2],["label2",2],["label4",2]],
+        "Aceept": [["label1",2],["label3",4]]
+    	}
+	}
+
+    str = mlutils.bars.expl_struct(explanation)
+    _.isEqual(str,original).should.equal(true)    
+	})
+
+	it('correctly divides labels', function() {
+		_.isEqual(mlutils.bars.bag_of_labels_to_components(['Offer']),[['Offer'],[],[]]).should.equal(true)
+		_.isEqual(mlutils.bars.bag_of_labels_to_components(['Offer', 'Salary', 'Accept']),[['Offer','Accept'],['Salary'],[]]).should.equal(true)
+		_.isEqual(mlutils.bars.bag_of_labels_to_components(['Offer', 'Salary', 'Accept', '20,000 NIS', 'QA']),[['Offer','Accept'],['Salary'],['20,000 NIS','QA']]).should.equal(true)
+		_.isEqual(mlutils.bars.bag_of_labels_to_components([true,'Greet']),[['Greet'], [], [ true]]).should.equal(true)
+	})
+
+	it('correctly sees ambiguity', function() {
+		_.isEqual(mlutils.bars.semlang_ambiguity(['Offer', '20,000 NIS']), [[ 'Offer', 'Salary', '20,000 NIS' ]]).should.equal(true)
+		_.isEqual(mlutils.bars.semlang_ambiguity([true]), [ [ 'Greet', true ], [ 'Quit', true ] ]).should.equal(true)
+		_.isEqual(mlutils.bars.semlang_ambiguity(['Accept', '20,000 NIS']), []).should.equal(true)
+		_.isEqual(mlutils.bars.semlang_ambiguity(['20,000 NIS']), [['Offer','Salary','20,000 NIS']]).should.equal(true)
+		mlutils.bars.semlang_ambiguity(['previous']).length.should.equal(4)
+	})
+
+	it('correctly generate labels', function() {
+		_.isEqual(mlutils.bars.generate_possible_labels([['Offer'],['Salary'],['20,000 NIS']]), [ '{"Offer":{"Salary":"20,000 NIS"}}' ]).should.equal(true)
+		_.isEqual(mlutils.bars.generate_possible_labels([['Offer', 'Accept', 'Reject', 'Greet'],['Salary', 'Job description'],['20,000 NIS','previous']]),[ '{"Offer":{"Salary":"20,000 NIS"}}','{"Accept":"previous"}','{"Accept":"Salary"}','{"Reject":"previous"}','{"Reject":"Salary"}' ]).should.equal(true)
+		_.isEqual(mlutils.bars.generate_possible_labels([['Greet'],[],[true]]),[ '{"Greet":true}' ]).should.equal(true)
+	})
+	
+	it('correctly join labels', function() {
+	_.isEqual(mlutils.bars.join_labels([['1'],['3'],['5']],[['2'],['4'],['6']]), [ [ '1', '2' ], [ '3', '4' ], [ '5', '6' ] ]).should.equal(true)
+	})
+
+	it('correctly resolve emptiness', function() {
+		_.isEqual(mlutils.bars.resolve_emptiness([['Accept'],[],['20,000 NIS', 'QA']]), [ [ 'Accept', 'Offer' ],[ 'Salary', 'Job Description' ],[ '20,000 NIS', 'QA' ] ]).should.equal(true)
+		_.isEqual(mlutils.bars.resolve_emptiness([[],[],['20,000 NIS']]), [['Offer'],['Salary'],['20,000 NIS']]).should.equal(true)
+	})
+
 })

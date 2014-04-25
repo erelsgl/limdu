@@ -1,7 +1,8 @@
 var hash = require("../../utils/hash");
-var FeaturesUnit = require("../../features");
+// var FeaturesUnit = require("../../features");
 var sprintf = require("sprintf").sprintf;
 var _ = require("underscore")._;
+var ftrs = require('../../features');
 
 /**
  * BinarySegmentation - Multi-label text classifier, based on a segmentation scheme using base binary classifiers.
@@ -26,9 +27,10 @@ var BinarySegmentation = function(opts) {
 		console.dir(opts);
 		throw new Error("opts.binaryClassifierType is null");
 	}
+
 	this.binaryClassifierType = opts.binaryClassifierType;
-	this.featureExtractor = FeaturesUnit.normalize(opts.featureExtractor);
-	
+	this.classifier = new this.binaryClassifierType();
+
 	switch (opts.segmentSplitStrategy) {
 	case 'shortestSegment': this.segmentSplitStrategy = this.shortestSegmentSplitStrategy; break;
 	case 'longestSegment':  this.segmentSplitStrategy = this.longestSegmentSplitStrategy;  break;
@@ -41,12 +43,7 @@ var BinarySegmentation = function(opts) {
 
 BinarySegmentation.prototype = {
 	
-	getAllClasses: function() {
-		return Object.keys(this.mapClassnameToClassifier);
-	},
-
-	/**
-	 * Tell the classifier that the given sample belongs to the given classes.
+	/* Tell the classifier that the given sample belongs to the given classes.
 	 * 
 	 * @param sample
 	 *            a document.
@@ -54,7 +51,7 @@ BinarySegmentation.prototype = {
 	 *            an object whose KEYS are classes, or an array whose VALUES are classes.
 	 */
 	trainOnline: function(sample, classes) {
-		sample = this.sampleToFeatures(sample, this.featureExtractor);
+		sample = this.sampleToFeatures(sample, this.featureExtractors);
 		classes = hash.normalized(classes);
 		for (var positiveClass in classes) {
 			this.makeSureClassifierExists(positiveClass);
@@ -74,47 +71,7 @@ BinarySegmentation.prototype = {
 	 *            {input: sample1, output: [class11, class12...]}
 	 */
 	trainBatch : function(dataset) {
-		// this variable will hold a dataset for each binary classifier:
-		var mapClassnameToDataset = {}; 
-
-		// create positive samples for each class:
-		for ( var i = 0; i < dataset.length; ++i) {
-			dataset[i].features = this.sampleToFeatures(dataset[i].input, this.featureExtractor);
-			dataset[i].output = hash.normalized(dataset[i].output);
-
-			var sample = dataset[i].features;
-			var classes = dataset[i].output;
-			for (var positiveClass in classes) {  // the current sample is a positive example for each of the classes in its set
-				this.makeSureClassifierExists(positiveClass);
-				if (!(positiveClass in mapClassnameToDataset)) // make sure dataset for this class exists
-					mapClassnameToDataset[positiveClass] = [];
-				mapClassnameToDataset[positiveClass].push({
-					input : sample,
-					output : 1
-				});
-			}
-		}
-
-		// create negative samples for each class (after all classes are in the array):
-		for ( var i = 0; i < dataset.length; ++i) {
-			var sample = dataset[i].features;
-			var classes = dataset[i].output;
-			for (var negativeClass in this.mapClassnameToClassifier) { // the current sample is a negative example for each of the classes NOT in its set
-				if (!(negativeClass in mapClassnameToDataset)) // make sure dataset for this class exists
-					mapClassnameToDataset[negativeClass] = [];
-				if (!classes[negativeClass])
-					mapClassnameToDataset[negativeClass].push({
-						input : sample,
-						output : 0
-					})
-			}
-		}
-
-		// train all classifiers:
-		for (var aClass in mapClassnameToDataset) {
-			this.mapClassnameToClassifier[aClass]
-					.trainBatch(mapClassnameToDataset[aClass]);
-		}
+		this.classifier.trainBatch(dataset)
 	},
 
 	/**
@@ -125,38 +82,11 @@ BinarySegmentation.prototype = {
 	 *  
 	 * @return an array whose VALUES are classes.
 	 */
+
+
 	classifySegment: function(segment, explain) {
-		var classes = {};
-		sample = this.sampleToFeatures(segment, this.featureExtractor);
-		if (explain>0) var positive_explanations = {}, negative_explanations = {};
-		for (var aClass in this.mapClassnameToClassifier) {
-			var classifier = this.mapClassnameToClassifier[aClass];
-			var classification = classifier.classify(sample, explain);
-			if (classification.explanation) {
-				var explanations_string = classification.explanation.reduce(function(a,b) {
-					return a + " " + sprintf("%s%+1.2f",b.feature,b.relevance);
-				}, "");
-				if (classification.classification > 0.5) {
-					classes[aClass] = true;
-					if (explain>0) positive_explanations[aClass]=explanations_string;
-				} else {
-					if (explain>0) negative_explanations[aClass]=explanations_string;
-				}
-			} else {
-				if (classification > 0.5)
-					classes[aClass] = true;
-			}
-		}
-		classes = Object.keys(classes);
-		return (explain>0?
-			{
-				classes: classes, 
-				explanation: {
-					positive: positive_explanations,
-					negative: negative_explanations
-				}
-			}:
-			classes);
+			var classification = this.classifier.classify(segment, 30, true);
+			return classification
 	},
 
 	/**
@@ -168,11 +98,11 @@ BinarySegmentation.prototype = {
 	 * @return an array [the_best_class, and_its_probability].
 	 */
 	bestClassOfSegment: function(segment) {
-		var classes = this.classifySegment(segment);
-		if (classes.length==0) {
+		var classes = this.classifySegment(segment, 6);
+		if (classes.classes.length==0) {
 			return [null, 0];
 		} else {
-			return [classes[0], 1 / classes.length];
+			return [classes.classes[0], classes.scores[classes.classes[0]]];
 		}
 	},
 	
@@ -191,43 +121,68 @@ BinarySegmentation.prototype = {
 		var segmentClassificationCosts = [];  // best cost to classify segment [i,j]
 		for (var start=0; start<=words.length; ++start) {
 			segmentClassificationCosts[start] = [];
-			for (var end=0; end<start; ++end)
+			// for (var end=0; end<start; ++end)
+			for (var end=0; end<=words.length; ++end)
 				segmentClassificationCosts[start][end]=Infinity;
+				// segmentClassificationCosts[start][end] = 0
 			segmentClassificationCosts[start][start]=0;
 			for (var end=start+1; end<=words.length; ++end) {
 				var segment = words.slice(start,end).join(" ");
+				// console.log(segment)
 				var bestClassAndProbability = this.bestClassOfSegment(segment);
-				//console.log(segment+" - "+bestClassAndProbability);
-				var bestClass = bestClassAndProbability[0];
-				var bestClassProbability = bestClassAndProbability[1];
-				segmentClassificationCosts[start][end] = -Math.log(bestClassProbability);
+				if (bestClassAndProbability[1] != Infinity)
+				{
+					var bestClass = bestClassAndProbability[0];
+					var bestClassProbability = bestClassAndProbability[1];
+					// segmentClassificationCosts[start][end] = -Math.log(bestClassProbability)
+					segmentClassificationCosts[start][end] = -bestClassProbability
+				}
 			}
 		}
-		//console.log("segmentClassificationCosts");		console.dir(segmentClassificationCosts);
-		var cheapest_paths = require("../../../graph-paths/graph-paths").cheapest_paths;
-		cheapestSegmentClassificationCosts = cheapest_paths(segmentClassificationCosts, 0);
-		cheapestSentenceClassificationCost = cheapestSegmentClassificationCosts[words.length];
+		var cheapest_paths = require("../../node_modules/graph-paths/graph-paths").cheapest_paths;
+		
+		var mini = Infinity
+		_(words.length).times(function(nn){
+			cheapestSegmentClassificationCosts = cheapest_paths(segmentClassificationCosts, nn);
+			//HERE
+			// console.log(cheapestSegmentClassificationCosts)
+			// console.log("_")
+			_.each(cheapestSegmentClassificationCosts, function(value, key, list){ 
+				if (value.cost<mini)
+				{
+				mini = value.cost
+				cheapestSentenceClassificationCost = value
+				}
+			}, this)
+		}, this)
+
+		// cheapestSentenceClassificationCost = cheapestSegmentClassificationCosts[words.length];
 		if (!cheapestSentenceClassificationCost)
 			throw new Error("cheapestSegmentClassificationCosts["+words.length+"] is empty");
 		
 		var cheapestClassificationPath = cheapestSentenceClassificationCost.path;
-		explanations.push(cheapestSentenceClassificationCost);
+		// explanations.push(cheapestSentenceClassificationCost);
 		for (var i=0; i<cheapestClassificationPath.length-1; ++i) {
 			var segment = words.slice(cheapestClassificationPath[i],cheapestClassificationPath[i+1]).join(" ");
 			var segmentClassesWithExplain = this.classifySegment(segment, explain);
 			var segmentClasses = (segmentClassesWithExplain.classes? segmentClassesWithExplain.classes: segmentClassesWithExplain);
-			//console.log(segment+": "+segmentClasses);
+			// console.log(segment+": "+segmentClasses);
+
 			for (var j in segmentClasses) {
 				accumulatedClasses[segmentClasses[j]]=true;
 			}
+
+			// explanations = []
 			if (explain>0) {
-				explanations.push(segment);
-				explanations.push(segmentClassesWithExplain.explanation);
+				_.each(segmentClasses, function(clas, key, list){ 
+					explanations.push([clas, segment, [cheapestClassificationPath[i], cheapestClassificationPath[i+1]]])
+
+				}, this)
 			};
 			
 		}
 	},
-	
+
 	/**
 	 * protected function:
 	 * Strategy of classifying the shortest segments with a single class.
@@ -305,22 +260,35 @@ BinarySegmentation.prototype = {
 	 * @return an array whose VALUES are classes.
 	 */
 	classify: function(sentence, explain) {
+		// explain = 5
+		console.log("sentece"+sentence)
 		var minWordsToSplit = 2;
 		var words = sentence.split(/ /);
 		if (this.segmentSplitStrategy && words.length>=minWordsToSplit) {
 			var accumulatedClasses = {};
 			var explanations = [];
 			this.segmentSplitStrategy(words, accumulatedClasses, explain, explanations); 
-			// this is either this.shortestSegmentSplitStrategy, or this.longestSegmentSplitStrategy
 			
 			var classes = Object.keys(accumulatedClasses);
+			console.log(classes)
 			return (explain>0?	{
 				classes: classes, 
 				explanation: explanations
 			}: 
 			classes);
 		} else {
-			return this.classifySegment(sentence, explain);
+			classification = this.bestClassOfSegment(sentence)
+			console.log(classification)
+			// classification = this.classifySegment(sentence, explain);
+			return (explain>0?	{
+				classes: classification[0], 
+				explanation: [[classification[0], sentence, [0,sentence.length-1]]]
+
+			}: 
+			classification[0]);
+			// return {classes: classification[0],
+					// explanation: [[classification[0], sentence, [0,sentence.length-1]]]}
+			// return {classes: classification.classes[0]}
 		}
 	},
 
@@ -346,25 +314,13 @@ BinarySegmentation.prototype = {
 		}
 	},
 	
-	// private function: 
-	makeSureClassifierExists: function(aClass) {
-		if (!this.mapClassnameToClassifier[aClass]) { // make sure classifier exists
-			this.mapClassnameToClassifier[aClass] = new this.binaryClassifierType();
-		}
-	},
-	
-	// private function: 
-	sampleToFeatures: function(sample, featureExtractor) {
-		var features = sample;
-		if (featureExtractor) {
-			try {
-				features = featureExtractor(sample);
-			} catch (err) {
-				throw new Error("Cannot extract features from '"+JSON.stringify(sample)+"': "+JSON.stringify(err));
-			}
-		}
-		return features;
-	},
+	setFeatureLookupTable: function(featureLookupTable) {
+		if (featureLookupTable) 
+			// this.featureLookupTable = featureLookupTable
+			if (this.classifier.setFeatureLookupTable)
+				this.classifier.setFeatureLookupTable(featureLookupTable);  // for generating clearer explanations only
+		// }
+ 	},
 }
 
 module.exports = BinarySegmentation;

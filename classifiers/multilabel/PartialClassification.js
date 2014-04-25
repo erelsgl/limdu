@@ -75,22 +75,24 @@ PartialClassification.prototype = {
 
 	classify: function(sample, explain, continuous_output) {
 				
-		labels = []
-		explanation = []
+		var labels = []
+		var explanation = []
+		var scores = {}
 		
 	 	_.each(this.classifier, function(classif, key, list){
-	 		value = classif.classify(sample, explain)
+	 		var value = classif.classify(sample, explain, continuous_output)
 	 	 	if (explain>0)
 	 	 		labels.push(value.classes)
 	 	 	else
  				labels.push(value)
 	 	 	explanation.push(value.explanation)
+	 	 	scores = _.extend(scores, value.scores)
 	 	})
-  			
+
 		if (explain>0)
 			{
-				positive = {}
-				negative = {}
+				var positive = {}
+				var negative = {}
 
 				_.each(_.pluck(explanation, 'positive'), function(value, key, list){ 
 					positive = _.extend(positive, value)
@@ -99,17 +101,33 @@ PartialClassification.prototype = {
 				_.each(_.pluck(explanation, 'negative'), function(value, key, list){ 
 					negative = _.extend(negative, value)
 					}, this)
+			
+
+			if (_.keys(negative)!=0)
+				explanation = {
+					positive: positive, 
+					negative: negative,
+				}
 			}
 
 		return (explain>0?
 			{
 				classes: labels, 
-				explanation: {
-					positive: positive, 
-					negative: negative, 
-				}
+				scores: scores,
+				explanation: explanation
 			}:
 			labels);
+
+		
+		// console.log(JSON.stringify(explanation, null, 4))
+		// return (explain>0?
+		// 	{
+		// 		classes: labels, 
+		// 		scores: scores,
+		// 		explanation: explanation
+		// 	}:
+		// 	labels);
+
  	},
 
 

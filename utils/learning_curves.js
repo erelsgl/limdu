@@ -78,11 +78,10 @@ module.exports.learning_curves = function(classifiers, dataset, parameters, step
 	},this)
 
 	plotfor = plotfor.substring(0,plotfor.length-2);
-	// console.log(plotfor)
-	// process.exit(0)
 
 	partitions.partitions(dataset, numOfFolds, function(train, test, fold) {
 		index = step
+		// index = 200
 
 		if (isDialogue(test))
 			test = extractturns(test)	
@@ -101,9 +100,9 @@ module.exports.learning_curves = function(classifiers, dataset, parameters, step
 
 	    _.each(classifiers, function(value, key, list) { 	
 	    	stats = trainAndTest_hash(value, mytrainset, test, 5)
-	    	report.push(stats[2]['stats'])
+	    	report.push(stats[0]['stats'])
 	    })
-		
+
 		_.each(parameters, function(value, key, list){
 			valuestring = mytrain.length +"\t"+ (_.pluck(report, value)).join("\t") +"\n" ;
 			fs.appendFileSync(dir+value+"-fold"+fold, valuestring,'utf8', function (err) {console.log("error "+err); return 0 })
@@ -113,15 +112,18 @@ module.exports.learning_curves = function(classifiers, dataset, parameters, step
 			plotfor = "plot "
 			_(fold+1).times(function(n){
 			// _.each(parameters,  function(value, key, list){ 
-				plotfor = plotfor + " for [i=2:"+ (_.size(classifiers) + 1)+"] \'"+dir+value+"-fold"+n+"\' using 1:i with linespoints linecolor i pt "+n+" ps 3, "
+
+				foldcom = " for [i=2:"+ (_.size(classifiers) + 1)+"] \'"+dir+value+"-fold"+n+"\' using 1:i with linespoints linecolor i pt "+n+" ps 3"
+				com = "gnuplot -p -e \"reset; set term png truecolor size 1024,1024; set grid ytics; set grid xtics; set key bottom right; set output \'"+dir + value+"fold"+n+".png\'; set key autotitle columnhead; plot "+foldcom +"\""
+				result = execSync.run(com)
+
+				plotfor = plotfor + foldcom + ", "
 				// fs.writeFileSync(dir+value+"-fold"+n, header, 'utf-8', function(err) {console.log("error "+err); return 0 })
 				// },this)
 			},this)
 			plotfor = plotfor.substring(0,plotfor.length-2);
 			command = "gnuplot -p -e \"reset; set term png truecolor size 1024,1024; set grid ytics; set grid xtics; set key bottom right; set output \'"+dir + value+".png\'; set key autotitle columnhead; "+plotfor +"\""
 			result = execSync.run(command)
-			// console.log(command)
-			// process.exit(0)
 		}, this)
 		}
 

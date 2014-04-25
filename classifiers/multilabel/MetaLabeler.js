@@ -89,7 +89,12 @@ MetaLabeler.prototype = {
 		// Pick the labelCount most relevant labels from the list returned by the ranker:   
 		var positiveLabelsWithScores = rankedLabels.slice(0, labelCount);
 
-		var positiveLabels = positiveLabelsWithScores.map(function(labelWithScore) {return labelWithScore[0]});
+		var positiveLabels = positiveLabelsWithScores
+
+		if (positiveLabelsWithScores.length != 0)
+			if (_.isArray(positiveLabelsWithScores[0]))
+				var positiveLabels = positiveLabelsWithScores.map(function(labelWithScore) {return labelWithScore[0]});
+		
 		return (explain>0? {
 			classes: positiveLabels,
 			explanation: {

@@ -160,6 +160,11 @@ addCasesLabels: function (expectedClasses, actualClasses ) {
 		}
 		this.count++;
 
+		_.each(explanations, function(value, key, list){ 
+			// explanations[key] = _.sortBy(explanations[key], function(num){ num });
+			explanations[key].sort()
+		}, this)
+
 		return explanations;
 	},
 	

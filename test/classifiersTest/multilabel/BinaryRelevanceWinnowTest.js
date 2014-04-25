@@ -8,6 +8,8 @@
 
 var should = require('should');
 var classifiers = require('../../../classifiers');
+var _ = require("underscore")._;
+
 
 var retrain_count = 10;
 var BinaryRelevanceWinnow = classifiers.multilabel.BinaryRelevance.bind(this, {
@@ -58,22 +60,21 @@ var testMultiLabelClassifier = function(classifier) {
 	})
 	
 	it('supports ranking with scores', function() {
-		var a = classifier.classify({I:1 , want:1 , aa:1 }, /*explain=*/0, /*withScores=*/true);
-//		console.dir(a);
-		a.should.have.lengthOf(3);
-		a[0][0].should.eql('A');
-		a[0][1].should.be.above(0);
-		a[1][1].should.be.below(0);
-		var b = classifier.classify({I:1 , want:1 , bb:1 }, /*explain=*/0, /*withScores=*/true)
-		b.should.have.lengthOf(3);
-		b[0][0].should.eql('B');
-		b[0][1].should.be.above(0);
-		b[1][1].should.be.below(0);
-		var c = classifier.classify({I:1 , want:1 , cc:1 }, /*explain=*/0, /*withScores=*/true);
-		c.should.have.lengthOf(3);
-		c[0][0].should.eql('{"C":"c"}');
-		c[0][1].should.be.above(0);
-		c[1][1].should.be.below(0);
+		var a = classifier.classify({I:1 , want:1 , aa:1 }, /*explain=*/5, /*withScores=*/true);
+		_.keys(a.scores).should.have.lengthOf(3);
+		_.keys(a.scores)[0].should.eql('A');
+		a.scores['A'].should.be.above(0);
+		a.scores['B'].should.be.below(0);
+		var b = classifier.classify({I:1 , want:1 , bb:1 }, /*explain=*/5, /*withScores=*/true)
+		_.keys(b.scores).should.have.lengthOf(3);
+		b.scores['B'].should.be.above(0);
+		b.scores['A'].should.be.below(0);
+		var c = classifier.classify({I:1 , want:1 , cc:1 }, /*explain=*/5, /*withScores=*/true);
+		_.keys(c.scores).should.have.lengthOf(3);
+		c.scores['{"C":"c"}'].should.be.above(0);
+		c.scores['A'].should.be.below(0);
+		c.scores['B'].should.be.below(0);
+
 	});
 }
 

@@ -2,6 +2,7 @@ var ftrs = require('../features');
 var _ = require('underscore')._;
 var hash = require('../utils/hash');
 var util = require('../utils/bars');
+var fs = require('fs');
 
 var multilabelutils = require('./multilabel/multilabelutils');
 
@@ -51,7 +52,10 @@ var EnhancedClassifier = function(opts) {
 	this.bias = opts.bias;
 
 	this.spellChecker = opts.spellChecker;
-	this.pastTrainingSamples = opts.pastTrainingSamples;
+	// this.pastTrainingSamples = opts.pastTrainingSamples;
+	// TODO: it looks like the menthd with creating an array at the definition 
+	// create an array with the same pointer for every classifier of the given class
+	this.pastTrainingSamples = []
 
 	this.InputSplitLabel = opts.InputSplitLabel
 	this.OutputSplitLabel = opts.OutputSplitLabel
@@ -132,35 +136,41 @@ EnhancedClassifier.prototype = {
 	
 	trainSpellChecker: function(features) {
 		if (this.spellChecker) {
-			if (!_.isObject(features)) {
-				throw new Error("The spell-checker cannot train because the 'features' are not organized as a hash");
-			}
-			for (var feature in features) {
-				this.spellChecker.understand(feature); // Adds the given word to the index of the spell-checker.
-				this.spellChecker.train(feature);      // Adds the given word to the probabilistic model of the spell-checker.
-			}
+			_.each(features.split(" "), function(word, key, list){ 
+				this.spellChecker[1].understand(word); // Adds the given word to the index of the spell-checker.
+				this.spellChecker[1].train(word);
+				this.spellChecker[1].understand(word.toLowerCase()); // Adds the given word to the index of the spell-checker.
+				this.spellChecker[1].train(word.toLowerCase());  
+			}, this)
 		}
 	},
 	
 	correctFeatureSpelling: function(features) {
 		if (this.spellChecker) {
-			if (!_.isObject(features)) {
-				throw new Error("The spell-checker cannot correct because the 'features' are not organized as a hash");
-			}
+			var clean = ""
 			var correctedFeatures = {};
-			for (var feature in features) {
+			features = features.split(" ")
+			for (var index in features) {
+				var feature = features[index]
 				if (!isNaN(parseInt(feature)))  // don't spell-correct numeric features
-					continue;
-				var suggestions = this.spellChecker.suggest(feature); // If feature exists, returns empty. Otherwise, returns ordered list of suggested corrections from the training set.
-				if (suggestions.length==0) 
-					continue;
-				
-				// take the first suggestion; but decrement its value a little:
-				//if (suggestions[0]=='i') {				console.log("spellCheck("+feature+")="+suggestions);				}
-				features[suggestions[0]] = features[feature] * 0.9;
-				delete features[feature];
+					{
+					clean = clean + " "+feature
+					continue
+					}
+
+				var suggestions = []
+				if (this.spellChecker[1].suggest(feature).length != 0) // If feature exists, returns empty. Otherwise, returns ordered list of suggested corrections from the training set.
+					suggestions = this.spellChecker[1].suggest(feature)
+
+				if (suggestions.length==0)
+					clean = clean + " " + feature
+				else
+					clean = clean + " " + suggestions[0]
 			}
+
+				return clean.trim()
 		}
+		return features
 	},
 	
 	featuresToArray: function(features) {
@@ -276,6 +286,12 @@ EnhancedClassifier.prototype = {
 			this.Observable = Observable;
 			// }
 
+			if (this.spellChecker) {
+				var seeds = fs.readFileSync('./node_modules/wordsworth/data/seed.txt')
+				var trainings = fs.readFileSync('./node_modules/wordsworth/data/training.txt')
+				this.spellChecker[0].initializeSync(seeds.toString().split("\r\n"), trainings.toString().split("\r\n"))
+				}
+
 			dataset = dataset.map(function(datum) {
 
 			if (typeof this.InputSplitLabel === 'function') {
@@ -289,10 +305,11 @@ EnhancedClassifier.prototype = {
 			if (pastTrainingSamples && dataset!=pastTrainingSamples)
 				pastTrainingSamples.push(datum);
 			datum = _(datum).clone();
+			this.trainSpellChecker(datum.input);
 			datum.input = this.normalizedSample(datum.input);
 			var features = this.sampleToFeatures(datum.input, this.featureExtractors);
 			this.countFeatures(features);
-			this.trainSpellChecker(features);
+			// this.trainSpellChecker(features);
 			if (featureLookupTable)
 				featureLookupTable.addFeatures(features);
 			datum.input = features;
@@ -315,8 +332,9 @@ EnhancedClassifier.prototype = {
 	 * @return an array whose VALUES are classes.
 	 */
 	classifyPart: function(sample, explain, continuous_output) {
-		var features = this.sampleToFeatures(sample, this.featureExtractorsForClassification? this.featureExtractorsForClassification: this.featureExtractors);
-		this.correctFeatureSpelling(features);
+		samplecheck = this.correctFeatureSpelling(sample)
+		var features = this.sampleToFeatures(samplecheck, this.featureExtractorsForClassification? this.featureExtractorsForClassification: this.featureExtractors);
+		// this.correctFeatureSpelling(features);
 		this.editFeatureValues(features, /*remove_unknown_features=*/true);
 		var array = this.featuresToArray(features);
 		var classification = this.classifier.classify(array, explain, continuous_output);
@@ -329,7 +347,8 @@ EnhancedClassifier.prototype = {
 		return classification;
 	},
 
-	outputToFormat: function(dataset) {
+	outputToFormat: function(data) {
+		dataset = util.clonedataset(data)
 		dataset = dataset.map(function(datum) {
 		var normalizedLabels = multilabelutils.normalizeOutputLabels(datum.output);
 		return {
@@ -345,11 +364,12 @@ EnhancedClassifier.prototype = {
 	 * @param sample a document.
 	 * @return an array whose VALUES are classes.
 	 */
-	classify: function(sample, explain, continuous_output) {
+	classify: function(sample, explain, continuous_output, original) {
 		sample = this.normalizedSample(sample);
 		if (!this.inputSplitter) {
 			var classesWithExplanation = this.classifyPart(sample, explain, continuous_output);
 			var classes = (explain>0? classesWithExplanation.classes: classesWithExplanation);
+			var scores =  (continuous_output? classesWithExplanation.scores: null)
 			var explanations = (explain>0? classesWithExplanation.explanation: null);
 		} else {
 			var parts = this.inputSplitter(sample);
@@ -364,7 +384,7 @@ EnhancedClassifier.prototype = {
 				// 	accumulatedClasses[classes[i]]=true;
 				accumulatedClasses.push(classes)
 				if (explain>0) {
-					explanations.push(part);
+					// explanations.push(part);
 					explanations.push(classesWithExplanation.explanation);
 				}
 			}, this);
@@ -381,11 +401,7 @@ EnhancedClassifier.prototype = {
 			}
 			}
 		}
-		
-		// console.log(accumulatedClasses)		
-		// console.log(sample)
-		// console.log(classes)
-		
+
 		if (this.labelLookupTable) {
 			if (Array.isArray(classes)) {
 				classes = classes.map(function(label) {
@@ -400,15 +416,32 @@ EnhancedClassifier.prototype = {
 			}
 		}
 
-
 		if ((typeof this.OutputSplitLabel === 'function')) {
-			classes = this.OutputSplitLabel(classes, this.Observable, sample, explanations)
+
+			// classes = this.OutputSplitLabel(classes, this.Observable, sample, explanations)
+			// var classes = []
+			// if (_.isArray(explanations))
+		
+			if ((explain>0) && (this.inputSplitter))
+				{ nclasses = []
+				_(explanations.length).times(function(n){
+					var clas = this.OutputSplitLabel(classes, this, parts[n], explanations[n], original)
+					nclasses = nclasses.concat(clas)
+				}, this)
+				classes = nclasses
+				}
+			else
+				{
+				classes = this.OutputSplitLabel(classes, this, sample, explanations, original)
+				}
 			}
-	
+
 		if (explain>0) 
 			return {
 				classes: classes,
+				scores: scores,
 				explanation: explanations
+
 			};
 		else
 			return classes;

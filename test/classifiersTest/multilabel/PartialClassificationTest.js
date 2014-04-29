@@ -46,13 +46,13 @@ var testPartialClassificationNonHierarchical = function(classifier) {
 	});
 
 	it('classifies 2-class samples', function() {
-		classifier.classify({I:1 , want:1 , aa:1 , and:1 , bb:1 }).should.eql([['A','B']]);
-		classifier.classify({I:1 , want:1 , bb:1 , and:1 , cc:1 }).should.eql([['B','{"C":"c"}']]);
-		classifier.classify({I:1 , want:1 , cc:1 , and:1 , aa:1 }).should.eql([['A','{"C":"c"}']]);
+		classifier.classify({I:1 , want:1 , aa:1 , and:1 , bb:1 })[0].sort().should.eql(['A','B'].sort());
+		classifier.classify({I:1 , want:1 , bb:1 , and:1 , cc:1 })[0].sort().should.eql(['B','{"C":"c"}'].sort());
+		classifier.classify({I:1 , want:1 , cc:1 , and:1 , aa:1 })[0].sort().should.eql(['A','{"C":"c"}'].sort());
 	});
 
 	it('classifies 3-class samples', function() {
-		classifier.classify({I:1 , want:1 , aa:1 , and:1 , bb:1 , "'": true, cc:1 }).should.eql([['A','B','{"C":"c"}']]);
+		classifier.classify({I:1 , want:1 , aa:1 , and:1 , bb:1 , "'": true, cc:1 })[0].sort().should.eql(['A','B','{"C":"c"}'].sort());
 	});
 
 	it('classifies 0-class samples', function() {

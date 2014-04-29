@@ -37,13 +37,14 @@ var testMultiLabelClassifier = function(classifier) {
 	});
 
 	it('classifies 2-class samples', function() {
-		classifier.classify({I:1 , want:1 , aa:1 , and:1 , bb:1 }).should.eql(['A','B']);
-		classifier.classify({I:1 , want:1 , bb:1 , and:1 , cc:1 }).should.eql(['B','{"C":"c"}']);
-		classifier.classify({I:1 , want:1 , cc:1 , and:1 , aa:1 }).should.eql(['A','{"C":"c"}']);
+		classifier.classify({I:1 , want:1 , aa:1 , and:1 , bb:1 }).sort().should.eql(['A','B'].sort());
+		classifier.classify({I:1 , want:1 , bb:1 , and:1 , cc:1 }).sort().should.eql(['B','{"C":"c"}'].sort());
+		classifier.classify({I:1 , want:1 , cc:1 , and:1 , aa:1 }).sort().should.eql(['A','{"C":"c"}'].sort());
+
 	});
 
 	it('classifies 3-class samples', function() {
-		classifier.classify({I:1 , want:1 , aa:1 , and:1 , bb:1 , "'": true, cc:1 }).should.eql(['A','B','{"C":"c"}']);
+		classifier.classify({I:1 , want:1 , aa:1 , and:1 , bb:1 , "'": true, cc:1 }).sort().should.eql(['A','B','{"C":"c"}'].sort());
 	});
 
 	it('classifies 0-class samples', function() {
@@ -51,7 +52,7 @@ var testMultiLabelClassifier = function(classifier) {
 	});
 	
 	it('knows its classes', function() {
-		classifier.getAllClasses().should.eql(['A','B','{"C":"c"}']);
+		classifier.getAllClasses().sort().should.eql(['A','B','{"C":"c"}'].sort());
 	})
 
 	it('explains its decisions', function() {
@@ -123,10 +124,10 @@ describe.skip('Multi-Label BR Classifier batch-trained on two-class inputs', fun
 	});
 
 	it('classifies 2-class samples', function() {
-		classifier.classify({I:1 , want:1 , aa:1 , and:1 , bb:1 }).should.eql(['A','B']);
-		classifier.classify({I:1 , want:1 , bb:1 , and:1 , cc:1 }).should.eql(['B','C']);
-		classifier.classify({I:1 , want:1 , cc:1 , and:1 , dd:1 }).should.eql(['C','D']);
-		classifier.classify({I:1 , want:1 , dd:1 , and:1 , aa:1 }).should.eql(['D','A']);
+		classifier.classify({I:1 , want:1 , aa:1 , and:1 , bb:1 }).sort().should.eql(['A','B'].sort());
+		classifier.classify({I:1 , want:1 , bb:1 , and:1 , cc:1 }).sort().should.eql(['B','C'].sort());
+		classifier.classify({I:1 , want:1 , cc:1 , and:1 , dd:1 }).sort().should.eql(['C','D'].sort());
+		classifier.classify({I:1 , want:1 , dd:1 , and:1 , aa:1 }).sort().should.eql(['D','A'].sort());
 	});
 });
 

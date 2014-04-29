@@ -3,11 +3,8 @@
  */
 module.exports = function(numOfWords, gap, grams, features, nobegin) {
 				for (var i=0; i<numOfWords-1-(gap?1:0); ++i) {
-					if (!(nobegin))
-						{
-						grams.unshift("[start]");
-						grams.push("[end]");
-						}
+					grams.unshift("[start]");
+					grams.push("[end]");
 				}
 				for (var i=0; i<=grams.length-numOfWords; ++i) {
 					sliceOfWords = grams.slice(i, i+numOfWords);

@@ -102,7 +102,13 @@ BinaryRelevance.prototype = {
 	 * @param withScores - boolean - if true, return an array of [class,score], ordered by decreasing order of score.
 	 *  
 	 * @return an array whose VALUES are the labels.
+	 * @output
+	 * scores [hash] - the scores of each binary classifier in the class
+	 * explanations [hash] positive - features of the classifier with positive labels
+	 *					   negative - features of classifiers with negative labels
+	 * classes [list] the list of given labels
 	 */
+
 	classify: function(sample, explain, withScores) {
 		var labels = []
 		var scores = {}
@@ -120,7 +126,7 @@ BinaryRelevance.prototype = {
 			// if (score>0.5)
 			if (score>0)
 				{
-				labels.push(label)
+				labels.push([label, score])
 				if (explanations_string) positive_explanations[label]=explanations_string;
 				}
 			else
@@ -130,6 +136,9 @@ BinaryRelevance.prototype = {
 
 			scores[label] = score
 		}
+
+		labels = _.sortBy(labels, function(num){ return num[1] });
+		labels = _.map(labels.reverse(), function(num){ return num[0] });
 
 		return (explain>0?
 			{

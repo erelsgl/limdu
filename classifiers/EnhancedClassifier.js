@@ -1,7 +1,7 @@
 var ftrs = require('../features');
 var _ = require('underscore')._;
 var hash = require('../utils/hash');
-var util = require('../utils/bars');
+var util = require('../utils/list');
 var fs = require('fs');
 
 var multilabelutils = require('./multilabel/multilabelutils');
@@ -363,6 +363,7 @@ EnhancedClassifier.prototype = {
 	 * Use the model trained so far to classify a new sample.
 	 * @param sample a document.
 	 * @return an array whose VALUES are classes.
+	 * @original is the original gold standard labels is used only for statistics.
 	 */
 	classify: function(sample, explain, continuous_output, original) {
 		sample = this.normalizedSample(sample);

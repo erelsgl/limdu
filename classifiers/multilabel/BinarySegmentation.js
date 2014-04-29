@@ -30,6 +30,7 @@ var BinarySegmentation = function(opts) {
 
 	this.binaryClassifierType = opts.binaryClassifierType;
 	this.classifier = new this.binaryClassifierType();
+	this.strandard = opts.strandard;
 
 	switch (opts.segmentSplitStrategy) {
 	case 'shortestSegment': this.segmentSplitStrategy = this.shortestSegmentSplitStrategy; break;
@@ -86,6 +87,24 @@ BinarySegmentation.prototype = {
 
 	classifySegment: function(segment, explain) {
 			var classification = this.classifier.classify(segment, 30, true);
+			// if (classification.classes.length != 0)
+			{
+				//HERE
+				// console.log(segment)
+				// console.log(classification)
+				// console.log(classification['explanation']['positive'])
+				// console.log(classification['explanation']['negative']['With leased car'])
+				// console.log(classification['explanation']['negative']['10%'])
+			}
+
+
+			// if ((segment == "Leased car")&&('With leased car' in classification['explanation']['negative']))
+				{
+				// console.log(classification['explanation']['negative']['With leased car'])
+				// console.log("______________________________________")
+				// process.exit(0)
+
+				}
 			return classification
 	},
 
@@ -102,6 +121,8 @@ BinarySegmentation.prototype = {
 		if (classes.classes.length==0) {
 			return [null, 0];
 		} else {
+			// HERE
+			// console.log([classes.classes[0], classes.scores[classes.classes[0]]])
 			return [classes.classes[0], classes.scores[classes.classes[0]]];
 		}
 	},
@@ -141,6 +162,8 @@ BinarySegmentation.prototype = {
 		}
 		var cheapest_paths = require("../../node_modules/graph-paths/graph-paths").cheapest_paths;
 		
+		// if (this.standard == false)
+		// {
 		var mini = Infinity
 		_(words.length).times(function(nn){
 			cheapestSegmentClassificationCosts = cheapest_paths(segmentClassificationCosts, nn);
@@ -155,7 +178,13 @@ BinarySegmentation.prototype = {
 				}
 			}, this)
 		}, this)
+		// }
+		// else
+		// {
+			// cheapestSegmentClassificationCosts = cheapest_paths(segmentClassificationCosts, 0);
+			// cheapestSentenceClassificationCost = cheapestSegmentClassificationCosts[words.length];
 
+		// }
 		// cheapestSentenceClassificationCost = cheapestSegmentClassificationCosts[words.length];
 		if (!cheapestSentenceClassificationCost)
 			throw new Error("cheapestSegmentClassificationCosts["+words.length+"] is empty");
@@ -261,7 +290,7 @@ BinarySegmentation.prototype = {
 	 */
 	classify: function(sentence, explain) {
 		// explain = 5
-		console.log("sentece"+sentence)
+		// console.log("sentece"+sentence)
 		var minWordsToSplit = 2;
 		var words = sentence.split(/ /);
 		if (this.segmentSplitStrategy && words.length>=minWordsToSplit) {
@@ -270,7 +299,7 @@ BinarySegmentation.prototype = {
 			this.segmentSplitStrategy(words, accumulatedClasses, explain, explanations); 
 			
 			var classes = Object.keys(accumulatedClasses);
-			console.log(classes)
+			// console.log(classes)
 			return (explain>0?	{
 				classes: classes, 
 				explanation: explanations
@@ -278,7 +307,7 @@ BinarySegmentation.prototype = {
 			classes);
 		} else {
 			classification = this.bestClassOfSegment(sentence)
-			console.log(classification)
+			// console.log(classification)
 			// classification = this.classifySegment(sentence, explain);
 			return (explain>0?	{
 				classes: classification[0], 

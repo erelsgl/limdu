@@ -52,3 +52,13 @@ exports.listembed = function(label)
 			return [label]
 		}
 	}
+
+exports.clonedataset = function(set)
+	{
+	set1 = []
+	_.each(set, function(value, key, list){
+		set1.push(_.clone(value))
+		})
+	return set1
+	}
+

@@ -34,17 +34,6 @@ describe('word bigram feature extractor', function() {
 	});
 })
 
-describe('word bigram feature extractor', function() {
-	it('creates word bigram features', function() {
-		var sentence = "pension,"
-		var features = {}
-		var words = tokenizer.tokenize(sentence);
-		ftrs.NGramsFromArray(1, 0, words, features, true); 
-		ftrs.NGramsFromArray(2, 0, words, features, true);
-		_.isEqual(Object.keys(features), [ 'pension', ',', '[start] pension', 'pension ,', ', [end]' ]).should.equal(true) 
-	});
-})
-
 describe('word trigram-with-gap feature extractor', function() {
 	it('creates word bigram features', function() {
 		var fe = ftrs.NGramsOfWords(3, true);

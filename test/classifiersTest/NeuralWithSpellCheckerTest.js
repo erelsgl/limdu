@@ -40,7 +40,7 @@ describe('classifier with spell-checker', function() {
 		var spamClassifier = new classifiers.EnhancedClassifier({
 			classifierType:   classifiers.NeuralNetwork,
 			featureExtractor: ftrs.NGramsOfWords(1),
-			spellChecker: wordsworth.getInstance(),
+			spellChecker: [wordsworth.getInstance(), wordsworth.getInstance()]
 		});
 
 		spamClassifier.trainBatch([

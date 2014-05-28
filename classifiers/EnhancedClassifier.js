@@ -3,8 +3,10 @@ var _ = require('underscore')._;
 var hash = require('../utils/hash');
 var util = require('../utils/list');
 var fs = require('fs');
+var natural = require('natural');
 
 var multilabelutils = require('./multilabel/multilabelutils');
+var tokenizer = new natural.RegexpTokenizer({pattern: /[^a-zA-Z0-9%'$,]+/});
 
 
 /**
@@ -48,10 +50,14 @@ var EnhancedClassifier = function(opts) {
 	this.multiplyFeaturesByIDF = opts.multiplyFeaturesByIDF;
 	this.minFeatureDocumentFrequency = opts.minFeatureDocumentFrequency || 0;
 	if (opts.multiplyFeaturesByIDF||opts.minFeatureDocumentFrequency) 
+		{
+    	this.tfidf = new natural.TfIdf()
 		this.featureDocumentFrequency = {};
+		}
 	this.bias = opts.bias;
 
 	this.spellChecker = opts.spellChecker;
+	// this.spellChecker =  [require('wordsworth').getInstance(), require('wordsworth').getInstance()],
 	// this.pastTrainingSamples = opts.pastTrainingSamples;
 	// TODO: it looks like the menthd with creating an array at the definition 
 	// create an array with the same pointer for every classifier of the given class
@@ -109,13 +115,16 @@ EnhancedClassifier.prototype = {
 
 	// private function: use this.normalizers to normalize the given sample:
 	normalizedSample: function(sample) {
-		if (this.normalizers) {
-			try {
-				for (var i in this.normalizers) {					
-					sample = this.normalizers[i](sample);
+		if (!(_.isArray(sample)))
+		{
+			if (this.normalizers) {
+				try {
+					for (var i in this.normalizers) {					
+						sample = this.normalizers[i](sample);
+					}
+				} catch (err) {
+					throw new Error("Cannot normalize '"+sample+"': "+JSON.stringify(err));
 				}
-			} catch (err) {
-				throw new Error("Cannot normalize '"+sample+"': "+JSON.stringify(err));
 			}
 		}
 		return sample;
@@ -133,44 +142,62 @@ EnhancedClassifier.prototype = {
 		}
 		return features;
 	},
+
+	// sampleToFeatures: function(sample, featureExtractor) {
+	// 	var features = sample;
+	// 	if (featureExtractor) {
+	// 		try {
+	// 			// features = {};
+	// 			features = featureExtractor(sample);
+	// 		} catch (err) {
+	// 			throw new Error("Cannot extract features from '"+sample+"': "+JSON.stringify(err));
+	// 		}
+	// 	}
+	// 	return features;
+	// },
 	
 	trainSpellChecker: function(features) {
 		if (this.spellChecker) {
-			_.each(features.split(" "), function(word, key, list){ 
+			var tokens = tokenizer.tokenize(features);
+			_.each(tokens, function(word, key, list){ 
 				this.spellChecker[1].understand(word); // Adds the given word to the index of the spell-checker.
 				this.spellChecker[1].train(word);
-				this.spellChecker[1].understand(word.toLowerCase()); // Adds the given word to the index of the spell-checker.
-				this.spellChecker[1].train(word.toLowerCase());  
 			}, this)
 		}
 	},
 	
-	correctFeatureSpelling: function(features) {
+	correctFeatureSpelling: function(sample) {
 		if (this.spellChecker) {
-			var clean = ""
-			var correctedFeatures = {};
-			features = features.split(" ")
+			var features = tokenizer.tokenize(sample);
 			for (var index in features) {
 				var feature = features[index]
 				if (!isNaN(parseInt(feature)))  // don't spell-correct numeric features
 					{
-					clean = clean + " "+feature
 					continue
 					}
-
-				var suggestions = []
-				if (this.spellChecker[1].suggest(feature).length != 0) // If feature exists, returns empty. Otherwise, returns ordered list of suggested corrections from the training set.
-					suggestions = this.spellChecker[1].suggest(feature)
-
-				if (suggestions.length==0)
-					clean = clean + " " + feature
-				else
-					clean = clean + " " + suggestions[0]
+				
+				if (!(this.spellChecker[1].exists(feature)))
+					{
+						if (this.spellChecker[1].suggest(feature).length != 0)
+							{
+							features[index] = this.spellChecker[1].suggest(feature)[0]
+							}
+						else
+							{
+								if (!(this.spellChecker[0].exists(feature)))
+									{
+										if (this.spellChecker[0].suggest(feature).length != 0)
+											{
+											features[index] = this.spellChecker[0].suggest(feature)[0]
+											
+											}
+									}
+							}
+					}
 			}
-
-				return clean.trim()
+		sample = features.join(" ")
 		}
-		return features
+		return sample
 	},
 	
 	featuresToArray: function(features) {
@@ -183,6 +210,7 @@ EnhancedClassifier.prototype = {
 	
 	countFeatures: function(features) {
 		if (this.featureDocumentFrequency) {
+			// this.tfidf.addDocument(datum.input);
 			for (var feature in features)
 				this.featureDocumentFrequency[feature] = (this.featureDocumentFrequency[feature] || 0)+1;
 			this.documentCount = (this.documentCount||0)+1;
@@ -190,22 +218,25 @@ EnhancedClassifier.prototype = {
 	},
 	
 	editFeatureValues: function(features, remove_unknown_features) {
+
 		if (this.multiplyFeaturesByIDF) { 
 			for (var feature in features) { 
-				var DF = this.featureDocumentFrequency[feature]||0;
-				var IDF = Math.log(this.documentCount / (1+DF));
-				if (IDF<=0)
-					console.warn("IDF<=0: documentCount="+this.documentCount+" DF("+feature+")="+DF);
+				var IDF = this.tfidf.idf(feature)
+				if (IDF != Infinity)
+					features[feature] *= IDF
 				else
-					features[feature] *= IDF;
+					delete features[feature]
 			}
-		}
-		if (remove_unknown_features && this.minFeatureDocumentFrequency>0)
-			for (var feature in features)
-				if ((this.featureDocumentFrequency[feature]||0)<this.minFeatureDocumentFrequency)
-					delete features[feature];
-		if (this.bias && !features.bias)
+
+			if (this.bias && !features.bias)
 			features.bias = this.bias;
+
+		}
+		// if (remove_unknown_features && this.minFeatureDocumentFrequency>0)
+			// for (var feature in features)
+				// if ((this.featureDocumentFrequency[feature]||0)<this.minFeatureDocumentFrequency)
+					// delete features[feature];
+		
 	},
 	
 
@@ -228,21 +259,6 @@ EnhancedClassifier.prototype = {
 			this.pastTrainingSamples.push({input: sample, output: classes});
 	},
 
-
-	splitJson: function(json) {
-		return this.splitJsonRecursive(_.isString(json) && /{.*}/.test(json)?
-		JSON.parse(json):
-		json);
-	},
- 
-	splitJsonRecursive: function(json) {
-		if (!_.isObject(json))
-			return [json];
-		var firstKey = Object.keys(json)[0];
-		var rest = this.splitJsonRecursive(json[firstKey]);
-		rest.unshift(firstKey);
-		return rest;
-	},
 	/**
 	 * Batch training: 
 	 * Train the classifier with all the given documents.
@@ -262,28 +278,28 @@ EnhancedClassifier.prototype = {
 		// 	}
 		// }, this);
 		// }
-			Observable = {}
+			// Observable = {}
 
-			// if (this.classifier.setObservable)
-				// {
-				_.each(dataset, function(datum, key, list){
-				_.each(multilabelutils.normalizeOutputLabels(datum.output), function(label, key, list){
-					_.each(this.splitJson(label), function(element, key, list){
-						if (key==0)
-							if (!(element in Observable))
-									Observable[element] = {}
-						if (key==1)
-							if (!(element in Observable[list[key-1]]))
-									Observable[list[key-1]][element] = {}
-						if (key==2)
-							if (!(element in Observable[list[key-2]][list[key-1]]))
-									Observable[list[key-2]][list[key-1]][element] = {}
+			// // if (this.classifier.setObservable)
+			// 	// {
+			// 	_.each(dataset, function(datum, key, list){
+			// 	_.each(multilabelutils.normalizeOutputLabels(datum.output), function(label, key, list){
+			// 		_.each(this.splitJson(label), function(element, key, list){
+			// 			if (key==0)
+			// 				if (!(element in Observable))
+			// 						Observable[element] = {}
+			// 			if (key==1)
+			// 				if (!(element in Observable[list[key-1]]))
+			// 						Observable[list[key-1]][element] = {}
+			// 			if (key==2)
+			// 				if (!(element in Observable[list[key-2]][list[key-1]]))
+			// 						Observable[list[key-2]][list[key-1]][element] = {}
 
-					}, this)
-				}, this);
-			}, this)
+			// 		}, this)
+			// 	}, this);
+			// }, this)
 		
-			this.Observable = Observable;
+			// this.Observable = Observable;
 			// }
 
 			if (this.spellChecker) {
@@ -294,28 +310,49 @@ EnhancedClassifier.prototype = {
 
 			dataset = dataset.map(function(datum) {
 
-			if (typeof this.InputSplitLabel === 'function') {
-				datum.output = (this.InputSplitLabel(multilabelutils.normalizeOutputLabels(datum.output)))	
-			}
-			else
-			{
-				datum.output = normalizeClasses(datum.output, this.labelLookupTable);
-			}
+				if (typeof this.InputSplitLabel === 'function') {
+					datum.output = (this.InputSplitLabel(multilabelutils.normalizeOutputLabels(datum.output)))	
+				}
+				else
+				{
+					datum.output = normalizeClasses(datum.output, this.labelLookupTable);
+				}
 
-			if (pastTrainingSamples && dataset!=pastTrainingSamples)
-				pastTrainingSamples.push(datum);
-			datum = _(datum).clone();
-			this.trainSpellChecker(datum.input);
-			datum.input = this.normalizedSample(datum.input);
-			var features = this.sampleToFeatures(datum.input, this.featureExtractors);
-			this.countFeatures(features);
-			// this.trainSpellChecker(features);
-			if (featureLookupTable)
-				featureLookupTable.addFeatures(features);
-			datum.input = features;
-			return datum;
-		}, this);
+				if (pastTrainingSamples && dataset!=pastTrainingSamples)
+					pastTrainingSamples.push(datum);
+				datum = _(datum).clone();
+
+				datum.input = this.normalizedSample(datum.input);
+
+				this.trainSpellChecker(datum.input);
+
+				var features = this.sampleToFeatures(datum.input, this.featureExtractors);
+				
+				// console.log(features)
+				// this.countFeatures(features);
+				// console.log(features)
+
+
+				if (this.tfidf)
+					this.tfidf.addDocument(features);
+				// this.trainSpellChecker(features);
+				if (featureLookupTable)
+					featureLookupTable.addFeatures(features);
+				datum.input = features;
+				return datum;
+			}, this);
+
+
+			//sum up all occurence of all featueres in the dataset - aggregation.
+		// if (this.featureDocumentFrequency)
+			// {
+			// console.log(this.featureDocumentFrequency)
+			// console.log(this.documentCount)
+			// process.exit(0)
+			// }
+
 		dataset.forEach(function(datum) {
+			// run on single sentence
 			this.editFeatureValues(datum.input, /*remove_unknown_features=*/false);
 			if (featureLookupTable)
 				datum.input = featureLookupTable.hashToArray(datum.input);
@@ -332,18 +369,39 @@ EnhancedClassifier.prototype = {
 	 * @return an array whose VALUES are classes.
 	 */
 	classifyPart: function(sample, explain, continuous_output) {
-		samplecheck = this.correctFeatureSpelling(sample)
-		var features = this.sampleToFeatures(samplecheck, this.featureExtractorsForClassification? this.featureExtractorsForClassification: this.featureExtractors);
+		// samplecheck = this.correctFeatureSpelling(sample)
+		// console.log(this.spellChecker[1].exists("nis"))
+		// console.log(this.spellChecker[1].exists("NIS"))
+		// process.exit(0)
+		// var features = this.sampleToFeatures(samplecheck, this.featureExtractorsForClassification? this.featureExtractorsForClassification: this.featureExtractors);
+		// console.log(sample)
+		// var tokens = tokenizer.tokenize(sample);
+		// var tokensCorrected = this.correctFeatureSpelling(sample);
+		// console.log("sample"+sample)
+		var samplecorrected = this.correctFeatureSpelling(sample);
+
+		// if (sample != samplecorrected)
+			// console.log("corrected"+samplecorrected)
+
+		var features = this.sampleToFeatures(samplecorrected, this.featureExtractors);
+
 		// this.correctFeatureSpelling(features);
+
 		this.editFeatureValues(features, /*remove_unknown_features=*/true);
+
+		// console.log(this.tfidf.documents)
+
+		// console.log(sample)
+		// console.log(features)
+		// process.exit(0)
 		var array = this.featuresToArray(features);
 		var classification = this.classifier.classify(array, explain, continuous_output);
-		if (this.spellChecker && classification.explanation) {
-			if (Array.isArray(classification.explanation))
-				classification.explanation.unshift({SpellCorrectedFeatures: JSON.stringify(features)});
-			else
-				classification.explanation['SpellCorrectedFeatures']=JSON.stringify(features);
-		}
+		// if (this.spellChecker && classification.explanation) {
+			// if (Array.isArray(classification.explanation))
+				// classification.explanation.unshift({SpellCorrectedFeatures: JSON.stringify(features)});
+			// else
+				// classification.explanation['SpellCorrectedFeatures']=JSON.stringify(features);
+		// }
 		return classification;
 	},
 
@@ -365,7 +423,7 @@ EnhancedClassifier.prototype = {
 	 * @return an array whose VALUES are classes.
 	 * @original is the original gold standard labels is used only for statistics.
 	 */
-	classify: function(sample, explain, continuous_output, original) {
+	classify: function(sample, explain, continuous_output, original, classifier_compare) {
 		sample = this.normalizedSample(sample);
 		if (!this.inputSplitter) {
 			var classesWithExplanation = this.classifyPart(sample, explain, continuous_output);
@@ -426,14 +484,14 @@ EnhancedClassifier.prototype = {
 			if ((explain>0) && (this.inputSplitter))
 				{ nclasses = []
 				_(explanations.length).times(function(n){
-					var clas = this.OutputSplitLabel(classes, this, parts[n], explanations[n], original)
+					var clas = this.OutputSplitLabel(classes, this, parts[n], explanations[n], original, classifier_compare)
 					nclasses = nclasses.concat(clas)
 				}, this)
 				classes = nclasses
 				}
 			else
 				{
-				classes = this.OutputSplitLabel(classes, this, sample, explanations, original)
+				classes = this.OutputSplitLabel(classes, this, sample, explanations, original, classifier_compare)
 				}
 			}
 

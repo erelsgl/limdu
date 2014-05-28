@@ -129,6 +129,8 @@ addCasesLabels: function (expectedClasses, actualClasses ) {
 	 * @return an array of explanations "FALSE POSITIVE", "FALSE NEGATIVE", and maybe also "TRUE POSITIVE"
      * @author Vasily Konovalov
 	 */
+
+	 //  micro - average
 	addCasesHash: function (expectedClasses, actualClasses, logTruePositives ) {
 		var explanations = {};
 		explanations['TP'] = []; explanations['FP'] = []; explanations['FN'] = [];
@@ -170,37 +172,16 @@ addCasesLabels: function (expectedClasses, actualClasses ) {
 	
 	retrieveLabels: function()
 	{
-		// if there are any data per labels calculate it
-		label_output = []
-		label_hash = {}
-
-		// console.log(this.labels)
-		// process.exit(0)
-
 		_.each(Object.keys(this.labels), function(label, key, list){ 
 			
 			this.labels[label]['Recall'] = this.labels[label]['TP'] / (this.labels[label]['TP'] + this.labels[label]['FN']);
 			this.labels[label]['Precision'] = this.labels[label]['TP'] / (this.labels[label]['TP'] + this.labels[label]['FP']);
 			this.labels[label]['F1'] = 2 / (1/this.labels[label]['Recall'] + 1/this.labels[label]['Precision'])
-			this.labels[label]['Frequency'] = (this.labels[label]['TP'] +this.labels[label]['FN'] )/(this.TP+this.FN)
 
 			if (!this.labels[label]['F1']) this.labels[label]['F1'] = -1
-							
-			label_output.push([label, this.labels[label]['F1'], this.labels[label]['Frequency'], this.labels[label]['TP'] + this.labels[label]['FN']])
-					
 			}, this)
 
-			label_output = _.sortBy(label_output, function(item){ return item[1]; });
-
-		for (label in label_output)
-			{
-			label_hash[label_output[label][0]] = {}
-			label_hash[label_output[label][0]]['F1'] = label_output[label][1]
-			label_hash[label_output[label][0]]['Frequency'] = label_output[label][2]
-			label_hash[label_output[label][0]]['Occurences'] = label_output[label][3]
-			}
-
-		return label_hash
+		return this.labels
 	},
 
 	retrieveStats: function()

@@ -12,6 +12,7 @@
     "sprintf": "*",
     "svm": "*",
     "temp": "*",
+    "wordsworth": "*",
     "execSync": "*",
     "brain": "*",
     "graph-paths": "latest",

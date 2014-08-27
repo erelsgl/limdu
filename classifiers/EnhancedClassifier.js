@@ -140,6 +140,7 @@ EnhancedClassifier.prototype = {
 				throw new Error("Cannot extract features from '"+sample+"': "+JSON.stringify(err));
 			}
 		}
+
 		return features;
 	},
 
@@ -309,6 +310,7 @@ EnhancedClassifier.prototype = {
 				}
 
 			dataset = dataset.map(function(datum) {
+
 
 				if (typeof this.InputSplitLabel === 'function') {
 					datum.output = (this.InputSplitLabel(multilabelutils.normalizeOutputLabels(datum.output)))	
@@ -480,6 +482,8 @@ EnhancedClassifier.prototype = {
 			// classes = this.OutputSplitLabel(classes, this.Observable, sample, explanations)
 			// var classes = []
 			// if (_.isArray(explanations))
+
+			// var bonus = []
 		
 			if ((explain>0) && (this.inputSplitter))
 				{ nclasses = []
@@ -491,7 +495,7 @@ EnhancedClassifier.prototype = {
 				}
 			else
 				{
-				classes = this.OutputSplitLabel(classes, this, sample, explanations, original, classifier_compare)
+				var classes = this.OutputSplitLabel(classes, this, sample, explanations, original, classifier_compare)
 				}
 			}
 
@@ -500,6 +504,7 @@ EnhancedClassifier.prototype = {
 				classes: classes,
 				scores: scores,
 				explanation: explanations
+				// bonus: bonus
 
 			};
 		else

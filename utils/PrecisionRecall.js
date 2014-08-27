@@ -169,6 +169,112 @@ addCasesLabels: function (expectedClasses, actualClasses ) {
 
 		return explanations;
 	},
+
+	addCasesHashSeq: function (expectedClasses, actualClasses, logTruePositives ) {
+
+		var ex = []
+		var ac = []
+
+		_.each(expectedClasses['single_labels'], function(value, key, list){ 
+			if (value['position'][0].length > 0)
+				_.each(value['position'], function(pos, key1, list1){
+					ex.push([key, pos]) 
+				}, this)
+		}, this)
+
+		_.each(actualClasses['explanation'], function(value, key, list){ 
+			ac.push([value[0], value[2]])
+		}, this)
+
+		var explanations = {};
+		explanations['TP'] = []; explanations['FP'] = []; explanations['FN'] = [];
+
+		// actualClasses = hash.normalized(actualClasses);
+		// expectedClasses = hash.normalized(expectedClasses);
+
+		// console.log(ac)
+		// console.log(ex)
+		// console.log()
+		// process.exit(0)
+		
+		var allTrue = true;
+		for (var actualClassindex in ac) {
+			
+			if (!(ac[actualClassindex][0] in this.labels)) {
+				this.labels[ac[actualClassindex][0]]={}
+				this.labels[ac[actualClassindex][0]]['TP']=0
+				this.labels[ac[actualClassindex][0]]['FP']=0
+				this.labels[ac[actualClassindex][0]]['FN']=0
+				}
+
+			var found = false
+			_.each(ex, function(exc, key, list){
+				if (ac[actualClassindex][0] == exc[0])
+					if (this.intersection(ac[actualClassindex][1], exc[1]))
+						found = true
+			}, this)
+
+			if (found) { 
+				if (logTruePositives) explanations['TP'].push(ac[actualClassindex][0]);
+				this.labels[ac[actualClassindex][0]]['TP'] += 1
+				this.TP++
+			} else {
+				explanations['FP'].push(ac[actualClassindex][0]);
+				this.labels[ac[actualClassindex][0]]['FP'] += 1
+				this.FP++
+				allTrue = false;
+			}
+		}
+
+		for (var expectedClassindex in ex) {
+			var found = false
+
+			if (!(ex[expectedClassindex][0] in this.labels)) {
+				this.labels[ex[expectedClassindex][0]]={}
+				this.labels[ex[expectedClassindex][0]]['TP']=0
+				this.labels[ex[expectedClassindex][0]]['FP']=0
+				this.labels[ex[expectedClassindex][0]]['FN']=0
+				}
+
+			_.each(ac, function(acc, key, list){ 
+				if (ex[expectedClassindex][0] == acc[0])
+					if (this.intersection(ex[expectedClassindex][1], acc[1]))
+						found = true
+			}, this)
+
+			if (!found)
+				{
+				explanations['FN'].push(ex[expectedClassindex][0]);
+				this.labels[ex[expectedClassindex][0]]['FN'] += 1
+				this.FN++;
+				allTrue = false;
+				}
+		}
+
+		if (allTrue) {
+			// if ((logTruePositives)&& (!only_false_cases)) explanations.push("\t\t*** ALL TRUE!");
+			this.TRUE++;
+		}
+		this.count++;
+
+		_.each(explanations, function(value, key, list){ 
+			// explanations[key] = _.sortBy(explanations[key], function(num){ num });
+			explanations[key].sort()
+		}, this)
+
+		// console.log(explanations)
+		// process.exit(0)
+		return explanations;
+	},
+	
+	intersection:function(begin, end)
+	{
+		if ((begin[0]<=end[0])&&(begin[1]>=end[0]))
+			return true
+		if ((begin[0]>=end[0])&&(begin[0]<=end[1]))
+			return true
+		return false
+	},
 	
 	retrieveLabels: function()
 	{

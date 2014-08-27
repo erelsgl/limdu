@@ -74,6 +74,11 @@ BinarySegmentation.prototype = {
 	 *            {input: sample1, output: [class11, class12...]}
 	 */
 	trainBatch : function(dataset) {
+		// add ['start'] and ['end'] as a try to resolve Append:previous FP
+		_.map(dataset, function(num){ 
+			num['input'] = "['start'] "+ num['input'] + " ['end']"
+			return num });
+
 		this.classifier.trainBatch(dataset)
 	},
 
@@ -265,7 +270,10 @@ BinarySegmentation.prototype = {
 	 * @return an array whose VALUES are classes.
 	 */
 	classify: function(sentence, explain) {
-		
+
+		// console.log("TEST")
+		// console.log("sentence "+ sentence)
+		// sentence = "['start'] " + sentence + " ['end']"		
 		var words = tokenizer.tokenize(sentence);
 		var minWordsToSplit = 2;
 		// var words = sentence.split(/ /);
@@ -285,6 +293,12 @@ BinarySegmentation.prototype = {
 			classification = this.bestClassOfSegment(sentence, explain)
 			// classification = this.classifySegment(sentence, explain);
 			//HERER
+
+			// console.log(sentence)
+			// console.log(classification)
+			// process.exit(0)
+			// process.exit(0)
+
 			return (explain>0?	{
 				classes: classification[0], 
 				// FEATURES

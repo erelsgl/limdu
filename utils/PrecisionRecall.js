@@ -170,21 +170,22 @@ addCasesLabels: function (expectedClasses, actualClasses ) {
 		return explanations;
 	},
 
+	// example of usage see in test
 	addCasesHashSeq: function (expectedClasses, actualClasses, logTruePositives ) {
 
 		var ex = []
-		var ac = []
+		var ac = actualClasses
 
 		_.each(expectedClasses['single_labels'], function(value, key, list){ 
-			if (value['position'][0].length > 0)
+			// if (value['position'][0].length > 0)
 				_.each(value['position'], function(pos, key1, list1){
 					ex.push([key, pos]) 
 				}, this)
 		}, this)
 
-		_.each(actualClasses['explanation'], function(value, key, list){ 
-			ac.push([value[0], value[2]])
-		}, this)
+		// _.each(actualClasses['explanation'], function(value, key, list){ 
+			// ac.push([value[0], value[2]])
+		// }, this)
 
 		var explanations = {};
 		explanations['TP'] = []; explanations['FP'] = []; explanations['FN'] = [];
@@ -210,8 +211,15 @@ addCasesLabels: function (expectedClasses, actualClasses ) {
 			var found = false
 			_.each(ex, function(exc, key, list){
 				if (ac[actualClassindex][0] == exc[0])
-					if (this.intersection(ac[actualClassindex][1], exc[1]))
+					{
+					if ((exc[1].length == 0) || (ac[actualClassindex][1][0] == -1))
 						found = true
+					else
+						{
+						if (this.intersection(ac[actualClassindex][1], exc[1]))
+							found = true
+						}
+					}
 			}, this)
 
 			if (found) { 
@@ -238,8 +246,15 @@ addCasesLabels: function (expectedClasses, actualClasses ) {
 
 			_.each(ac, function(acc, key, list){ 
 				if (ex[expectedClassindex][0] == acc[0])
-					if (this.intersection(ex[expectedClassindex][1], acc[1]))
-						found = true
+					{
+						if ((ex[expectedClassindex][1].length == 0) || (acc[1][0] == -1))
+							found = true
+						else
+							{
+							if (this.intersection(ex[expectedClassindex][1], acc[1]))
+								found = true
+							}
+					}
 			}, this)
 
 			if (!found)
@@ -267,6 +282,7 @@ addCasesLabels: function (expectedClasses, actualClasses ) {
 		return explanations;
 	},
 	
+	// simple intersection
 	intersection:function(begin, end)
 	{
 		if ((begin[0]<=end[0])&&(begin[1]>=end[0]))

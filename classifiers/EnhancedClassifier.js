@@ -127,6 +127,7 @@ EnhancedClassifier.prototype = {
 				}
 			}
 		}
+
 		return sample;
 	},
 
@@ -426,6 +427,7 @@ EnhancedClassifier.prototype = {
 	 * @original is the original gold standard labels is used only for statistics.
 	 */
 	classify: function(sample, explain, continuous_output, original, classifier_compare) {
+		var initial = sample
 		sample = this.normalizedSample(sample);
 		if (!this.inputSplitter) {
 			var classesWithExplanation = this.classifyPart(sample, explain, continuous_output);
@@ -488,14 +490,14 @@ EnhancedClassifier.prototype = {
 			if ((explain>0) && (this.inputSplitter))
 				{ nclasses = []
 				_(explanations.length).times(function(n){
-					var clas = this.OutputSplitLabel(classes, this, parts[n], explanations[n], original, classifier_compare)
+					var clas = this.OutputSplitLabel(classes, this, parts[n], explanations[n], original, classifier_compare, initial)
 					nclasses = nclasses.concat(clas)
 				}, this)
 				classes = nclasses
 				}
 			else
 				{
-				var classes = this.OutputSplitLabel(classes, this, sample, explanations, original, classifier_compare)
+				var classes = this.OutputSplitLabel(classes, this, sample, explanations, original, classifier_compare, initial)
 				}
 			}
 

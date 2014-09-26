@@ -40,6 +40,71 @@ describe('PrecisionRecall object', function() {
 		results['Recall'].should.equal(7/9)
 	});
 
+	it('correctly calculates precision, recall, accuracy in sequence format.', function() {
+                var pr = new mlutils.PrecisionRecall();
+		//expectedClasses, actualClasses
+		var expected =  
+		{
+		"single_labels": {
+                "Offer": {
+                    "id": 2,
+                    "position": [
+                        [13,26]
+                    ]
+                },
+                "Working Hours": {
+                    "id": 3,
+                    "position": [
+                        [6,9]
+                    ]
+                },
+                "8 hours": {
+                    "id": 5,
+                    "position": [
+                        [3,12]
+                    ]
+                },
+                "10 hours":{
+                    "id": 5,
+                    "position": [
+                        []
+                    ]
+                },
+            	}
+		}
+
+		// var actual = {'explanation':[
+		// 					['Offer','I am offering you',[13,25]],
+		// 					['Salary', 'salary',[3,6]],
+		// 					['8 hours', '', [3,5]],
+		// 					['10 hours', '', [9,15]],
+		// 				]
+		// 			}
+
+			var actual = [
+							['Offer',[13,25]],
+							['Salary', [3,6]],
+							['8 hours', [3,5]],
+							['10 hours', [9,15]],
+						]
+					
+		
+                var stats = pr.addCasesHashSeq(expected, actual, 1);
+
+                console.log(JSON.stringify(stats, null, 4))
+                process.exit(0)
+
+                _.isEqual(stats['TP'], ['8 hours', 'Offer' ]).should.equal(true)
+                _.isEqual(stats['FP'], ['Salary']).should.equal(true)
+                _.isEqual(stats['FN'], ['Working Hours']).should.equal(true)
+
+
+                var results = pr.retrieveStats()
+
+                // results['Recall'].should.equal(7/9)
+        });
+
+
 	it('correctly calculates precision, recall, accuracy in hash format.', function() {
 		var pr = new mlutils.PrecisionRecall();
 		var stats = pr.addCasesLabels([1,2,3,4,5], [1,3,5,7], 1);

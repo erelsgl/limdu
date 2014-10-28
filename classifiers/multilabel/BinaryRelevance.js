@@ -2,6 +2,7 @@ var hash = require("../../utils/hash");
 var sprintf = require("sprintf").sprintf;
 var _ = require("underscore")._;
 var multilabelutils = require('./multilabelutils');
+var fs = require('fs');
 
 /**
  * BinaryRelevance - Multi-label classifier, based on a collection of binary classifiers. 
@@ -118,6 +119,9 @@ BinaryRelevance.prototype = {
 
 		for (var label in this.mapClassnameToClassifier) {
 			var classifier = this.mapClassnameToClassifier[label];
+			
+			// fs.writeFileSync('/tmp/labels/'+label, JSON.stringify(classifier.getFeatures(), null, 4), 'utf8');
+
 			var scoreWithExplain = classifier.classify(sample, explain, withScores);
 			var score = scoreWithExplain.explanation?  scoreWithExplain.classification: scoreWithExplain;
 

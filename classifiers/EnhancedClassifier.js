@@ -331,17 +331,21 @@ EnhancedClassifier.prototype = {
 				 /*<attribute> and <value> are considered here
 				 but there are omitted in feature generation step*/
 				 // console.log(datum)
-				if (datum.input.trim().split(/\s+/).length < 4)
-				{
-					// console.log("pottentially to be exluded")
-					if (datum.output.length > 0)
-						if (datum.output[0].length > 0)
-							if (datum.output[0][0] == "Offer")
-								{
-								// console.log("it's short offer and it's excluded")
-								return null
-								}
-				}
+				// if (_.isString(datum.input))
+				// {
+
+				// 	if (datum.input.trim().split(/\s+/).length < 4)
+				// 	{
+				// 		// console.log("pottentially to be exluded")
+				// 		if (datum.output.length > 0)
+				// 			if (datum.output[0].length > 0)
+				// 				if (datum.output[0][0] == "Offer")
+				// 					{
+				// 					// console.log("it's short offer and it's excluded")
+				// 					return null
+				// 					}
+				// 	}
+				// }
 
 				this.trainSpellChecker(datum.input);
 
@@ -378,7 +382,7 @@ EnhancedClassifier.prototype = {
 				datum.input = featureLookupTable.hashToArray(datum.input);
 		}, this);
 
-		
+
 
 		this.classifier.trainBatch(dataset);
 	},
@@ -447,18 +451,18 @@ EnhancedClassifier.prototype = {
 		var initial = sample
 		sample = this.normalizedSample(sample)
 
-		if (sample.trim().split(/\s+/).length < 4)
-		{	if (explain>0) 
-				return {
-					classes: [],
-					scores: {},
-					explanation: {} 
-					// bonus: bonus
+		// if (sample.trim().split(/\s+/).length < 4)
+		// {	if (explain>0) 
+		// 		return {
+		// 			classes: [],
+		// 			scores: {},
+		// 			explanation: {} 
+		// 			// bonus: bonus
 
-				};
-			else
-				return []
-		}
+		// 		};
+		// 	else
+		// 		return []
+		// }
 		
 		if (!this.inputSplitter) {
 			var classesWithExplanation = this.classifyPart(sample, explain, continuous_output);
@@ -538,7 +542,6 @@ EnhancedClassifier.prototype = {
 				scores: scores,
 				explanation: explanations
 				// bonus: bonus
-
 			};
 		else
 			return classes;

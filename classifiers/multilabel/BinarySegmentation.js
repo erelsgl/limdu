@@ -4,7 +4,7 @@ var sprintf = require("sprintf").sprintf;
 var _ = require("underscore")._;
 var ftrs = require('../../features');
 var natural = require('natural');
-var tokenizer = new natural.RegexpTokenizer({pattern: /[^a-zA-Z0-9%'$]+/});
+var tokenizer = new natural.RegexpTokenizer({pattern: /[^a-zA-Z0-9%'$+-]+/});
 
 /**
  * BinarySegmentation - Multi-label text classifier, based on a segmentation scheme using base binary classifiers.
@@ -273,7 +273,7 @@ BinarySegmentation.prototype = {
 
 		// console.log("TEST")
 		// console.log("sentence "+ sentence)
-		// sentence = "['start'] " + sentence + " ['end']"		
+		// sentence = "['start'] " + sentence + " ['end']"
 		var words = tokenizer.tokenize(sentence);
 		var minWordsToSplit = 2;
 		// var words = sentence.split(/ /);

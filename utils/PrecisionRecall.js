@@ -44,7 +44,7 @@ PrecisionRecall.prototype = {
 	 * @return an array of explanations "FALSE POSITIVE", "FALSE NEGATIVE", and maybe also "TRUE POSITIVE"
 	 */
 
-addCasesLabels: function (expectedClasses, actualClasses ) {
+	addCasesLabels: function (expectedClasses, actualClasses ) {
 		var explanations = [];
 		actualClasses = hash.normalized(actualClasses);
 		expectedClasses = hash.normalized(expectedClasses);
@@ -79,6 +79,13 @@ addCasesLabels: function (expectedClasses, actualClasses ) {
 				this.labels[expectedClass]['FN'] += 1 
 			}
 		}
+	},
+
+	/* intented to calculate macro and micro average */
+	addPredicition: function(expected, actual)
+	{
+		addCasesHash(expected, actual, 1)
+		addCasesLabels(expected, actual)
 	},
 
 	/**
@@ -310,17 +317,53 @@ addCasesLabels: function (expectedClasses, actualClasses ) {
 	{
 		this.calculateStatsNoReturn()
 		stats = {}
+
 		stats['Accuracy'] = this.Accuracy
 		stats['HammingLoss'] = this.HammingLoss
 		stats['HammingGain'] = this.HammingGain
 		stats['Precision'] = this.Precision
 		stats['Recall'] = this.Recall
 		stats['F1'] = this.F1
+
+		stats['macroPrecision'] = this.macroPrecision
+		stats['macroRecall'] = this.macroRecall
+		stats['macroF1'] = this.macroF1
+		
 		stats['shortStatsString'] = this.shortStatsString
 		return stats
 	},
 
 	calculateStatsNoReturn: function() {
+		this.retrieveLabels()
+
+		this.macroPrecision = 0
+		this.macroRecall = 0
+		this.macroF1 = 0
+
+		var macroPrecision = []
+		var macroRecall = []
+		var macroF1 = []
+
+		// isNaN
+
+		if (Object.keys(this.labels).length > 3)
+		{
+
+			var list_lab = _.toArray(this.labels)
+			var macro_stats = {}
+			
+			_.each(['Precision', 'Recall', 'F1'], function(param, key, list){ 
+				macro_stats[param] = _.pluck(list_lab, param)
+				macro_stats[param] = _.filter(macro_stats[param], function(elem){ return (isNaN(elem))==false})
+				macro_stats[param] = _.reduce(macro_stats[param], function(memo, num){ return memo + num; }) / macro_stats[param].length
+			}, this)
+
+			this.macroPrecision = macro_stats['Precision']
+			this.macroRecall = macro_stats['Recall']
+			this.macroF1 = macro_stats['F1']
+
+		}
+
 		this.Accuracy = (this.TRUE) / (this.count);
 		this.HammingLoss = (this.FN+this.FP) / (this.FN+this.TP); // "the percentage of the wrong labels to the total number of labels"
 		this.HammingGain = 1-this.HammingLoss;

@@ -123,6 +123,7 @@ EnhancedClassifier.prototype = {
 						sample = this.normalizers[i](sample);
 					}
 				} catch (err) {
+					console.log(err)
 					throw new Error("Cannot normalize '"+sample+"': "+JSON.stringify(err));
 				}
 			}
@@ -327,6 +328,21 @@ EnhancedClassifier.prototype = {
 
 				datum.input = this.normalizedSample(datum.input);
 
+				 /*<attribute> and <value> are considered here
+				 but there are omitted in feature generation step*/
+				 // console.log(datum)
+				if (datum.input.trim().split(/\s+/).length < 4)
+				{
+					// console.log("pottentially to be exluded")
+					if (datum.output.length > 0)
+						if (datum.output[0].length > 0)
+							if (datum.output[0][0] == "Offer")
+								{
+								// console.log("it's short offer and it's excluded")
+								return null
+								}
+				}
+
 				this.trainSpellChecker(datum.input);
 
 				var features = this.sampleToFeatures(datum.input, this.featureExtractors);
@@ -345,6 +361,7 @@ EnhancedClassifier.prototype = {
 				return datum;
 			}, this);
 
+			dataset = _.compact(dataset)
 
 			//sum up all occurence of all featueres in the dataset - aggregation.
 		// if (this.featureDocumentFrequency)
@@ -361,7 +378,7 @@ EnhancedClassifier.prototype = {
 				datum.input = featureLookupTable.hashToArray(datum.input);
 		}, this);
 
-
+		
 
 		this.classifier.trainBatch(dataset);
 	},
@@ -428,7 +445,21 @@ EnhancedClassifier.prototype = {
 	 */
 	classify: function(sample, explain, continuous_output, original, classifier_compare) {
 		var initial = sample
-		sample = this.normalizedSample(sample);
+		sample = this.normalizedSample(sample)
+
+		if (sample.trim().split(/\s+/).length < 4)
+		{	if (explain>0) 
+				return {
+					classes: [],
+					scores: {},
+					explanation: {} 
+					// bonus: bonus
+
+				};
+			else
+				return []
+		}
+		
 		if (!this.inputSplitter) {
 			var classesWithExplanation = this.classifyPart(sample, explain, continuous_output);
 			var classes = (explain>0? classesWithExplanation.classes: classesWithExplanation);

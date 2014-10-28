@@ -91,10 +91,7 @@ describe('PrecisionRecall object', function() {
 		
                 var stats = pr.addCasesHashSeq(expected, actual, 1);
 
-                console.log(JSON.stringify(stats, null, 4))
-                process.exit(0)
-
-                _.isEqual(stats['TP'], ['8 hours', 'Offer' ]).should.equal(true)
+                _.isEqual(stats['TP'], ['10 hours', '8 hours', 'Offer']).should.equal(true)
                 _.isEqual(stats['FP'], ['Salary']).should.equal(true)
                 _.isEqual(stats['FN'], ['Working Hours']).should.equal(true)
 
@@ -118,6 +115,9 @@ describe('PrecisionRecall object', function() {
 		var labels = pr.retrieveLabels()
 		labels['1']['F1'].should.equal(2*0.5*0.5/(1))
 		labels['7']['F1'].should.equal((2*1/3)/(4/3))
+		var stat = pr.calculateStats()
 	})
+
+
 
 })

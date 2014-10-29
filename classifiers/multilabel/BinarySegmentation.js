@@ -32,7 +32,6 @@ var BinarySegmentation = function(opts) {
 
 	this.binaryClassifierType = opts.binaryClassifierType;
 	this.classifier = new this.binaryClassifierType();
-	this.strandard = opts.strandard;
 
 	switch (opts.segmentSplitStrategy) {
 	case 'shortestSegment': this.segmentSplitStrategy = this.shortestSegmentSplitStrategy; break;

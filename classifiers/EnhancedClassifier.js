@@ -48,6 +48,8 @@ var EnhancedClassifier = function(opts) {
 	this.setFeatureExtractorForClassification(opts.featureExtractorForClassification);
 	this.setFeatureLookupTable(opts.featureLookupTable);
 	this.setLabelLookupTable(opts.labelLookupTable);
+	this.setInstanceFilter(opts.instanceFilter);
+
 
 	this.multiplyFeaturesByIDF = opts.multiplyFeaturesByIDF;
 	this.minFeatureDocumentFrequency = opts.minFeatureDocumentFrequency || 0;
@@ -60,7 +62,6 @@ var EnhancedClassifier = function(opts) {
 
 	this.spellChecker = opts.spellChecker;
 	this.tokenizer = opts.tokenizer;
-	this.instanceFilterRule = opts.instanceFilter
 
 	// this.spellChecker =  [require('wordsworth').getInstance(), require('wordsworth').getInstance()],
 	// this.pastTrainingSamples = opts.pastTrainingSamples;
@@ -76,6 +77,10 @@ var EnhancedClassifier = function(opts) {
 
 
 EnhancedClassifier.prototype = {
+
+	setInstanceFilter: function (instanceFilter) {
+		this.instanceFilter = instanceFilter;
+	},
 
 	/** Set the main feature extractor, used for both training and classification. */
 	setFeatureExtractor: function (featureExtractor) {
@@ -149,9 +154,9 @@ EnhancedClassifier.prototype = {
 		return features;
 	},
 
-	instanceFilter: function(data) {
-		if (this.instanceFilterRule) 
-			return this.instanceFilterRule(data)
+	instanceFilterRun: function(data) {
+		if (this.instanceFilter) 
+			return this.instanceFilter(data)
 	},
 	
 	trainSpellChecker: function(features) {
@@ -291,7 +296,7 @@ EnhancedClassifier.prototype = {
 				datum.input = this.normalizedSample(datum.input);
 
 				/*true - this instance is filtered as not useful*/
-				if (this.instanceFilter(datum) == true)
+				if (this.instanceFilterRun(datum) == true)
 					return null
 
 				this.trainSpellChecker(datum.input);
@@ -364,7 +369,7 @@ EnhancedClassifier.prototype = {
 		var initial = sample
 		sample = this.normalizedSample(sample)
 
-		if (this.instanceFilter(sample))
+		if (this.instanceFilterRun(sample))
 			{	if (explain>0) 
 				return {
 					classes: [],

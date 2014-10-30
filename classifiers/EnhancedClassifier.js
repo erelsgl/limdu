@@ -1,13 +1,12 @@
+/*
+TODO: SpellChecker should be reorganized
+*/
+
 var ftrs = require('../features');
 var _ = require('underscore')._;
 var hash = require('../utils/hash');
 var util = require('../utils/list');
-var fs = require('fs');
-var natural = require('natural');
-
 var multilabelutils = require('./multilabel/multilabelutils');
-var tokenizer = new natural.RegexpTokenizer({pattern: /[^a-zA-Z0-9%'$,]+/});
-
 
 /**
  * EnhancedClassifier - wraps any classifier with feature-extractors and feature-lookup-tables.
@@ -29,7 +28,10 @@ var tokenizer = new natural.RegexpTokenizer({pattern: /[^a-zA-Z0-9%'$,]+/});
  * * 'InputSplitLabel' - a method for special separation of input labels before training
  * * 'OutputSplitLabel' - a method for special separation of output labesl after classification.
  * * 'TestSplitLabel' - a method for special separation before a testing
- * *  'Observalbe' - a tree of label of training data 
+ * * 'TfIdfImpl' - implementation of tf-idf algorithm
+ * * 'tokenizer' - implementation of tokenizer
+ * * 'instanceFilter' - filter of instance of training data and test data, if training instance is filtered is not used for training, if triaging instance is filtered by classify,
+ it's classified empty class.
 */
 
 var EnhancedClassifier = function(opts) {
@@ -51,35 +53,36 @@ var EnhancedClassifier = function(opts) {
 	this.minFeatureDocumentFrequency = opts.minFeatureDocumentFrequency || 0;
 	if (opts.multiplyFeaturesByIDF||opts.minFeatureDocumentFrequency) 
 		{
-    	this.tfidf = new natural.TfIdf()
+    	this.tfidf = new opts.TfIdfImpl
 		this.featureDocumentFrequency = {};
 		}
 	this.bias = opts.bias;
 
 	this.spellChecker = opts.spellChecker;
+	this.tokenizer = opts.tokenizer;
+	this.instanceFilterRule = opts.instanceFilter
+
 	// this.spellChecker =  [require('wordsworth').getInstance(), require('wordsworth').getInstance()],
 	// this.pastTrainingSamples = opts.pastTrainingSamples;
-	// TODO: it looks like the menthd with creating an array at the definition 
+	// TODO: it looks like the method with creating an array at the definition 
 	// create an array with the same pointer for every classifier of the given class
+	
 	this.pastTrainingSamples = []
 
 	this.InputSplitLabel = opts.InputSplitLabel
 	this.OutputSplitLabel = opts.OutputSplitLabel
 	this.TestSplitLabel = opts.TestSplitLabel
-
-	this.Observable = []
-
 }
 
 
 EnhancedClassifier.prototype = {
 
-	/** Set the main feature extactor, used for both training and classification. */
+	/** Set the main feature extractor, used for both training and classification. */
 	setFeatureExtractor: function (featureExtractor) {
 		this.featureExtractors = ftrs.normalize(featureExtractor);
 	},
 	
-	/** Set the main feature extactor, used for both training and classification. */
+	/** Set the main feature extractor, used for both training and classification. */
 	setNormalizer: function (normalizer) {
 		if (normalizer)
 			this.normalizers = (Array.isArray(normalizer)? normalizer: [normalizer]);
@@ -146,22 +149,14 @@ EnhancedClassifier.prototype = {
 		return features;
 	},
 
-	// sampleToFeatures: function(sample, featureExtractor) {
-	// 	var features = sample;
-	// 	if (featureExtractor) {
-	// 		try {
-	// 			// features = {};
-	// 			features = featureExtractor(sample);
-	// 		} catch (err) {
-	// 			throw new Error("Cannot extract features from '"+sample+"': "+JSON.stringify(err));
-	// 		}
-	// 	}
-	// 	return features;
-	// },
+	instanceFilter: function(data) {
+		if (this.instanceFilterRule) 
+			return this.instanceFilterRule(data)
+	},
 	
 	trainSpellChecker: function(features) {
 		if (this.spellChecker) {
-			var tokens = tokenizer.tokenize(features);
+			var tokens = this.tokenizer.tokenize(features);
 			_.each(tokens, function(word, key, list){ 
 				this.spellChecker[1].understand(word); // Adds the given word to the index of the spell-checker.
 				this.spellChecker[1].train(word);
@@ -171,7 +166,7 @@ EnhancedClassifier.prototype = {
 	
 	correctFeatureSpelling: function(sample) {
 		if (this.spellChecker) {
-			var features = tokenizer.tokenize(sample);
+			var features = this.tokenizer.tokenize(sample);
 			for (var index in features) {
 				var feature = features[index]
 				if (!isNaN(parseInt(feature)))  // don't spell-correct numeric features
@@ -270,49 +265,16 @@ EnhancedClassifier.prototype = {
 	trainBatch: function(dataset) {
 		var featureLookupTable = this.featureLookupTable;
 		var pastTrainingSamples = this.pastTrainingSamples;
-		
-		// if (typeof this.InputSplitLabel === 'function') {
-		// dataset = dataset.map(function(datum) {
-		// 	var normalizedLabels = multilabelutils.normalizeOutputLabels(datum.output);
-		// 	process.exit(0)
-		// 	return {
-		// 		input: datum.input,
-		// 		output: (this.InputSplitLabel(normalizedLabels))
-		// 	}
-		// }, this);
-		// }
-			// Observable = {}
-
-			// // if (this.classifier.setObservable)
-			// 	// {
-			// 	_.each(dataset, function(datum, key, list){
-			// 	_.each(multilabelutils.normalizeOutputLabels(datum.output), function(label, key, list){
-			// 		_.each(this.splitJson(label), function(element, key, list){
-			// 			if (key==0)
-			// 				if (!(element in Observable))
-			// 						Observable[element] = {}
-			// 			if (key==1)
-			// 				if (!(element in Observable[list[key-1]]))
-			// 						Observable[list[key-1]][element] = {}
-			// 			if (key==2)
-			// 				if (!(element in Observable[list[key-2]][list[key-1]]))
-			// 						Observable[list[key-2]][list[key-1]][element] = {}
-
-			// 		}, this)
-			// 	}, this);
-			// }, this)
-		
-			// this.Observable = Observable;
-			// }
 
 			if (this.spellChecker) {
-				var seeds = fs.readFileSync('./node_modules/wordsworth/data/seed.txt')
-				var trainings = fs.readFileSync('./node_modules/wordsworth/data/training.txt')
+				// var seeds = fs.readFileSync('./node_modules/wordsworth/data/seed.txt')
+				// var trainings = fs.readFileSync('./node_modules/wordsworth/data/training.txt')
+				var seeds = []
+				var trainings = []
 				this.spellChecker[0].initializeSync(seeds.toString().split("\r\n"), trainings.toString().split("\r\n"))
 				}
 
 			dataset = dataset.map(function(datum) {
-
 
 				if (typeof this.InputSplitLabel === 'function') {
 					datum.output = (this.InputSplitLabel(multilabelutils.normalizeOutputLabels(datum.output)))	
@@ -328,52 +290,25 @@ EnhancedClassifier.prototype = {
 
 				datum.input = this.normalizedSample(datum.input);
 
-				 /*<attribute> and <value> are considered here
-				 but there are omitted in feature generation step*/
-				 // console.log(datum)
-				// if (_.isString(datum.input))
-				// {
-
-				// 	if (datum.input.trim().split(/\s+/).length < 4)
-				// 	{
-				// 		// console.log("pottentially to be exluded")
-				// 		if (datum.output.length > 0)
-				// 			if (datum.output[0].length > 0)
-				// 				if (datum.output[0][0] == "Offer")
-				// 					{
-				// 					// console.log("it's short offer and it's excluded")
-				// 					return null
-				// 					}
-				// 	}
-				// }
+				/*true - this instance is filtered as not useful*/
+				if (this.instanceFilter(datum) == true)
+					return null
 
 				this.trainSpellChecker(datum.input);
 
 				var features = this.sampleToFeatures(datum.input, this.featureExtractors);
 				
-				// console.log(features)
-				// this.countFeatures(features);
-				// console.log(features)
-
-
 				if (this.tfidf)
 					this.tfidf.addDocument(features);
 				// this.trainSpellChecker(features);
 				if (featureLookupTable)
 					featureLookupTable.addFeatures(features);
+
 				datum.input = features;
 				return datum;
 			}, this);
 
 			dataset = _.compact(dataset)
-
-			//sum up all occurence of all featueres in the dataset - aggregation.
-		// if (this.featureDocumentFrequency)
-			// {
-			// console.log(this.featureDocumentFrequency)
-			// console.log(this.documentCount)
-			// process.exit(0)
-			// }
 
 		dataset.forEach(function(datum) {
 			// run on single sentence
@@ -381,8 +316,6 @@ EnhancedClassifier.prototype = {
 			if (featureLookupTable)
 				datum.input = featureLookupTable.hashToArray(datum.input);
 		}, this);
-
-
 
 		this.classifier.trainBatch(dataset);
 	},
@@ -393,33 +326,13 @@ EnhancedClassifier.prototype = {
 	 * @return an array whose VALUES are classes.
 	 */
 	classifyPart: function(sample, explain, continuous_output) {
-		// samplecheck = this.correctFeatureSpelling(sample)
-		// console.log(this.spellChecker[1].exists("nis"))
-		// console.log(this.spellChecker[1].exists("NIS"))
-		// process.exit(0)
-		// var features = this.sampleToFeatures(samplecheck, this.featureExtractorsForClassification? this.featureExtractorsForClassification: this.featureExtractors);
-		// console.log(sample)
-		// var tokens = tokenizer.tokenize(sample);
-		// var tokensCorrected = this.correctFeatureSpelling(sample);
-		// console.log("sample"+sample)
+		
 		var samplecorrected = this.correctFeatureSpelling(sample);
-
-		// if (sample != samplecorrected)
-			// console.log("corrected"+samplecorrected)
-
 		var features = this.sampleToFeatures(samplecorrected, this.featureExtractors);
-
-		// this.correctFeatureSpelling(features);
-
 		this.editFeatureValues(features, /*remove_unknown_features=*/true);
-
-		// console.log(this.tfidf.documents)
-
-		// console.log(sample)
-		// console.log(features)
-		// process.exit(0)
 		var array = this.featuresToArray(features);
 		var classification = this.classifier.classify(array, explain, continuous_output);
+		
 		// if (this.spellChecker && classification.explanation) {
 			// if (Array.isArray(classification.explanation))
 				// classification.explanation.unshift({SpellCorrectedFeatures: JSON.stringify(features)});
@@ -451,18 +364,17 @@ EnhancedClassifier.prototype = {
 		var initial = sample
 		sample = this.normalizedSample(sample)
 
-		// if (sample.trim().split(/\s+/).length < 4)
-		// {	if (explain>0) 
-		// 		return {
-		// 			classes: [],
-		// 			scores: {},
-		// 			explanation: {} 
-		// 			// bonus: bonus
-
-		// 		};
-		// 	else
-		// 		return []
-		// }
+		if (this.instanceFilter(sample))
+			{	if (explain>0) 
+				return {
+					classes: [],
+					scores: {},
+					explanation: {} 
+					// bonus: bonus
+				};
+			else
+				return []
+			}		
 		
 		if (!this.inputSplitter) {
 			var classesWithExplanation = this.classifyPart(sample, explain, continuous_output);
@@ -519,7 +431,6 @@ EnhancedClassifier.prototype = {
 			// classes = this.OutputSplitLabel(classes, this.Observable, sample, explanations)
 			// var classes = []
 			// if (_.isArray(explanations))
-
 			// var bonus = []
 		
 			if ((explain>0) && (this.inputSplitter))

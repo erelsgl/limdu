@@ -129,7 +129,7 @@ SvmPerf.prototype = {
  */
 
 var SVM_PERF_MODEL_PATTERN = new RegExp(
-		"[\\S\\s]*"+    // skip the beginning of stringgetFeatures
+		"[\\S\\s]*"+ 
 		"^([\\S\\s]*) # threshold b[\\S\\s]*"+  // parse the threshold line
 		"^([\\S\\s]*) #[\\S\\s]*" + // parse the weights line
 		"", "m");

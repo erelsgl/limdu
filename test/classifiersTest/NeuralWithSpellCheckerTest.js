@@ -8,6 +8,7 @@
 var should = require('should');
 var classifiers = require('../../classifiers');
 var ftrs = require('../../features');
+var natural = require('natural');
 
 try {
 	var wordsworth = require('wordsworth');
@@ -40,6 +41,7 @@ describe('classifier with spell-checker', function() {
 		var spamClassifier = new classifiers.EnhancedClassifier({
 			classifierType:   classifiers.NeuralNetwork,
 			featureExtractor: ftrs.NGramsOfWords(1),
+			tokenizer: new natural.RegexpTokenizer({pattern: /[^a-zA-Z0-9%'$,]+/}),
 			spellChecker: [wordsworth.getInstance(), wordsworth.getInstance()]
 		});
 

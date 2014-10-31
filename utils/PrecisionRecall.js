@@ -44,7 +44,7 @@ PrecisionRecall.prototype = {
 	 * @return an array of explanations "FALSE POSITIVE", "FALSE NEGATIVE", and maybe also "TRUE POSITIVE"
 	 */
 
-addCasesLabels: function (expectedClasses, actualClasses ) {
+	addCasesLabels: function (expectedClasses, actualClasses ) {
 		var explanations = [];
 		actualClasses = hash.normalized(actualClasses);
 		expectedClasses = hash.normalized(expectedClasses);
@@ -79,6 +79,13 @@ addCasesLabels: function (expectedClasses, actualClasses ) {
 				this.labels[expectedClass]['FN'] += 1 
 			}
 		}
+	},
+
+	/* intented to calculate macro and micro average */
+	addPredicition: function(expected, actual)
+	{
+		addCasesHash(expected, actual, 1)
+		addCasesLabels(expected, actual)
 	},
 
 	/**
@@ -129,6 +136,8 @@ addCasesLabels: function (expectedClasses, actualClasses ) {
 	 * @return an array of explanations "FALSE POSITIVE", "FALSE NEGATIVE", and maybe also "TRUE POSITIVE"
      * @author Vasily Konovalov
 	 */
+
+	 //  micro - average
 	addCasesHash: function (expectedClasses, actualClasses, logTruePositives ) {
 		var explanations = {};
 		explanations['TP'] = []; explanations['FP'] = []; explanations['FN'] = [];
@@ -160,59 +169,201 @@ addCasesLabels: function (expectedClasses, actualClasses ) {
 		}
 		this.count++;
 
+		_.each(explanations, function(value, key, list){ 
+			// explanations[key] = _.sortBy(explanations[key], function(num){ num });
+			explanations[key].sort()
+		}, this)
+
 		return explanations;
+	},
+
+	// example of usage see in test
+	addCasesHashSeq: function (expectedClasses, actualClasses, logTruePositives ) {
+
+		var ex = []
+		var ac = actualClasses
+
+		_.each(expectedClasses['single_labels'], function(value, key, list){ 
+			// if (value['position'][0].length > 0)
+				_.each(value['position'], function(pos, key1, list1){
+					ex.push([key, pos]) 
+				}, this)
+		}, this)
+
+		// _.each(actualClasses['explanation'], function(value, key, list){ 
+			// ac.push([value[0], value[2]])
+		// }, this)
+
+		var explanations = {};
+		explanations['TP'] = []; explanations['FP'] = []; explanations['FN'] = [];
+
+		// actualClasses = hash.normalized(actualClasses);
+		// expectedClasses = hash.normalized(expectedClasses);
+
+		// console.log(ac)
+		// console.log(ex)
+		// console.log()
+		// process.exit(0)
+		
+		var allTrue = true;
+		for (var actualClassindex in ac) {
+			
+			if (!(ac[actualClassindex][0] in this.labels)) {
+				this.labels[ac[actualClassindex][0]]={}
+				this.labels[ac[actualClassindex][0]]['TP']=0
+				this.labels[ac[actualClassindex][0]]['FP']=0
+				this.labels[ac[actualClassindex][0]]['FN']=0
+				}
+
+			var found = false
+			_.each(ex, function(exc, key, list){
+				if (ac[actualClassindex][0] == exc[0])
+					{
+					if ((exc[1].length == 0) || (ac[actualClassindex][1][0] == -1))
+						found = true
+					else
+						{
+						if (this.intersection(ac[actualClassindex][1], exc[1]))
+							found = true
+						}
+					}
+			}, this)
+
+			if (found) { 
+				if (logTruePositives) explanations['TP'].push(ac[actualClassindex][0]);
+				this.labels[ac[actualClassindex][0]]['TP'] += 1
+				this.TP++
+			} else {
+				explanations['FP'].push(ac[actualClassindex][0]);
+				this.labels[ac[actualClassindex][0]]['FP'] += 1
+				this.FP++
+				allTrue = false;
+			}
+		}
+
+		for (var expectedClassindex in ex) {
+			var found = false
+
+			if (!(ex[expectedClassindex][0] in this.labels)) {
+				this.labels[ex[expectedClassindex][0]]={}
+				this.labels[ex[expectedClassindex][0]]['TP']=0
+				this.labels[ex[expectedClassindex][0]]['FP']=0
+				this.labels[ex[expectedClassindex][0]]['FN']=0
+				}
+
+			_.each(ac, function(acc, key, list){ 
+				if (ex[expectedClassindex][0] == acc[0])
+					{
+						if ((ex[expectedClassindex][1].length == 0) || (acc[1][0] == -1))
+							found = true
+						else
+							{
+							if (this.intersection(ex[expectedClassindex][1], acc[1]))
+								found = true
+							}
+					}
+			}, this)
+
+			if (!found)
+				{
+				explanations['FN'].push(ex[expectedClassindex][0]);
+				this.labels[ex[expectedClassindex][0]]['FN'] += 1
+				this.FN++;
+				allTrue = false;
+				}
+		}
+
+		if (allTrue) {
+			// if ((logTruePositives)&& (!only_false_cases)) explanations.push("\t\t*** ALL TRUE!");
+			this.TRUE++;
+		}
+		this.count++;
+
+		_.each(explanations, function(value, key, list){ 
+			// explanations[key] = _.sortBy(explanations[key], function(num){ num });
+			explanations[key].sort()
+		}, this)
+
+		// console.log(explanations)
+		// process.exit(0)
+		return explanations;
+	},
+	
+	// simple intersection
+	intersection:function(begin, end)
+	{
+		if ((begin[0]<=end[0])&&(begin[1]>=end[0]))
+			return true
+		if ((begin[0]>=end[0])&&(begin[0]<=end[1]))
+			return true
+		return false
 	},
 	
 	retrieveLabels: function()
 	{
-		// if there are any data per labels calculate it
-		label_output = []
-		label_hash = {}
-
-		// console.log(this.labels)
-		// process.exit(0)
-
 		_.each(Object.keys(this.labels), function(label, key, list){ 
 			
 			this.labels[label]['Recall'] = this.labels[label]['TP'] / (this.labels[label]['TP'] + this.labels[label]['FN']);
 			this.labels[label]['Precision'] = this.labels[label]['TP'] / (this.labels[label]['TP'] + this.labels[label]['FP']);
 			this.labels[label]['F1'] = 2 / (1/this.labels[label]['Recall'] + 1/this.labels[label]['Precision'])
-			this.labels[label]['Frequency'] = (this.labels[label]['TP'] +this.labels[label]['FN'] )/(this.TP+this.FN)
 
 			if (!this.labels[label]['F1']) this.labels[label]['F1'] = -1
-							
-			label_output.push([label, this.labels[label]['F1'], this.labels[label]['Frequency'], this.labels[label]['TP'] + this.labels[label]['FN']])
-					
 			}, this)
 
-			label_output = _.sortBy(label_output, function(item){ return item[1]; });
-
-		for (label in label_output)
-			{
-			label_hash[label_output[label][0]] = {}
-			label_hash[label_output[label][0]]['F1'] = label_output[label][1]
-			label_hash[label_output[label][0]]['Frequency'] = label_output[label][2]
-			label_hash[label_output[label][0]]['Occurences'] = label_output[label][3]
-			}
-
-		return label_hash
+		return this.labels
 	},
 
 	retrieveStats: function()
 	{
 		this.calculateStatsNoReturn()
 		stats = {}
+
 		stats['Accuracy'] = this.Accuracy
 		stats['HammingLoss'] = this.HammingLoss
 		stats['HammingGain'] = this.HammingGain
 		stats['Precision'] = this.Precision
 		stats['Recall'] = this.Recall
 		stats['F1'] = this.F1
+
+		stats['macroPrecision'] = this.macroPrecision
+		stats['macroRecall'] = this.macroRecall
+		stats['macroF1'] = this.macroF1
+		
 		stats['shortStatsString'] = this.shortStatsString
 		return stats
 	},
 
 	calculateStatsNoReturn: function() {
+		this.retrieveLabels()
+
+		this.macroPrecision = 0
+		this.macroRecall = 0
+		this.macroF1 = 0
+
+		var macroPrecision = []
+		var macroRecall = []
+		var macroF1 = []
+
+		// isNaN
+
+		if (Object.keys(this.labels).length > 3)
+		{
+
+			var list_lab = _.toArray(this.labels)
+			var macro_stats = {}
+			
+			_.each(['Precision', 'Recall', 'F1'], function(param, key, list){ 
+				macro_stats[param] = _.pluck(list_lab, param)
+				macro_stats[param] = _.filter(macro_stats[param], function(elem){ return (isNaN(elem))==false})
+				macro_stats[param] = _.reduce(macro_stats[param], function(memo, num){ return memo + num; }) / macro_stats[param].length
+			}, this)
+
+			this.macroPrecision = macro_stats['Precision']
+			this.macroRecall = macro_stats['Recall']
+			this.macroF1 = macro_stats['F1']
+
+		}
+
 		this.Accuracy = (this.TRUE) / (this.count);
 		this.HammingLoss = (this.FN+this.FP) / (this.FN+this.TP); // "the percentage of the wrong labels to the total number of labels"
 		this.HammingGain = 1-this.HammingLoss;

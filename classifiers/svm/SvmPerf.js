@@ -19,8 +19,9 @@ var fs   = require('fs')
   , util  = require('util')
   , execSync = require('execSync').exec
   , exec = require('child_process').exec
-  , svmcommon = require('./svmcommon')
-  ;
+  , svmcommon = require('./svmcommon')	
+  , _ = require("underscore")._;
+  
 
 function SvmPerf(opts) {
 	if (!SvmPerf.isInstalled()) {
@@ -33,6 +34,7 @@ function SvmPerf(opts) {
 	this.model_file_prefix = opts.model_file_prefix || null;
 	this.bias = 'bias' in opts? opts.bias: 1.0;
 	this.debug = opts.debug || false;
+	this.ShowFeat = {}
 }
 
 SvmPerf.isInstalled = function() {
@@ -76,6 +78,18 @@ SvmPerf.prototype = {
 			this.mapFeatureToWeight = modelStringToModelMap(modelString);  // weights in modelMap start from 0 (- the bias).
 			if (this.debug) console.dir(this.mapFeatureToWeight);
 		},
+
+		getFeatures: function() {
+			var featlist = []
+			_.each(this.mapFeatureToWeight, function(weight, index, list){
+				if (parseInt(index) == 0)
+					featlist.push(['bias', weight])
+				else
+					featlist.push([this.featureLookupTable.numberToFeature(parseInt(index)-1), weight])
+			}, this)
+			featlist = _.sortBy(featlist, function(num){return num[1]})
+			return featlist
+		},
 		
 		getModelWeights: function() {
 			return this.mapFeatureToWeight;
@@ -115,7 +129,7 @@ SvmPerf.prototype = {
  */
 
 var SVM_PERF_MODEL_PATTERN = new RegExp(
-		"[\\S\\s]*"+    // skip the beginning of string
+		"[\\S\\s]*"+ 
 		"^([\\S\\s]*) # threshold b[\\S\\s]*"+  // parse the threshold line
 		"^([\\S\\s]*) #[\\S\\s]*" + // parse the weights line
 		"", "m");

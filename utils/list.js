@@ -31,17 +31,37 @@ exports.average = function(list)
 		return sum/list.length
 	}
 
+// @input - list 
+// @output - embedded list
 exports.listembed = function(label)
 	{
-		if (typeof label != 'undefined')
-		{
-			if (!(label[0] instanceof Array))
-				return [label]
-			else 
-				return label
-		}
-		else
-		{
+		if ((label === null) || (label == undefined) || (typeof label == 'undefined'))
+			return [[]]
+		// if (typeof label != 'undefined')
+		// else
+		// {
+		if ((_.isObject(label))&&!(_.isArray(label)))
+		// if ('classes' in JSON.parse(label))
+		if ('classes' in label)
+			label = label.classes
+
+		if (!(label[0] instanceof Array))
 			return [label]
-		}
+		else 
+			return label
+		// }
+		// else
+		// {
+			// return [label]
+		// }
 	}
+
+exports.clonedataset = function(set)
+	{
+	set1 = []
+	_.each(set, function(value, key, list){
+		set1.push(_.clone(value))
+		})
+	return set1
+	}
+

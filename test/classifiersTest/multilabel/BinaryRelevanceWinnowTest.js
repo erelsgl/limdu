@@ -8,6 +8,8 @@
 
 var should = require('should');
 var classifiers = require('../../../classifiers');
+var _ = require("underscore")._;
+
 
 var retrain_count = 10;
 var BinaryRelevanceWinnow = classifiers.multilabel.BinaryRelevance.bind(this, {
@@ -35,13 +37,14 @@ var testMultiLabelClassifier = function(classifier) {
 	});
 
 	it('classifies 2-class samples', function() {
-		classifier.classify({I:1 , want:1 , aa:1 , and:1 , bb:1 }).should.eql(['A','B']);
-		classifier.classify({I:1 , want:1 , bb:1 , and:1 , cc:1 }).should.eql(['B','{"C":"c"}']);
-		classifier.classify({I:1 , want:1 , cc:1 , and:1 , aa:1 }).should.eql(['A','{"C":"c"}']);
+		classifier.classify({I:1 , want:1 , aa:1 , and:1 , bb:1 }).sort().should.eql(['A','B'].sort());
+		classifier.classify({I:1 , want:1 , bb:1 , and:1 , cc:1 }).sort().should.eql(['B','{"C":"c"}'].sort());
+		classifier.classify({I:1 , want:1 , cc:1 , and:1 , aa:1 }).sort().should.eql(['A','{"C":"c"}'].sort());
+
 	});
 
 	it('classifies 3-class samples', function() {
-		classifier.classify({I:1 , want:1 , aa:1 , and:1 , bb:1 , "'": true, cc:1 }).should.eql(['A','B','{"C":"c"}']);
+		classifier.classify({I:1 , want:1 , aa:1 , and:1 , bb:1 , "'": true, cc:1 }).sort().should.eql(['A','B','{"C":"c"}'].sort());
 	});
 
 	it('classifies 0-class samples', function() {
@@ -49,7 +52,7 @@ var testMultiLabelClassifier = function(classifier) {
 	});
 	
 	it('knows its classes', function() {
-		classifier.getAllClasses().should.eql(['A','B','{"C":"c"}']);
+		classifier.getAllClasses().sort().should.eql(['A','B','{"C":"c"}'].sort());
 	})
 
 	it('explains its decisions', function() {
@@ -58,22 +61,21 @@ var testMultiLabelClassifier = function(classifier) {
 	})
 	
 	it('supports ranking with scores', function() {
-		var a = classifier.classify({I:1 , want:1 , aa:1 }, /*explain=*/0, /*withScores=*/true);
-//		console.dir(a);
-		a.should.have.lengthOf(3);
-		a[0][0].should.eql('A');
-		a[0][1].should.be.above(0);
-		a[1][1].should.be.below(0);
-		var b = classifier.classify({I:1 , want:1 , bb:1 }, /*explain=*/0, /*withScores=*/true)
-		b.should.have.lengthOf(3);
-		b[0][0].should.eql('B');
-		b[0][1].should.be.above(0);
-		b[1][1].should.be.below(0);
-		var c = classifier.classify({I:1 , want:1 , cc:1 }, /*explain=*/0, /*withScores=*/true);
-		c.should.have.lengthOf(3);
-		c[0][0].should.eql('{"C":"c"}');
-		c[0][1].should.be.above(0);
-		c[1][1].should.be.below(0);
+		var a = classifier.classify({I:1 , want:1 , aa:1 }, /*explain=*/5, /*withScores=*/true);
+		_.keys(a.scores).should.have.lengthOf(3);
+		_.keys(a.scores)[0].should.eql('A');
+		a.scores['A'].should.be.above(0);
+		a.scores['B'].should.be.below(0);
+		var b = classifier.classify({I:1 , want:1 , bb:1 }, /*explain=*/5, /*withScores=*/true)
+		_.keys(b.scores).should.have.lengthOf(3);
+		b.scores['B'].should.be.above(0);
+		b.scores['A'].should.be.below(0);
+		var c = classifier.classify({I:1 , want:1 , cc:1 }, /*explain=*/5, /*withScores=*/true);
+		_.keys(c.scores).should.have.lengthOf(3);
+		c.scores['{"C":"c"}'].should.be.above(0);
+		c.scores['A'].should.be.below(0);
+		c.scores['B'].should.be.below(0);
+
 	});
 }
 
@@ -122,10 +124,10 @@ describe.skip('Multi-Label BR Classifier batch-trained on two-class inputs', fun
 	});
 
 	it('classifies 2-class samples', function() {
-		classifier.classify({I:1 , want:1 , aa:1 , and:1 , bb:1 }).should.eql(['A','B']);
-		classifier.classify({I:1 , want:1 , bb:1 , and:1 , cc:1 }).should.eql(['B','C']);
-		classifier.classify({I:1 , want:1 , cc:1 , and:1 , dd:1 }).should.eql(['C','D']);
-		classifier.classify({I:1 , want:1 , dd:1 , and:1 , aa:1 }).should.eql(['D','A']);
+		classifier.classify({I:1 , want:1 , aa:1 , and:1 , bb:1 }).sort().should.eql(['A','B'].sort());
+		classifier.classify({I:1 , want:1 , bb:1 , and:1 , cc:1 }).sort().should.eql(['B','C'].sort());
+		classifier.classify({I:1 , want:1 , cc:1 , and:1 , dd:1 }).sort().should.eql(['C','D'].sort());
+		classifier.classify({I:1 , want:1 , dd:1 , and:1 , aa:1 }).sort().should.eql(['D','A'].sort());
 	});
 });
 

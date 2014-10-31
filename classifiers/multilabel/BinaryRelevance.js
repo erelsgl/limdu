@@ -102,58 +102,52 @@ BinaryRelevance.prototype = {
 	 * @param withScores - boolean - if true, return an array of [class,score], ordered by decreasing order of score.
 	 *  
 	 * @return an array whose VALUES are the labels.
+	 * @output
+	 * scores [hash] - the scores of each binary classifier in the class
+	 * explanations [hash] positive - features of the classifier with positive labels
+	 *					   negative - features of classifiers with negative labels
+	 * classes [list] the list of given labels
 	 */
+
 	classify: function(sample, explain, withScores) {
-		var labels = [];
-		if (explain>0) {
-			if (withScores) {
-				var explanations = [];
-			} else {
-				var positive_explanations = {};
-				var negative_explanations = {};
-			}
-		}
+		var labels = []
+		var scores = {}
+		var explanations = [];
+		var positive_explanations = {};
+		var negative_explanations = {};
+
 		for (var label in this.mapClassnameToClassifier) {
 			var classifier = this.mapClassnameToClassifier[label];
+			
+			// fs.writeFileSync('/tmp/labels/'+label, JSON.stringify(classifier.getFeatures(), null, 4), 'utf8');
+
 			var scoreWithExplain = classifier.classify(sample, explain, withScores);
 			var score = scoreWithExplain.explanation?  scoreWithExplain.classification: scoreWithExplain;
-		
-			// var explanations_string = ((scoreWithExplain.explanation && explain>0)?
-			// 	// cannot use .join here
-			// 		// scoreWithExplain.explanation.reduce(function(a,b) {
-			// 		// 	// return a + " " + b;
-			// 		// 	return [a,b];
-			// 		// }, ""):
-			// 		// null);
-			// 		scoreWithExplain.explanation)
 
 			explanations_string = scoreWithExplain.explanation
-			
-			if (withScores) {
-				var labelAndScore = [label, score];
-				if (explanations_string) labelAndScore.push(explanations_string);
-				labels.push(labelAndScore);
-			} else if (score>0.5) {
-				labels.push(label);
+
+			// if (score>0.5)
+			if (score>0)
+				{
+				labels.push([label, score])
 				if (explanations_string) positive_explanations[label]=explanations_string;
-			} else {
+				}
+			else
+				{
 				if (explanations_string) negative_explanations[label]=explanations_string;
-			}
+				}
+
+			scores[label] = score
 		}
-		if (withScores) {
-			labels.sort(function(pair1, pair2) {return pair2[1]-pair1[1]});
-			if (explain>0) {
-				var explanations = [];
-				labels.forEach(function(datum) {
-					explanations.push(datum[0]+": score="+JSON.stringify(datum[1])+" features="+datum[2]);
-					datum.pop();
-				});
-			}
-		}
+
+		labels = _.sortBy(labels, function(num){ return num[1] });
+		labels = _.map(labels.reverse(), function(num){ return num[0] });
+
 		return (explain>0?
 			{
 				classes: labels, 
-				explanation: withScores? explanations: {
+				scores: scores,
+				explanation: {
 					positive: positive_explanations, 
 					negative: negative_explanations,
 				}

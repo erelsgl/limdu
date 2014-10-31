@@ -10,7 +10,7 @@ module.exports = function(numOfWords, gap, grams, features) {
 					sliceOfWords = grams.slice(i, i+numOfWords);
 					if (gap) sliceOfWords[1]="-";
 					var feature = sliceOfWords.join(" ");
-					features[feature]=1;
+					features[feature.trim()]=1;
 				}
 				for (var i=0; i<numOfWords-1-(gap?1:0); ++i) {
 					grams.pop();

@@ -12,9 +12,9 @@
     "sprintf": "*",
     "svm": "*",
     "temp": "*",
+    "wordsworth": "*",
     "execSync": "*",
     "brain": "*",
-    "defaultdict": "*",
     "graph-paths": "latest",
     "languagemodel": "latest"
   },

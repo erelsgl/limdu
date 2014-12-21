@@ -310,12 +310,6 @@ PrecisionRecall.prototype = {
 			if (!this.labels[label]['F1']) this.labels[label]['F1'] = -1
 			}, this)
 
-/*		this.Offer = this.labels['Offer']['F1']
-		this.Accept = this.labels['Accept']['F1']
-		this.Reject = this.labels['Reject']['F1']
-		this.Greet = this.labels['Greet']['F1']
-		this.Query = this.labels['Query']['F1']
-*/
 		return this.labels
 	},
 

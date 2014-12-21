@@ -45,7 +45,6 @@ describe('PrecisionRecall object', function() {
 		//expectedClasses, actualClasses
 		var expected =  
 		{
-		"single_labels": {
                 "Offer": {
                     "id": 2,
                     "position": [
@@ -69,8 +68,7 @@ describe('PrecisionRecall object', function() {
                     "position": [
                         []
                     ]
-                },
-            	}
+                }
 		}
 
 		// var actual = {'explanation':[

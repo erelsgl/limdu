@@ -86,7 +86,7 @@ describe('PrecisionRecall object', function() {
     	stats.should.be.false
     })
 
-    it('repetitions in sequenced format', function() {
+    it('repetitions in sequence format', function() {
     	var pr = new mlutils.PrecisionRecall();
     	var expected =  [[]]
     	var actual = 
@@ -96,9 +96,7 @@ describe('PrecisionRecall object', function() {
 				]
 		
 		var stats = pr.addCasesHashSeq(expected, actual, 1);
-		console.log(stats)
-		process.exit(0)
-
+		_.isEqual(stats, { TP: [], FP: [ 'Offer' ], FN: [] }).should.be.true
     })
 
 	it('correctly calculates precision, recall, accuracy in hash format.', function() {

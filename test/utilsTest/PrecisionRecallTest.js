@@ -70,6 +70,37 @@ describe('PrecisionRecall object', function() {
         var stats = pr.addCasesHashSeq(expected, actual, 1);
     });
 
+    it('intersection', function() {
+        var pr = new mlutils.PrecisionRecall();
+    	
+    	var actual = [5,10]
+    	var expected = [8,15]
+
+    	var stats = pr.intersection(actual, expected)
+    	stats.should.be.true
+
+    	var actual = [5,10]
+    	var expected = [12,15]
+		
+		var stats = pr.intersection(actual, expected)
+    	stats.should.be.false
+    })
+
+    it('repetitions in sequenced format', function() {
+    	var pr = new mlutils.PrecisionRecall();
+    	var expected =  [[]]
+    	var actual = 
+				[
+					['Offer',[13,25]],
+					['Offer', [14,27]],
+				]
+		
+		var stats = pr.addCasesHashSeq(expected, actual, 1);
+		console.log(stats)
+		process.exit(0)
+
+    })
+
 	it('correctly calculates precision, recall, accuracy in hash format.', function() {
 		var pr = new mlutils.PrecisionRecall();
 		var stats = pr.addCasesLabels([1,2,3,4,5], [1,3,5,7], 1);

@@ -180,8 +180,21 @@ PrecisionRecall.prototype = {
 	// example of usage see in test
 	addCasesHashSeq: function (expectedClasses, actualClasses, logTruePositives ) {
 
-		var ex = expectedClasses
-		var ac = actualClasses
+		var ex = []
+		var ac = []
+
+		// clean up expected list
+		_.each(expectedClasses, function(expected, key, list){ 
+			if (expected.length == 2)
+				ex.push(expected)
+		}, this)
+
+		// filtering actual classes
+		_.each(actualClasses, function(actual, key, list){ 
+			var found = _.filter(ac, function(num){ return ((num[0] == actual[0]) && (this.intersection(num[1], actual[1]) == true)) }, this);
+			if (found.length == 0)
+				ac.push(actual)
+		}, this)
 
 		var explanations = {};
 		explanations['TP'] = []; explanations['FP'] = []; explanations['FN'] = [];

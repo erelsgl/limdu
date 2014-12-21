@@ -180,30 +180,11 @@ PrecisionRecall.prototype = {
 	// example of usage see in test
 	addCasesHashSeq: function (expectedClasses, actualClasses, logTruePositives ) {
 
-		var ex = []
+		var ex = expectedClasses
 		var ac = actualClasses
-
-		_.each(expectedClasses, function(value, key, list){ 
-			// if (value['position'][0].length > 0)
-				_.each(value['position'], function(pos, key1, list1){
-					ex.push([key, pos]) 
-				}, this)
-		}, this)
-
-		// _.each(actualClasses['explanation'], function(value, key, list){ 
-			// ac.push([value[0], value[2]])
-		// }, this)
 
 		var explanations = {};
 		explanations['TP'] = []; explanations['FP'] = []; explanations['FN'] = [];
-
-		// actualClasses = hash.normalized(actualClasses);
-		// expectedClasses = hash.normalized(expectedClasses);
-
-		// console.log(ac)
-		// console.log(ex)
-		// console.log()
-		// process.exit(0)
 		
 		var allTrue = true;
 		for (var actualClassindex in ac) {
@@ -284,8 +265,6 @@ PrecisionRecall.prototype = {
 			explanations[key].sort()
 		}, this)
 
-		// console.log(explanations)
-		// process.exit(0)
 		return explanations;
 	},
 	

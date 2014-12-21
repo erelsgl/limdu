@@ -41,64 +41,34 @@ describe('PrecisionRecall object', function() {
 	});
 
 	it('correctly calculates precision, recall, accuracy in sequence format.', function() {
-                var pr = new mlutils.PrecisionRecall();
-		//expectedClasses, actualClasses
-		var expected =  
-		{
-                "Offer": {
-                    "id": 2,
-                    "position": [
-                        [13,26]
-                    ]
-                },
-                "Working Hours": {
-                    "id": 3,
-                    "position": [
-                        [6,9]
-                    ]
-                },
-                "8 hours": {
-                    "id": 5,
-                    "position": [
-                        [3,12]
-                    ]
-                },
-                "10 hours":{
-                    "id": 5,
-                    "position": [
-                        []
-                    ]
-                }
-		}
-
-		// var actual = {'explanation':[
-		// 					['Offer','I am offering you',[13,25]],
-		// 					['Salary', 'salary',[3,6]],
-		// 					['8 hours', '', [3,5]],
-		// 					['10 hours', '', [9,15]],
-		// 				]
-		// 			}
-
-			var actual = [
-							['Offer',[13,25]],
-							['Salary', [3,6]],
-							['8 hours', [3,5]],
-							['10 hours', [9,15]],
-						]
-					
+        var pr = new mlutils.PrecisionRecall();
 		
-                var stats = pr.addCasesHashSeq(expected, actual, 1);
+		var expected =  
+				[
+                	["Offer", [13,26]],
+                	["Working Hours", [6,9]],
+                	["8 hours", [3,12]],
+                	["10 hours", []]
+				]
 
-                _.isEqual(stats['TP'], ['10 hours', '8 hours', 'Offer']).should.equal(true)
-                _.isEqual(stats['FP'], ['Salary']).should.equal(true)
-                _.isEqual(stats['FN'], ['Working Hours']).should.equal(true)
+		var actual = 
+				[
+					['Offer',[13,25]],
+					['Salary', [3,6]],
+					['8 hours', [3,5]],
+					['10 hours', [9,15]],
+				]
+			
+        var stats = pr.addCasesHashSeq(expected, actual, 1);
 
+        _.isEqual(stats['TP'], ['10 hours', '8 hours', 'Offer']).should.equal(true)
+        _.isEqual(stats['FP'], ['Salary']).should.equal(true)
+        _.isEqual(stats['FN'], ['Working Hours']).should.equal(true)
 
-                var results = pr.retrieveStats()
+        var results = pr.retrieveStats()
 
-                // results['Recall'].should.equal(7/9)
-        });
-
+        var stats = pr.addCasesHashSeq(expected, actual, 1);
+    });
 
 	it('correctly calculates precision, recall, accuracy in hash format.', function() {
 		var pr = new mlutils.PrecisionRecall();

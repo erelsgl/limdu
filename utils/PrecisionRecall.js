@@ -84,8 +84,8 @@ PrecisionRecall.prototype = {
 	/* intented to calculate macro and micro average */
 	addPredicition: function(expected, actual)
 	{
-		addCasesHash(expected, actual, 1)
-		addCasesLabels(expected, actual)
+		this.addCasesHash(expected, actual, 1)
+		this.addCasesLabels(expected, actual)
 	},
 
 	/**
@@ -181,29 +181,23 @@ PrecisionRecall.prototype = {
 	addCasesHashSeq: function (expectedClasses, actualClasses, logTruePositives ) {
 
 		var ex = []
-		var ac = actualClasses
+		var ac = []
 
-		_.each(expectedClasses['single_labels'], function(value, key, list){ 
-			// if (value['position'][0].length > 0)
-				_.each(value['position'], function(pos, key1, list1){
-					ex.push([key, pos]) 
-				}, this)
+		// clean up expected list
+		_.each(expectedClasses, function(expected, key, list){ 
+			if (expected.length == 2)
+				ex.push(expected)
 		}, this)
 
-		// _.each(actualClasses['explanation'], function(value, key, list){ 
-			// ac.push([value[0], value[2]])
-		// }, this)
+		// filtering actual classes
+		_.each(actualClasses, function(actual, key, list){ 
+			var found = _.filter(ac, function(num){ return ((num[0] == actual[0]) && (this.intersection(num[1], actual[1]) == true)) }, this);
+			if (found.length == 0)
+				ac.push(actual)
+		}, this)
 
 		var explanations = {};
 		explanations['TP'] = []; explanations['FP'] = []; explanations['FN'] = [];
-
-		// actualClasses = hash.normalized(actualClasses);
-		// expectedClasses = hash.normalized(expectedClasses);
-
-		// console.log(ac)
-		// console.log(ex)
-		// console.log()
-		// process.exit(0)
 		
 		var allTrue = true;
 		for (var actualClassindex in ac) {
@@ -284,8 +278,6 @@ PrecisionRecall.prototype = {
 			explanations[key].sort()
 		}, this)
 
-		// console.log(explanations)
-		// process.exit(0)
 		return explanations;
 	},
 	
@@ -346,23 +338,23 @@ PrecisionRecall.prototype = {
 
 		// isNaN
 
-		if (Object.keys(this.labels).length > 3)
-		{
+		// if (Object.keys(this.labels).length > 3)
+		// {
 
-			var list_lab = _.toArray(this.labels)
-			var macro_stats = {}
+		// 	var list_lab = _.toArray(this.labels)
+		// 	var macro_stats = {}
 			
-			_.each(['Precision', 'Recall', 'F1'], function(param, key, list){ 
-				macro_stats[param] = _.pluck(list_lab, param)
-				macro_stats[param] = _.filter(macro_stats[param], function(elem){ return (isNaN(elem))==false})
-				macro_stats[param] = _.reduce(macro_stats[param], function(memo, num){ return memo + num; }) / macro_stats[param].length
-			}, this)
+		// 	_.each(['Precision', 'Recall', 'F1'], function(param, key, list){ 
+		// 		macro_stats[param] = _.pluck(list_lab, param)
+		// 		macro_stats[param] = _.filter(macro_stats[param], function(elem){ return (isNaN(elem))==false})
+		// 		macro_stats[param] = _.reduce(macro_stats[param], function(memo, num){ return memo + num; }) / macro_stats[param].length
+		// 	}, this)
 
-			this.macroPrecision = macro_stats['Precision']
-			this.macroRecall = macro_stats['Recall']
-			this.macroF1 = macro_stats['F1']
+		// 	this.macroPrecision = macro_stats['Precision']
+		// 	this.macroRecall = macro_stats['Recall']
+		// 	this.macroF1 = macro_stats['F1']
 
-		}
+		// }
 
 		this.Accuracy = (this.TRUE) / (this.count);
 		this.HammingLoss = (this.FN+this.FP) / (this.FN+this.TP); // "the percentage of the wrong labels to the total number of labels"

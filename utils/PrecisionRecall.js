@@ -17,6 +17,7 @@ var PrecisionRecall = function() {
 	this.TRUE = 0;
 	this.startTime = new Date();
 	this.labels = {}
+	this.dep = {}
 }
 
 PrecisionRecall.prototype = {
@@ -185,15 +186,38 @@ PrecisionRecall.prototype = {
 
 		// clean up expected list
 		_.each(expectedClasses, function(expected, key, list){ 
-			if (expected.length == 2)
+			if ((expected.length == 2) || (expected.length == 3))
 				ex.push(expected)
 		}, this)
 
-		// filtering actual classes
+		
+		// filtering actual classes		
 		_.each(actualClasses, function(actual, key, list){ 
 			var found = _.filter(ac, function(num){ return ((num[0] == actual[0]) && (this.intersection(num[1], actual[1]) == true)) }, this);
 			if (found.length == 0)
 				ac.push(actual)
+		}, this)
+
+		// filling interdependencies between labels 
+		_.each(ac, function(actual, key, list){
+		if (actual.length == 3)
+			{	 
+			label = actual[0]
+			str = actual[2]
+			if (!(label in this.dep))
+				{
+				this.dep[label] = {}
+				this.dep[label][label] = []
+				}
+			this.dep[label][label].push(str)
+
+			var found = _.filter(ac, function(num){ return ((num[0] != actual[0]) && (this.intersection(num[1], actual[1]) == true)) }, this);
+			_.each(found, function(sublabel, key, list){
+				if (!(sublabel[0] in this.dep[label]))
+					this.dep[label][sublabel[0]] = []
+				this.dep[label][sublabel[0]].push(sublabel[2])
+			}, this)
+			}
 		}, this)
 
 		var explanations = {};
@@ -322,6 +346,7 @@ PrecisionRecall.prototype = {
 		stats['macroF1'] = this.macroF1
 		
 		stats['shortStatsString'] = this.shortStatsString
+		stats['interdep'] = this.dep
 		return stats
 	},
 

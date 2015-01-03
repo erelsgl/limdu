@@ -35,7 +35,7 @@ exports.partition = function(dataset, testSetStart, testSetCount) {
  * @note code adapted from Heather Arthur:  https://github.com/harthur/classifier/blob/master/test/cross-validation/cross-validate.js
  */
 exports.partitions = function(dataset, numOfPartitions, callback) {
-	var shuffledDataset = _.shuffle(dataset);
+	// var shuffledDataset = _.shuffle(dataset);
 	var testSetCount = dataset.length / numOfPartitions;
 	
 	for (var iPartition=0; iPartition<numOfPartitions; ++iPartition) {

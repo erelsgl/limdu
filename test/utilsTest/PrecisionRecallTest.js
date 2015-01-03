@@ -91,8 +91,8 @@ describe('PrecisionRecall object', function() {
     	var expected =  [[]]
     	var actual = 
 				[
-					['Offer',[13,25]],
-					['Offer', [14,27]],
+					['Offer',[13,25], 'i offer'],
+					['Offer', [14,27], 'ok'],
 				]
 		
 		var stats = pr.addCasesHashSeq(expected, actual, 1);
@@ -115,6 +115,34 @@ describe('PrecisionRecall object', function() {
 		var stat = pr.calculateStats()
 	})
 
+	it('correctly calculates dependencies between labels', function() {
 
+		var pr = new mlutils.PrecisionRecall();
+    	var expected =  [[]]
+    	var actual = 
+				[
+					['Offer',[13,25], 'i offer'],
+					['Accept', [10,27], 'offer'],
+					['Reject', [30,45], 'reject'],
+				]
+		
+		var stats = pr.addCasesHashSeq(expected, actual, 1);
 
+		var actual = 
+				[
+					['Offer',[13,25], 'i offer'],
+					['Offer',[14,25], 'offer'],
+					['Accept', [60,70], 'agree'],
+					['Reject', [90,100], 'decline']
+				]
+
+		var stats = pr.addCasesHashSeq(expected, actual, 1);
+		pr.calculateStats()
+
+		var gold = {"Offer": { "Offer": [ "i offer", "i offer" ], "Accept": [ "offer" ] },
+        "Accept": { "Accept": [ "offer", "agree" ], "Offer": [ "i offer" ] },
+        "Reject": { "Reject": [ "reject", "decline" ] }}
+
+		_.isEqual(pr.retrieveStats()['interdep'], gold).should.be.true
+	})
 })

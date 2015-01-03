@@ -200,7 +200,7 @@ PrecisionRecall.prototype = {
 
 		// filling interdependencies between labels 
 		_.each(ac, function(actual, key, list){
-		if (actual.length == 3)
+		if (actual.length > 3)
 			{	 
 			label = actual[0]
 			str = actual[2]
@@ -215,7 +215,7 @@ PrecisionRecall.prototype = {
 			_.each(found, function(sublabel, key, list){
 				if (!(sublabel[0] in this.dep[label]))
 					this.dep[label][sublabel[0]] = []
-				this.dep[label][sublabel[0]].push(sublabel[2])
+				this.dep[label][sublabel[0]].push([actual[2], sublabel[2]])
 			}, this)
 			}
 		}, this)
@@ -248,9 +248,12 @@ PrecisionRecall.prototype = {
 			}, this)
 
 			if (found) { 
-				if (logTruePositives) explanations['TP'].push(ac[actualClassindex][0]);
-				this.labels[ac[actualClassindex][0]]['TP'] += 1
-				this.TP++
+				if (logTruePositives)
+					{
+						explanations['TP'].push(ac[actualClassindex][0]);
+						this.labels[ac[actualClassindex][0]]['TP'] += 1
+						this.TP++
+					}
 			} else {
 				explanations['FP'].push(ac[actualClassindex][0]);
 				this.labels[ac[actualClassindex][0]]['FP'] += 1
@@ -297,10 +300,10 @@ PrecisionRecall.prototype = {
 		}
 		this.count++;
 
-		_.each(explanations, function(value, key, list){ 
+		// _.each(explanations, function(value, key, list){ 
 			// explanations[key] = _.sortBy(explanations[key], function(num){ num });
-			explanations[key].sort()
-		}, this)
+			// explanations[key].sort()
+		// }, this)
 
 		return explanations;
 	},
@@ -331,8 +334,13 @@ PrecisionRecall.prototype = {
 
 	retrieveStats: function()
 	{
-		this.calculateStatsNoReturn()
 		stats = {}
+		
+		this.calculateStatsNoReturn()
+
+		stats['TP'] = this.TP
+		stats['FP'] = this.FP
+		stats['FN'] = this.FN
 
 		stats['Accuracy'] = this.Accuracy
 		stats['HammingLoss'] = this.HammingLoss
@@ -347,6 +355,7 @@ PrecisionRecall.prototype = {
 		
 		stats['shortStatsString'] = this.shortStatsString
 		stats['interdep'] = this.dep
+		stats['labels'] = this.labels
 		return stats
 	},
 

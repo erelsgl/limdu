@@ -49,6 +49,8 @@ var EnhancedClassifier = function(opts) {
 	this.setFeatureLookupTable(opts.featureLookupTable);
 	this.setLabelLookupTable(opts.labelLookupTable);
 	this.setInstanceFilter(opts.instanceFilter);
+	if (opts.featureExpansion)
+		this.setFeatureExpansion(opts.featureExpansion);
 
 
 	this.multiplyFeaturesByIDF = opts.multiplyFeaturesByIDF;
@@ -86,6 +88,10 @@ EnhancedClassifier.prototype = {
 	setFeatureExtractor: function (featureExtractor) {
 		this.featureExtractors = ftrs.normalize(featureExtractor);
 	},
+
+	setFeatureExpansion: function (featureExpansion) {
+		this.featureExpansion = featureExpansion
+	},
 	
 	/** Set the main feature extractor, used for both training and classification. */
 	setNormalizer: function (normalizer) {
@@ -118,9 +124,13 @@ EnhancedClassifier.prototype = {
 			this.labelLookupTable = labelLookupTable;
 			if (this.classifier.setLabelLookupTable)
 				this.classifier.setLabelLookupTable(labelLookupTable);  // for generating clearer explanations only
+			this.applyFeatureExpansion();
 		}
 	},
 
+	applyFeatureExpansion: function(){
+	 	this.featureExpansioned = this.featureExpansion(this.featureLookupTable['featureIndexToFeatureName'])
+	},
 	// private function: use this.normalizers to normalize the given sample:
 	normalizedSample: function(sample) {
 		if (!(_.isArray(sample)))
@@ -225,6 +235,7 @@ EnhancedClassifier.prototype = {
 		if (this.multiplyFeaturesByIDF) { 
 			for (var feature in features) { 
 				var IDF = this.tfidf.idf(feature)
+
 				if (IDF != Infinity)
 					features[feature] *= IDF
 				else
@@ -323,6 +334,34 @@ EnhancedClassifier.prototype = {
 		}, this);
 
 		this.classifier.trainBatch(dataset);
+
+		console.log(featureLookupTable['featureIndexToFeatureName'])
+		console.log("start FeatureExpansion")
+
+		if (this.featureExpansion)
+			this.applyFeatureExpansion()
+
+		console.log("end FeatureExpansion")
+	},
+
+	editFeatureExpansion: function(features){
+		var featureLookupTable = this.featureLookupTable
+		var featureExpansioned = this.featureExpansioned
+
+		_.each(features, function(value, feature, list){
+			 if (featureLookupTable['featureIndexToFeatureName'].indexOf(feature) == -1)
+			 {
+			 	console.log(feature+" not in featureLookupTable")
+			 	if (feature in featureExpansioned)
+			 		{
+			 			delete features[feature]
+			 			features[featureExpansioned[feature][0][0]] = 1
+			 			if (featureLookupTable['featureIndexToFeatureName'].indexOf(featureExpansioned[feature][0][0]) == -1)
+			 				console.log("!sanity check "+ feature+" -> "+featureExpansioned[feature][0][0])
+			 			console.log("-expansion from '"+ feature + "' to '"+ featureExpansioned[feature][0][0]+"'")
+			 		}
+			 }
+		}, this)
 	},
 
 	/**
@@ -331,11 +370,18 @@ EnhancedClassifier.prototype = {
 	 * @return an array whose VALUES are classes.
 	 */
 	classifyPart: function(sample, explain, continuous_output) {
-		
+
 		var samplecorrected = this.correctFeatureSpelling(sample);
+
 		var features = this.sampleToFeatures(samplecorrected, this.featureExtractors);
-		this.editFeatureValues(features, /*remove_unknown_features=*/true);
+
+		if (this.featureExpansion)
+			this.editFeatureExpansion(features);
+
+		this.editFeatureValues(features, /*remove_unknown_features=*/false);
+
 		var array = this.featuresToArray(features);
+
 		var classification = this.classifier.classify(array, explain, continuous_output);
 		
 		// if (this.spellChecker && classification.explanation) {

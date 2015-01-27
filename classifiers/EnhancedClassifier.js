@@ -49,9 +49,10 @@ var EnhancedClassifier = function(opts) {
 	this.setFeatureLookupTable(opts.featureLookupTable);
 	this.setLabelLookupTable(opts.labelLookupTable);
 	this.setInstanceFilter(opts.instanceFilter);
-	if (opts.featureExpansion)
-		this.setFeatureExpansion(opts.featureExpansion);
 
+	this.setFeatureExpansion(opts.featureExpansion);
+	this.featureExpansionScale = opts.featureExpansionScale;
+	this.featureExpansionPhrase = opts.featureExpansionPhrase;
 
 	this.multiplyFeaturesByIDF = opts.multiplyFeaturesByIDF;
 	this.minFeatureDocumentFrequency = opts.minFeatureDocumentFrequency || 0;
@@ -129,7 +130,7 @@ EnhancedClassifier.prototype = {
 	},
 
 	applyFeatureExpansion: function(){
-	 	this.featureExpansioned = this.featureExpansion(this.featureLookupTable['featureIndexToFeatureName'])
+	 	this.featureExpansioned = this.featureExpansion(this.featureLookupTable['featureIndexToFeatureName'], this.featureExpansionScale, this.featureExpansionPhrase)
 	},
 	// private function: use this.normalizers to normalize the given sample:
 	normalizedSample: function(sample) {
@@ -335,13 +336,9 @@ EnhancedClassifier.prototype = {
 
 		this.classifier.trainBatch(dataset);
 
-		console.log(featureLookupTable['featureIndexToFeatureName'])
-		console.log("start FeatureExpansion")
-
 		if (this.featureExpansion)
 			this.applyFeatureExpansion()
 
-		console.log("end FeatureExpansion")
 	},
 
 	editFeatureExpansion: function(features){
@@ -351,7 +348,6 @@ EnhancedClassifier.prototype = {
 		_.each(features, function(value, feature, list){
 			 if (featureLookupTable['featureIndexToFeatureName'].indexOf(feature) == -1)
 			 {
-			 	console.log(feature+" not in featureLookupTable")
 			 	if (feature in featureExpansioned)
 			 		{
 			 			delete features[feature]

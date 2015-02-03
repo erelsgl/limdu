@@ -53,6 +53,7 @@ var EnhancedClassifier = function(opts) {
 	this.setFeatureExpansion(opts.featureExpansion);
 	this.featureExpansionScale = opts.featureExpansionScale;
 	this.featureExpansionPhrase = opts.featureExpansionPhrase;
+	this.featureFine = opts.featureFine;
 
 	this.multiplyFeaturesByIDF = opts.multiplyFeaturesByIDF;
 	this.minFeatureDocumentFrequency = opts.minFeatureDocumentFrequency || 0;
@@ -351,9 +352,20 @@ EnhancedClassifier.prototype = {
 			 	if (feature in featureExpansioned)
 			 		{
 			 			delete features[feature]
-			 			features[featureExpansioned[feature][0][0]] = 1
-			 			if (featureLookupTable['featureIndexToFeatureName'].indexOf(featureExpansioned[feature][0][0]) == -1)
-			 				console.log("!sanity check "+ feature+" -> "+featureExpansioned[feature][0][0])
+			 			var syn_feature = featureExpansioned[feature][0]
+			 			
+			 			features[syn_feature[0]] = 1
+
+			 			if (this.featureFine)
+			 				features[syn_feature[0]] = 1/Math.log(syn_feature[2])
+
+			 			if (featureLookupTable['featureIndexToFeatureName'].indexOf(syn_feature[0]) == -1)
+			 				{
+			 				console.log("!sanity check "+ feature+" -> "+syn_feature[0])
+			 				console.log(JSON.stringify(featureLookupTable, null, 4))
+			 				console.log()
+			 				process.exit(0)
+			 				}
 			 			console.log("-expansion from '"+ feature + "' to '"+ featureExpansioned[feature][0][0]+"'")
 			 		}
 			 }

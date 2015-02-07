@@ -236,12 +236,30 @@ EnhancedClassifier.prototype = {
 
 		if (this.multiplyFeaturesByIDF) { 
 			for (var feature in features) { 
+				
 				var IDF = this.tfidf.idf(feature)
 
 				if (IDF != Infinity)
 					features[feature] *= IDF
 				else
+					{
+					console.error("Infinity "+feature)
 					delete features[feature]
+					}
+
+				if (this.featureExpansioned)
+				{
+					if (feature in this.featureExpansioned)
+					{	
+						var feature_max = feature
+						_.each(this.featureExpansioned[feature], function(value, key, list){ 
+							if (this.tfidf.idf(value[0]) > this.tfidf.idf(feature_max)) 
+								feature_max = value[0]
+						}, this)
+						delete features[feature]
+						features[feature_max] = this.tfidf.idf(feature_max)
+					}
+				}
 			}
 
 			if (this.bias && !features.bias)
@@ -361,10 +379,8 @@ EnhancedClassifier.prototype = {
 
 			 			if (featureLookupTable['featureIndexToFeatureName'].indexOf(syn_feature[0]) == -1)
 			 				{
-			 				console.log("!sanity check "+ feature+" -> "+syn_feature[0])
-			 				console.log(JSON.stringify(featureLookupTable, null, 4))
-			 				console.log()
-			 				process.exit(0)
+			 				console.error("sanity check "+ feature+" -> "+syn_feature[0])
+			 				console.error(JSON.stringify(featureLookupTable, null, 4))
 			 				}
 			 			console.log("-expansion from '"+ feature + "' to '"+ featureExpansioned[feature][0][0]+"'")
 			 		}

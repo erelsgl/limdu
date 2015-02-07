@@ -2,6 +2,7 @@ var hash = require("../../utils/hash");
 var sprintf = require("sprintf").sprintf;
 var _ = require("underscore")._;
 var multilabelutils = require('./multilabelutils');
+// var fs = require('fs');
 
 /**
  * BinaryRelevance - Multi-label classifier, based on a collection of binary classifiers. 

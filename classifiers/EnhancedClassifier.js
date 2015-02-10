@@ -26,7 +26,7 @@ var multilabelutils = require('./multilabel/multilabelutils');
  * * 'spellChecker' - an initialized spell checker from the 'wordsworth' package, to spell-check features during classification.
  * * 'bias' - a 'bias' feature with a constant value (usually 1).
  * * 'InputSplitLabel' - a method for special separation of input labels before training
- * * 'OutputSplitLabel' - a method for special separation of output labesl after classification.
+ * * 'OutputSplitLabel' - a method for special separation of output labels after classification.
  * * 'TestSplitLabel' - a method for special separation before a testing
  * * 'TfIdfImpl' - implementation of tf-idf algorithm
  * * 'tokenizer' - implementation of tokenizer

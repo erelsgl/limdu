@@ -30,6 +30,11 @@ var multilabelutils = require('./multilabel/multilabelutils');
  * * 'TestSplitLabel' - a method for special separation before a testing
  * * 'TfIdfImpl' - implementation of tf-idf algorithm
  * * 'tokenizer' - implementation of tokenizer
+ * * 'featureExpansion' - a function that given the the list of known features generates the list of paraphrase features
+ * * 'featureExpansionScale' - a list than defines the scale of feature expansion, it goes from high Precision to high Recall, can be used in chains
+ * * 'featureExpansionPhrase' - a boolean, whether to explore only phrase-based expansion, this option measures the contribution of phrases
+ * * 'featureFine' - a boolean, fine expanded features by similarity score.
+
  * * 'instanceFilter' - filter of instance of training data and test data, if training instance is filtered is not used for training, if triaging instance is filtered by classify,
  it's classified empty class.
 */
@@ -247,7 +252,7 @@ EnhancedClassifier.prototype = {
 					delete features[feature]
 					}
 
-				if (this.featureExpansioned)
+				/*if (this.featureExpansioned)
 				{
 					if (feature in this.featureExpansioned)
 					{	
@@ -259,7 +264,7 @@ EnhancedClassifier.prototype = {
 						delete features[feature]
 						features[feature_max] = this.tfidf.idf(feature_max)
 					}
-				}
+				}*/
 			}
 
 			if (this.bias && !features.bias)

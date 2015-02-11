@@ -51,7 +51,9 @@ var EnhancedClassifier = function(opts) {
 	this.setNormalizer(opts.normalizer);
 	this.setFeatureExtractor(opts.featureExtractor);
 	this.setFeatureExtractorForClassification(opts.featureExtractorForClassification);
-	this.setFeatureLookupTable(opts.featureLookupTable);
+	// this.setFeatureLookupTable(opts.featureLookupTable);
+	this.setFeatureLookupTable(new ftrs.FeatureLookupTable());
+
 	this.setLabelLookupTable(opts.labelLookupTable);
 	this.setInstanceFilter(opts.instanceFilter);
 
@@ -136,6 +138,7 @@ EnhancedClassifier.prototype = {
 	},
 
 	applyFeatureExpansion: function(){
+		console.log("start expansion generation")
 	 	this.featureExpansioned = this.featureExpansion(this.featureLookupTable['featureIndexToFeatureName'], this.featureExpansionScale, this.featureExpansionPhrase)
 	},
 	// private function: use this.normalizers to normalize the given sample:

@@ -4,6 +4,8 @@ module.exports = {
 	NeuralNetwork: require('./neural/NeuralNetwork'),
 	Bayesian: require('./bayesian/bayesian'),
 
+	kNN: require('./kNN/kNN'),
+	
 	SvmJs: require('./svm/SvmJs'),
 	SvmPerf: require('./svm/SvmPerf'),
 	SvmLinear: require('./svm/SvmLinear'),

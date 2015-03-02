@@ -1,25 +1,10 @@
-var hash = require("../../utils/hash");
-var sprintf = require("sprintf").sprintf;
 var _ = require("underscore")._;
 var fs = require('fs');
-var partitions = require('../../utils/partitions');
-var execSync = require('execSync')
 var temp = require('temp')
 var execSync = require('execSync')
 
 /**
- * Adaptive Boosting (Adaboost) is a greedy search for a linear combination of 
- * classifiers by overweighting the examples that are misclassified by each 
- * classifier. icsiboost implements Adaboost over stumps (one-level decision trees) 
- * on discrete and continuous attributes (words and real values). 
- * See http://en.wikipedia.org/wiki/AdaBoost and the papers by Y. Freund and R. Schapire for more details.
- * 
- * @param opts
- *            ngram_length (optional) 
- *            iterations (optional) 
- *  
- * The class uses icsiboost open-source implementation of Boostexter
- * https://code.google.com/p/icsiboost/
+	kNN implementation via WEKA
  */
 
 var kNN = function(opts) {
@@ -55,9 +40,6 @@ kNN.prototype = {
 			process.exit(0)
 		}
 
-		// console.log(this.learnFile.path)
-		// console.log(this.testFile.path)
-
 		this.writeData(this.dataset, 0, this.learnFile)
 
 		var dataset = [{'input': sample, 'output': '?'}]
@@ -67,16 +49,19 @@ kNN.prototype = {
 		"-t " + this.learnFile.path + " -T " + this.testFile.path + " " + this.distancemap[this.distanceWeightening] + " -K 1 -W 0 "+
 		"-A \"weka.core.neighboursearch.LinearNNSearch -A \\\"weka.core." + this.distanceFunction + " -R first-last\\\"\" -p 0"
 
-		// console.log(command)
+		console.log(this.learnFile)
+		console.log(this.testFile)
+		console.log(command)
+
 		result = execSync.exec(command)
 
-		// console.log(JSON.stringify(result, null, 4))
+		console.log(JSON.stringify(result, null, 4))
 
 		var res = this.processResult(result)
 
-		var score = (res['label'] == 1 ? res['labelscore'] : (-1)*res['labelscore']);
+		var score = (res['label'] == 1 ? 1*res['labelscore'] : (-1)*res['labelscore']);
 
-		return {'classification': score}
+		return score
 	},
 
 	processResult: function(result) {
@@ -103,7 +88,7 @@ kNN.prototype = {
 
 
 		_.each(dataset, function(value, key, list){ 
-			value['input'] = this.complement(value['input'], this.featureLookupTable['featureIndexToFeatureName'].length)
+			value['input'] = this.complement(value['input'])
 			// if (value['output'] != '?')
 				output +=  value['input'].join(",") + "," + value['output'] + "\n"
 			// else
@@ -114,7 +99,8 @@ kNN.prototype = {
 		fs.closeSync(filename.fd);
 	},
 
-	complement: function(input, len) {
+	complement: function(input) {
+		var len = this.featureLookupTable['featureIndexToFeatureName'].length
 		_(len - input.length).times(function(n){
 			input.push(0)
 		})
@@ -141,48 +127,3 @@ kNN.prototype = {
 
 
 module.exports = kNN;
-
-
-/*{
-    "featureIndexToFeatureName": [
-        null,
-        "the",
-        "most",
-        "i",
-        "will",
-        "do",
-        "is",
-        "the most",
-        "most i",
-        "i will",
-        "will do",
-        "do is",
-        "would",
-        "like",
-        "a",
-        "i would",
-        "would like",
-        "like a"
-    ],
-    "featureNameToFeatureIndex": {
-        "undefined": 0,
-        "the": 1,
-        "most": 2,
-        "i": 3,
-        "will": 4,
-        "do": 5,
-        "is": 6,
-        "the most": 7,
-        "most i": 8,
-        "i will": 9,
-        "will do": 10,
-        "do is": 11,
-        "would": 12,
-        "like": 13,
-        "a": 14,
-        "i would": 15,
-        "would like": 16,
-        "like a": 17
-    }
-}
-*/

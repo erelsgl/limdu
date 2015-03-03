@@ -244,7 +244,11 @@ EnhancedClassifier.prototype = {
 
 		if (this.multiplyFeaturesByIDF) { 
 			for (var feature in features) { 
-				
+
+				// Skip word2vec features
+				if (typeof feature.match(/w2v/g) == "undefined" || feature.match(/w2v/g) == null)
+					continue
+
 				var IDF = this.tfidf.idf(feature)
 
 				if (IDF != Infinity)

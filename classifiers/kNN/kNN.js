@@ -8,18 +8,7 @@ var temp = require('temp')
 var execSync = require('execSync')
 
 /**
- * Adaptive Boosting (Adaboost) is a greedy search for a linear combination of 
- * classifiers by overweighting the examples that are misclassified by each 
- * classifier. icsiboost implements Adaboost over stumps (one-level decision trees) 
- * on discrete and continuous attributes (words and real values). 
- * See http://en.wikipedia.org/wiki/AdaBoost and the papers by Y. Freund and R. Schapire for more details.
- * 
- * @param opts
- *            ngram_length (optional) 
- *            iterations (optional) 
- *  
- * The class uses icsiboost open-source implementation of Boostexter
- * https://code.google.com/p/icsiboost/
+ * kNN classifier based on WEKA
  */
 
 var kNN = function(opts) {
@@ -31,8 +20,8 @@ var kNN = function(opts) {
 	this.labels = []
 	
 	this.distancemap = { '1/d':'-I',
-							'1-d':'-F',
-							'No' :''}
+						 '1-d':'-F',
+						 'No' :''}
 }
 
 kNN.prototype = {
@@ -61,7 +50,7 @@ kNN.prototype = {
 		this.writeData(dataset, 0, this.testFile)
 
 		var command = "java weka.classifiers.lazy.IBk "+
-		"-t " + this.learnFile.path + " -T " + this.testFile.path + " " + this.distancemap[this.distanceWeightening] + " -K 1 -W 0 "+
+		"-t " + this.learnFile.path + " -T " + this.testFile.path + " " + this.distancemap[this.distanceWeightening] + " -K " + this.k + " -W 0 "+
 		"-A \"weka.core.neighboursearch.LinearNNSearch -A \\\"weka.core." + this.distanceFunction + " -R first-last\\\"\" -p 0"
 
 		console.log(this.learnFile)
@@ -141,48 +130,3 @@ kNN.prototype = {
 
 
 module.exports = kNN;
-
-
-/*{
-    "featureIndexToFeatureName": [
-        null,
-        "the",
-        "most",
-        "i",
-        "will",
-        "do",
-        "is",
-        "the most",
-        "most i",
-        "i will",
-        "will do",
-        "do is",
-        "would",
-        "like",
-        "a",
-        "i would",
-        "would like",
-        "like a"
-    ],
-    "featureNameToFeatureIndex": {
-        "undefined": 0,
-        "the": 1,
-        "most": 2,
-        "i": 3,
-        "will": 4,
-        "do": 5,
-        "is": 6,
-        "the most": 7,
-        "most i": 8,
-        "i will": 9,
-        "will do": 10,
-        "do is": 11,
-        "would": 12,
-        "like": 13,
-        "a": 14,
-        "i would": 15,
-        "would like": 16,
-        "like a": 17
-    }
-}
-*/

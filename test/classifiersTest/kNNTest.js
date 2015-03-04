@@ -20,6 +20,10 @@ function weightInstance1(instance) {
 	return 1
 }
 
+function weightInstance2(instance) {
+	return 1/instance
+}
+
 var kNNClassifier = classifiers.kNN.bind(this, {
     k: 1,
 	distanceFunction: 'EuclideanDistance',
@@ -31,13 +35,19 @@ var kNNClassifier = classifiers.kNN.bind(this, {
 	
 });
 
+var kNNClassifier2 = classifiers.kNN.bind(this, {
+    k: 1,
+	distanceFunction: 'EuclideanDistance',
+	distanceWeightening: weightInstance
+});
+
 var kNNClassifierE = classifiers.EnhancedClassifier.bind(this, {
 	classifierType: kNNClassifier,
 	featureLookupTable: new ftrs.FeatureLookupTable()	
 });
 
 var kNNClassifierEF = classifiers.EnhancedClassifier.bind(this, {
-	classifierType: kNNClassifier, 
+	classifierType: kNNClassifier2, 
 	featureLookupTable: new ftrs.FeatureLookupTable(),
 	featureExtractor: unigramext
 });
@@ -80,7 +90,7 @@ describe('kNN classifier', function() {
 
 	})
 
-	it('enhance-feature classification version', function(){
+	it('complex', function(){
 		var classifier = new kNNClassifierEF();
 		var trainSet = [
 		        		{input: 'aa bb cc', output: 0},
@@ -90,11 +100,12 @@ describe('kNN classifier', function() {
 
 		classifier.trainBatch(trainSet);
 
-/*		console.log(classifier.featureLookupTable)
+		_.isEqual(classifier.featureLookupTable['featureNameToFeatureIndex'], { undefined: 0, aa: 1, bb: 2, cc: 3, dd: 4, pp: 5, ss: 6 }).should.be.true
 
-		{ featureIndexToFeatureName: [ undefined, 'aa', 'bb', 'cc', 'dd', 'pp', 'ss' ],
-  featureNameToFeatureIndex: { undefined: 0, aa: 1, bb: 2, cc: 3, dd: 4, pp: 5, ss: 6 } }
-*/
+		var output = classifier.classify('ww pp oo');
+
+		_.isEqual(classifier.featureLookupTable['featureNameToFeatureIndex'], { undefined: 0, aa: 1, bb: 2, cc: 3, dd: 4, pp: 5, ss: 6, ww: 7, oo: 8 }).should.be.true
+
 	})
 
 })

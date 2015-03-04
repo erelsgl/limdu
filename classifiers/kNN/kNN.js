@@ -1,27 +1,17 @@
-var hash = require("../../utils/hash");
-var sprintf = require("sprintf").sprintf;
 var _ = require("underscore")._;
-var fs = require('fs');
-var partitions = require('../../utils/partitions');
-var execSync = require('execSync')
-var temp = require('temp')
-var execSync = require('execSync')
+var fs = require("fs");
+var knncommon = require("./knncommon");
 
 /**
- * kNN classifier based on WEKA
+ * kNN classifier
  */
 
 var kNN = function(opts) {
-
 	this.k = opts.k
 	this.distanceFunction = opts.distanceFunction
 	this.distanceWeightening = opts.distanceWeightening
 
 	this.labels = []
-	
-	this.distancemap = { '1/d':'-I',
-						 '1-d':'-F',
-						 'No' :''}
 }
 
 kNN.prototype = {
@@ -35,75 +25,90 @@ kNN.prototype = {
 
 	classify: function(sample, explain) {
 
-		this.learnFile = temp.openSync({prefix:"kNN-", suffix:".learn.arff"});
-		this.testFile = temp.openSync({prefix:"kNN-", suffix:".test.arff"});
-
-		if (!(this.distanceWeightening in this.distancemap))
-		{
-			console.error("distanceWeightening not in distancemap")
-			process.exit(0)
+		var dfmap = {
+			'EuclideanDistance': knncommon.euclidean_distance,
+			'ChebyshevDistance': knncommon.chebyshev_distance,
+			'ManhattanDistance': knncommon.manhattan_distance,
+			'DotDistance': 		 knncommon.dot_distance
 		}
 
-		this.writeData(this.dataset, 0, this.learnFile)
+		var trainset = _.map(this.dataset, function(value){ return {
+																	'input': this.complement(value['input']),
+																	'output': value['output']
+																	}
+																 }, this);
 
-		var dataset = [{'input': sample, 'output': '?'}]
-		this.writeData(dataset, 0, this.testFile)
+		
 
-		var command = "java weka.classifiers.lazy.IBk "+
-		"-t " + this.learnFile.path + " -T " + this.testFile.path + " " + this.distancemap[this.distanceWeightening] + " -K " + this.k + " -W 0 "+
-		"-A \"weka.core.neighboursearch.LinearNNSearch -A \\\"weka.core." + this.distanceFunction + " -R first-last\\\"\" -p 0"
 
-		console.log(this.learnFile)
-		console.log(this.testFile)
-		console.log(command)
+		var eq = _.filter(trainset, function(value){ return _.isEqual(value['input'], sample); });
+		
+		if (eq.length != 0)
+			return { 
+				 	'classification': (eq[0]['output'] == 1 ? 1 : -1),
+				 	'explanation': 'same'
+		   			}
+		
 
-		result = execSync.exec(command)
+		var distances = _.map(trainset, function(value){ return {
+																'input'   : value['input'],
+																'output'  : value['output'],
+																'distance': dfmap[this.distanceFunction](sample, value['input']),
+																'score'   : this.distanceWeightening(dfmap[this.distanceFunction](sample, value['input']))
+																}
+																}, this);
 
-		console.log(JSON.stringify(result, null, 4))
+		var distances = _.sortBy(distances, function(num){ return num['distance']; })
 
-		var res = this.processResult(result)
+		var knn = distances.slice(0, this.k)
 
-		var score = (res['label'] == 1 ? 1*res['labelscore'] : (-1)*res['labelscore']);
+		var output = _.groupBy(knn, function(num){ return num['output'] })
 
-		return score
-	},
+		var thelabel = {'label': -1, 'score': -1}
 
-	processResult: function(result) {
-		var output = result['stdout'].split("\n\n")[2].split("\n")[1].split(" ")
-		var output = _.compact(output)
-		_.each(output, function(value, key, list){ 
-			output[key] = output[key].split(":")
+		_.each(output, function(value, label, list){ 
+			var sum = _.reduce(value, function(memo, num){ return memo + num['score']; }, 0);
+			if (sum > thelabel['score'])
+				{
+					thelabel['score'] = sum	
+					thelabel['label'] = label	
+				}
 		}, this)
 
-		return {'label': output[2][1],
-				'labelscore': output[3][0]}
-	},
-	/*0-train 1 set*/
-	writeData: function(dataset, mode, filename) {
+		return { 
+				 'classification': (thelabel['label'] == 1 ? thelabel['score'] : (-1) * thelabel['score']),
+				 'explanation': this.translatetrain(knn)	
+			   }
+		},
 
-		var output = "@RELATION kNN\n\n"
-			
-		_.each(this.featureLookupTable['featureIndexToFeatureName'], function(value, key, list){ 
-			output += "@ATTRIBUTE\t'" + value + "'\t" + "REAL\n"
-		}, this)
+	translatetrain: function(input)
+	{
+		if (this.featureLookupTable)
+		{
+			_.each(input, function(value, key, list){ 
+				input[key]['input'] = this.translaterow(value['input'])
+			}, this)
+			return input
+		}
+		else
+		return input
 
-		output += "@ATTRIBUTE\tclass\t{0,1}\n"
-		output += "\n@DATA\n"
-
-
-		_.each(dataset, function(value, key, list){ 
-			value['input'] = this.complement(value['input'], this.featureLookupTable['featureIndexToFeatureName'].length)
-			// if (value['output'] != '?')
-				output +=  value['input'].join(",") + "," + value['output'] + "\n"
-			// else
-				// output += "?," + value['input'].join(",") + "\n"
-		}, this)
-	
-		fs.writeSync(filename.fd, output);
-		fs.closeSync(filename.fd);
 	},
 
-	complement: function(input, len) {
+	translaterow: function(row)
+	{
+		var output = {}
+
+		_.each(row, function(value, key, list){ 
+			if (value != 0)
+				output[this.featureLookupTable['featureIndexToFeatureName'][key]] = value
+		}, this)
+
+		return output
+	},
+
+	complement: function(input) {
+		var len = this.featureLookupTable['featureIndexToFeatureName'].length
 		_(len - input.length).times(function(n){
 			input.push(0)
 		})

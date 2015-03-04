@@ -16,23 +16,24 @@ var unigramext = function(sentence, features) {
 	return features;
 }
 
+function weightInstance1(instance) {
+	return 1
+}
+
 var kNNClassifier = classifiers.kNN.bind(this, {
     k: 1,
 	distanceFunction: 'EuclideanDistance',
 	/*EuclideanDistance
-	EditDistance
 	ChebyshevDistance
 	ManhattanDistance*/
 
-	distanceWeightening: '1/d'
-	/*1/d - Weight by 1/d distance
-	1-d - Weight by 1-d distance
-	No - no distance weightening*/
+	distanceWeightening: weightInstance1
+	
 });
 
 var kNNClassifierE = classifiers.EnhancedClassifier.bind(this, {
-	classifierType: kNNClassifier, 
-	featureLookupTable: new ftrs.FeatureLookupTable()
+	classifierType: kNNClassifier,
+	featureLookupTable: new ftrs.FeatureLookupTable()	
 });
 
 var kNNClassifierEF = classifiers.EnhancedClassifier.bind(this, {
@@ -43,21 +44,20 @@ var kNNClassifierEF = classifiers.EnhancedClassifier.bind(this, {
 
 describe('kNN classifier', function() {
 
-	it('enhance classification version', function(){
+	it('simple', function(){
 
 		var classifier = new kNNClassifierE();
 		var trainSet = [
-		        		{input: {a:0, b:0}, output: 0},
-		        		{input: {a:1, b:1}, output: 0},
-		        		{input: {a:0, b:1}, output: 1},
-		        		{input: {a:1, b:2}, output: 1} ];
+		        		{input: {a:1.5, d:1}, output: 0},
+		        		{input: {a:1.2, d:0.6}, output: 0},
+		        		{input: {a:2, d:1}, output: 1},
+		        		{input: {a:2.5, d:2.1}, output: 1} ];
 
 		classifier.trainBatch(trainSet);
-		classifier.classify({a:0, b:0}).should.eql(-1);
-
+		classifier.classify({a:0.5, d:0.5})['explanation'][0]['distance'].should.equal(0.7071067811865475)	
 	})
 
-	it('enhance classification version', function(){
+	it('features', function(){
 
 		var classifier = new kNNClassifierE();
 		var trainSet = [

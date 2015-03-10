@@ -376,6 +376,8 @@ EnhancedClassifier.prototype = {
 		var featureLookupTable = this.featureLookupTable
 		var featureExpansioned = this.featureExpansioned
 
+		var expansioned = {}
+
 		_.each(features, function(value, feature, list){
 			 if (featureLookupTable['featureIndexToFeatureName'].indexOf(feature) == -1)
 			 {
@@ -395,9 +397,12 @@ EnhancedClassifier.prototype = {
 			 				console.error(JSON.stringify(featureLookupTable, null, 4))
 			 				}
 			 			console.log("-expansion from '"+ feature + "' to '"+ featureExpansioned[feature][0][0]+"'")
+			 			expansioned[feature] = featureExpansioned[feature][0][0]
 			 		}
 			 }
 		}, this)
+
+		return expansioned
 	},
 
 	/**
@@ -411,8 +416,9 @@ EnhancedClassifier.prototype = {
 
 		var features = this.sampleToFeatures(samplecorrected, this.featureExtractors);
 
+		var expansioned = {}
 		if (this.featureExpansion)
-			this.editFeatureExpansion(features);
+			expansioned = this.editFeatureExpansion(features);
 
 		this.editFeatureValues(features, /*remove_unknown_features=*/false);
 
@@ -426,6 +432,10 @@ EnhancedClassifier.prototype = {
 			// else
 				// classification.explanation['SpellCorrectedFeatures']=JSON.stringify(features);
 		// }
+
+		classification['expansioned'] = expansioned
+		classification['features'] = features
+
 		return classification;
 	},
 
@@ -538,6 +548,8 @@ EnhancedClassifier.prototype = {
 			return {
 				classes: classes,
 				scores: scores,
+				expansioned: classesWithExplanation.expansioned,
+				features: classesWithExplanation.features,
 				explanation: explanations
 				// bonus: bonus
 			};

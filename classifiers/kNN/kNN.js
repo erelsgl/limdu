@@ -38,9 +38,6 @@ kNN.prototype = {
 																	}
 																 }, this);
 
-		
-
-
 		var eq = _.filter(trainset, function(value){ return _.isEqual(value['input'], sample); });
 		
 		if (eq.length != 0)
@@ -75,9 +72,14 @@ kNN.prototype = {
 				}
 		}, this)
 
+		// _.each(knn, function(val, key, list){ 
+			// console.log(val)
+			// console.log(this.translaterow(val['input']))
+		// }, this)
+
 		return { 
 				 'classification': (thelabel['label'] == 1 ? thelabel['score'] : (-1) * thelabel['score']),
-				 'explanation': this.translatetrain(knn)	
+				 'explanation': this.translatetrain(knn)
 			   }
 		},
 

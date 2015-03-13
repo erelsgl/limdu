@@ -30,12 +30,16 @@ function SvmLinear(opts) {
 }
 
 SvmLinear.isInstalled = function() {
-	var result = execSync("liblinear_train");
-	return (result.code!=127);
-}
+  try {
+    var result = child_process.execSync("liblinear_train");
+    return true;
+  } catch (e) {
+    return (e.status != 127);
+  }
+};
 
 var util  = require('util')
-  , execSync = require('execSync').exec
+  , child_process = require('child_process')
   , exec = require('child_process').exec
   , fs   = require('fs')
   , svmcommon = require('./svmcommon')
@@ -69,7 +73,7 @@ SvmLinear.prototype = {
 			var command = "liblinear_train "+this.learn_args+" "+learnFile + " "+modelFile;
 			if (this.debug) console.log("running "+command);
 
-			var result = execSync(command);
+			var result = child_process.execSync(command);
 			if (result.code>0) {
 				console.dir(result);
 				console.log(fs.readFileSync(learnFile, 'utf-8'));

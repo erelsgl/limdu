@@ -15,7 +15,7 @@
 
 var _ = require('underscore')._;
 var fs = require('fs');
-var execSync = require('execSync')
+var child_process = require('child_process')
 var partitions = require('./partitions');
 var trainAndTest = require('./trainAndTest').trainAndTest;
 var natural = require('natural');
@@ -69,11 +69,11 @@ module.exports.unseen_word_curves = function(dataset) {
 		{
 			console.log("The existing report is found. If you want to draw a learning curves, remove the existing report")
 			command = "gnuplot -p -e \"plot \'"+dir+"unseen_curves\' using 1:2 with lines\""
-			result = execSync.run(command)
+			result = child_process.execSync(command)
 	    	return 0
 		}
 
-	var result = execSync.run("gnuplot -V");
+	var result = child_process.execSync("gnuplot -V");
 	if (result !=0 ) {
 		console.log("gnuplot is not found")
 		return 0

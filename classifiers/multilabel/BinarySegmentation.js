@@ -1,10 +1,7 @@
 var hash = require("../../utils/hash");
-// var FeaturesUnit = require("../../features");
 var sprintf = require("sprintf").sprintf;
 var _ = require("underscore")._;
 var ftrs = require('../../features');
-var natural = require('natural');
-var tokenizer = new natural.RegexpTokenizer({pattern: /[^a-zA-Z0-9%'$+-]+/});
 
 /**
  * BinarySegmentation - Multi-label text classifier, based on a segmentation scheme using base binary classifiers.
@@ -270,12 +267,10 @@ BinarySegmentation.prototype = {
 	 */
 	classify: function(sentence, explain) {
 
-		// console.log("TEST")
-		// console.log("sentence "+ sentence)
 		// sentence = "['start'] " + sentence + " ['end']"
-		var words = tokenizer.tokenize(sentence);
 		var minWordsToSplit = 2;
-		// var words = sentence.split(/ /);
+		var words = sentence.split(/ /);
+		// var words = tokenizer.tokenize(sentence);
 		if (this.segmentSplitStrategy && words.length>=minWordsToSplit) {
 			var accumulatedClasses = {};
 			var explanations = [];

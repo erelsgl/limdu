@@ -38,7 +38,7 @@ var kNNClassifier = classifiers.kNN.bind(this, {
 var kNNClassifier2 = classifiers.kNN.bind(this, {
     k: 1,
 	distanceFunction: 'EuclideanDistance',
-	distanceWeightening: weightInstance
+	distanceWeightening: weightInstance1
 });
 
 var kNNClassifierE = classifiers.EnhancedClassifier.bind(this, {

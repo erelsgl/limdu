@@ -68,6 +68,23 @@ module.exports.chebyshev_distance = function(a, b) {
   	return max
 }
 
+// metric measure the same words
+module.exports.and_distance = function(a, b) {
+  if (!isVectorNumber(a) || !isVectorNumber(b))
+    throw new Error("Vectors should be consist of numbers " + JSON.stringify(a) + " " +JSON.stringify(b))
+
+  if (a.length != b.length)
+    throw new Error("Vectors should be of the same size " + JSON.stringify(a.length) + " " +JSON.stringify(b.length))
+
+  var sum = 0;
+  var n;
+    for (n=0; n < a.length; n++) {
+      sum += ((a[n] > 0) && (b[n]>0) ? 1 : 0);
+    }
+    return 1/sum
+}
+
+
 function isVectorNumber(a) {
   var n;
   for (n=0; n < a.length; n++) {

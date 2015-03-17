@@ -148,26 +148,41 @@ BinarySegmentation.prototype = {
  	 * http://www.citeulike.org/user/erelsegal-halevi/article/10259046
 	 */
 	cheapestSegmentSplitStrategy: function(words, accumulatedClasses, explain, explanations) {
-		var EdgeWeightedDigraph = natural.EdgeWeightedDigraph;
-		var digraph = new EdgeWeightedDigraph();
 
-		for (var start=0; start<=words.length; ++start) {
-			for (var end=start+1; end<=words.length; ++end) {
-				var segment = words.slice(start,end).join(" ");
+		//for (var start=0; start<=words.length; ++start) {
+		//	for (var end=start+1; end<=words.length; ++end) {
+		//		var segment = words.slice(start,end).join(" ");
 
-				var bestClassAndProbability = this.bestClassOfSegment(segment, explain);
-				if (bestClassAndProbability[1] != Infinity)
-				{
-					var bestClass = bestClassAndProbability[0];
-					var bestClassProbability = bestClassAndProbability[1];
-					digraph.add(start, end, -bestClassProbability);
-				}
-			}
-		}
+		//		var bestClassAndProbability = this.bestClassOfSegment(segment, explain);
+		//		if (bestClassAndProbability[1] != Infinity)
+		//		{
+		//			var bestClass = bestClassAndProbability[0];
+		//			var bestClassProbability = bestClassAndProbability[1];
+			//		digraph.add(start, end, -bestClassProbability);
+		//		}
+		//	}
+		//}
 
-		var ShortestPathTree = natural.ShortestPathTree;
-		var spt = new ShortestPathTree(digraph, 0);
-		var path = spt.pathTo(words.length);
+		var cheapest_paths = require("../../node_modules/graph-paths/graph-paths").cheapest_paths;
+
+                var mini = Infinity
+                _(words.length).times(function(nn){
+                   cheapestSegmentClassificationCosts = cheapest_paths(segmentClassificationCosts, nn);
+                       _.each(cheapestSegmentClassificationCosts, function(value, key, list){
+                             if (value.cost<mini)
+                               {
+                                mini = value.cost
+	                            cheapestSentenceClassificationCost = value
+                                 }
+                         }, this)
+                 }, this)
+                   
+     cheapestSegmentClassificationCosts = cheapest_paths(segmentClassificationCosts, 0);
+     cheapestSentenceClassificationCost = cheapestSegmentClassificationCosts[words.length];
+
+
+        var path = cheapestSentenceClassificationCost.path;
+
 
 		for (var i=0; i<path.length-1; ++i) {
 			// var segment = words.slice(cheapestClassificationPath[i],cheapestClassificationPath[i+1]).join(" ");

@@ -7,11 +7,7 @@
 
 var should = require('should');
 var ftrs = require('../../features');
-var natural = require('../../node_modules/natural');
 var _ = require('underscore')._;
-
-var tokenizer = new natural.WordPunctTokenizer(); // WordTokenizer, TreebankWordTokenizer, WordPunctTokenizer
-
 
 describe('word unigram feature extractor', function() {
 	it('creates word unigram features', function() {

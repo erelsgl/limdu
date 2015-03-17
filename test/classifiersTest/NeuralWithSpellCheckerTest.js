@@ -10,6 +10,18 @@ var classifiers = require('../../classifiers');
 var ftrs = require('../../features');
 var natural = require('natural');
 
+
+var RegexpTokenizer = function(options) {
+    var options = options || {};
+    this._pattern = options.pattern || this._pattern;
+};
+
+
+RegexpTokenizer.prototype.tokenize = function(s) {
+	return s.match(this._pattern);
+};
+
+
 try {
 	var wordsworth = require('wordsworth');
 	var isTestRelevant = true;

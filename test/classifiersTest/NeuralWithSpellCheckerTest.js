@@ -6,9 +6,9 @@
  */
 
 var should = require('should');
+var _ = require('underscore')._;
 var classifiers = require('../../classifiers');
 var ftrs = require('../../features');
-var natural = require('natural');
 
 
 var RegexpTokenizer = function(options) {
@@ -18,7 +18,8 @@ var RegexpTokenizer = function(options) {
 
 
 RegexpTokenizer.prototype.tokenize = function(s) {
-	return s.match(this._pattern);
+    var results = s.split(this._pattern)
+    return _.without(results,'',' ')
 };
 
 
@@ -53,7 +54,7 @@ describe('classifier with spell-checker', function() {
 		var spamClassifier = new classifiers.EnhancedClassifier({
 			classifierType:   classifiers.NeuralNetwork,
 			featureExtractor: ftrs.NGramsOfWords(1),
-			tokenizer: new natural.RegexpTokenizer({pattern: /[^a-zA-Z0-9%'$,]+/}),
+			tokenizer: new RegexpTokenizer({pattern: /[^a-zA-Z0-9%'$,]+/}),
 			spellChecker: [wordsworth.getInstance(), wordsworth.getInstance()]
 		});
 
@@ -67,3 +68,6 @@ describe('classifier with spell-checker', function() {
 		spamClassifier.classify("expensive clocks").should.be.below(0.4);  // (not spam)
 	}: null)
 });
+
+
+exports.RegexpTokenizer = RegexpTokenizer;

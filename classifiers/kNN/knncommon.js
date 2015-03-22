@@ -5,7 +5,7 @@
 var fs   = require('fs')
 var _ = require('underscore')._
 
-module.exports.euclidean_distance = function(a, b) {
+function euclidean_distance(a, b) {
   if (!isVectorNumber(a) || !isVectorNumber(b))
     throw new Error("Vectors should be consist of numbers " + JSON.stringify(a) + " " +JSON.stringify(b))
 
@@ -20,7 +20,7 @@ module.exports.euclidean_distance = function(a, b) {
   	return Math.sqrt(sum);
 }
 
-module.exports.dot_distance = function(a, b) {
+function dot_distance(a, b) {
   if (!isVectorNumber(a) || !isVectorNumber(b))
     throw new Error("Vectors should be consist of numbers " + JSON.stringify(a) + " " +JSON.stringify(b))
 
@@ -35,7 +35,7 @@ module.exports.dot_distance = function(a, b) {
   	return sum
 }
 
-module.exports.manhattan_distance = function(a, b) {
+function manhattan_distance(a, b) {
   if (!isVectorNumber(a) || !isVectorNumber(b))
     throw new Error("Vectors should be consist of numbers " + JSON.stringify(a) + " " +JSON.stringify(b))
 
@@ -50,7 +50,7 @@ module.exports.manhattan_distance = function(a, b) {
   	return sum
 }
 
-module.exports.chebyshev_distance = function(a, b) {
+function chebyshev_distance(a, b) {
   if (!isVectorNumber(a) || !isVectorNumber(b))
     throw new Error("Vectors should be consist of numbers " + JSON.stringify(a) + " " +JSON.stringify(b))
 
@@ -69,7 +69,7 @@ module.exports.chebyshev_distance = function(a, b) {
 }
 
 // metric measure the same words
-module.exports.and_distance = function(a, b) {
+function and_distance(a, b) {
   if (!isVectorNumber(a) || !isVectorNumber(b))
     throw new Error("Vectors should be consist of numbers " + JSON.stringify(a) + " " +JSON.stringify(b))
 
@@ -84,6 +84,23 @@ module.exports.and_distance = function(a, b) {
     return 1/sum
 }
 
+function cosine_distance(a, b) {
+  if (!isVectorNumber(a) || !isVectorNumber(b))
+    throw new Error("Vectors should be consist of numbers " + JSON.stringify(a) + " " +JSON.stringify(b))
+
+  if (a.length != b.length)
+    throw new Error("Vectors should be of the same size " + JSON.stringify(a.length) + " " +JSON.stringify(b.length))
+
+  var norm1 = 0 
+  var norm2 = 0 
+
+  for (n=0; n < a.length; n++) {
+    norm1 += a[n]*a[n]
+    norm2 += b[n]*b[n]
+    }
+  
+    return dot_distance(a,b)/(Math.sqrt(norm1)*Math.sqrt(norm2))
+}
 
 function isVectorNumber(a) {
   var n;
@@ -92,4 +109,14 @@ function isVectorNumber(a) {
     return false
   }
   return true
+}
+
+module.exports = {
+  euclidean_distance:euclidean_distance,
+  cosine_distance:cosine_distance,
+  and_distance:and_distance,
+  chebyshev_distance:chebyshev_distance,
+  manhattan_distance:manhattan_distance,
+  dot_distance:dot_distance,
+  euclidean_distance:euclidean_distance
 }

@@ -29,7 +29,9 @@ kNN.prototype = {
 			'EuclideanDistance': knncommon.euclidean_distance,
 			'ChebyshevDistance': knncommon.chebyshev_distance,
 			'ManhattanDistance': knncommon.manhattan_distance,
-			'DotDistance': 		 knncommon.dot_distance
+			'DotDistance': 		 knncommon.dot_distance,
+			'AndDistance': 		 knncommon.and_distance,
+			'CosDistance':       knncommon.cosine_distance
 		}
 
 		var trainset = _.map(this.dataset, function(value){ return {
@@ -46,7 +48,6 @@ kNN.prototype = {
 				 	'explanation': 'same'
 		   			}
 		
-
 		var distances = _.map(trainset, function(value){ return {
 																'input'   : value['input'],
 																'output'  : value['output'],

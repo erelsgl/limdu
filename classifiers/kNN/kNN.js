@@ -40,13 +40,14 @@ kNN.prototype = {
 																	}
 																 }, this);
 
-		var eq = _.filter(trainset, function(value){ return _.isEqual(value['input'], sample); });
+		// is canceled due to "okay is fine"
+		// var eq = _.filter(trainset, function(value){ return _.isEqual(value['input'], sample); });
 		
-		if (eq.length != 0)
-			return { 
-				 	'classification': (eq[0]['output'] == 1 ? 1 : -1),
-				 	'explanation': 'same'
-		   			}
+		// if (eq.length != 0)
+			// return { 
+				 	// 'classification': (eq[0]['output'] == 1 ? 1 : -1),
+				 	// 'explanation': 'same'
+		   			// }
 		
 		var distances = _.map(trainset, function(value){ return {
 																'input'   : value['input'],
@@ -58,6 +59,17 @@ kNN.prototype = {
 
 		var distances = _.sortBy(distances, function(num){ return num['distance']; })
 
+		// eliminate Infinite and null
+
+		var distances = _.filter(distances, function(num){ return !isNaN(parseFloat(num['distance'])) && isFinite(num['distance']) });
+		
+		if (distances.length == 0)
+		{
+			return {
+				'classification': -1,
+				 'explanation': 'not number'
+			}
+		}
 		var knn = distances.slice(0, this.k)
 
 		var output = _.groupBy(knn, function(num){ return num['output'] })

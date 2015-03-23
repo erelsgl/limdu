@@ -99,7 +99,7 @@ function cosine_distance(a, b) {
     norm2 += b[n]*b[n]
     }
   
-    return dot_distance(a,b)/(Math.sqrt(norm1)*Math.sqrt(norm2))
+    return 1/(dot_distance(a,b)/(Math.sqrt(norm1)*Math.sqrt(norm2)))
 }
 
 function isVectorNumber(a) {

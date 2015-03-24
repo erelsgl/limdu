@@ -1,6 +1,5 @@
 var _ = require("underscore")._;
 var fs = require("fs");
-var knncommon = require("./knncommon");
 
 /**
  * kNN classifier
@@ -8,9 +7,9 @@ var knncommon = require("./knncommon");
 
 var kNN = function(opts) {
 	this.k = opts.k
-	this.distanceFunction = opts.distanceFunction
+	this.mode = opts.mode
+	this.distanceFunctionList = opts.distanceFunctionList
 	this.distanceWeightening = opts.distanceWeightening
-
 	this.labels = []
 }
 
@@ -24,15 +23,6 @@ kNN.prototype = {
 	},
 
 	classify: function(sample, explain) {
-
-		var dfmap = {
-			'EuclideanDistance': knncommon.euclidean_distance,
-			'ChebyshevDistance': knncommon.chebyshev_distance,
-			'ManhattanDistance': knncommon.manhattan_distance,
-			'DotDistance': 		 knncommon.dot_distance,
-			'AndDistance': 		 knncommon.and_distance,
-			'CosDistance':       knncommon.cosine_distance
-		}
 
 		var trainset = _.map(this.dataset, function(value){ return {
 																	'input': this.complement(value['input']),
@@ -52,8 +42,11 @@ kNN.prototype = {
 		var distances = _.map(trainset, function(value){ return {
 																'input'   : value['input'],
 																'output'  : value['output'],
-																'distance': dfmap[this.distanceFunction](sample, value['input']),
-																'score'   : this.distanceWeightening(dfmap[this.distanceFunction](sample, value['input']))
+																'distance': _.reduce(this.distanceFunctionList, function(memo, df){ return memo + df(sample, value['input']); }, 0),
+																'score':    _.reduce(this.distanceFunctionList, function(memo, df){ return memo + df(sample, value['input']); }, 0),
+
+																// 'distance': dfmap[this.distanceFunction](sample, value['input']),
+																// 'score'   : this.distanceWeightening(_.reduce(this.distanceFunctionList, function(memo, df){ return memo + df(sample, value['input']); }, 0))
 																}
 																}, this);
 
@@ -65,14 +58,20 @@ kNN.prototype = {
 		
 		if (distances.length == 0)
 		{
-			return {
-				'classification': -1,
-				 'explanation': 'not number'
-			}
+			if (this.mode == 'binary')
+				return {'classification': -1, 'explanation': 'not number'}
 		}
 		var knn = distances.slice(0, this.k)
 
 		var output = _.groupBy(knn, function(num){ return num['output'] })
+
+		if (this.mode == 'multi')
+		{
+			return { 
+					 'classes': Object.keys(output),
+					 'explanation': output
+			  		}
+		}
 
 		var thelabel = {'label': -1, 'score': -1}
 
@@ -90,10 +89,11 @@ kNN.prototype = {
 			// console.log(this.translaterow(val['input']))
 		// }, this)
 
-		return { 
-				 'classification': (thelabel['label'] == 1 ? thelabel['score'] : (-1) * thelabel['score']),
-				 'explanation': this.translatetrain(knn)
-			   }
+		if (this.mode == 'binary')
+			return { 
+					 'classification': (thelabel['label'] == 1 ? thelabel['score'] : (-1) * thelabel['score']),
+					 'explanation': this.translatetrain(knn)
+			  		}
 		},
 
 	translatetrain: function(input)

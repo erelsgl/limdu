@@ -17,7 +17,7 @@
 
 var fs   = require('fs')
   , util  = require('util')
-  , execSync = require('execSync').exec
+  , child_process = require('child_process')
   , exec = require('child_process').exec
   , svmcommon = require('./svmcommon')	
   , _ = require("underscore")._;
@@ -38,9 +38,13 @@ function SvmPerf(opts) {
 }
 
 SvmPerf.isInstalled = function() {
-	var result = execSync("svm_perf_learn -c 1 a");
-	return (result.code!=127);
-}
+  try {
+    var result = child_process.execSync("svm_perf_learn -c 1 a");
+    return true;
+  } catch (e) {
+    return (e.status != 127);
+  }
+};
 
 var FIRST_FEATURE_NUMBER=1;  // in svm perf, feature numbers start with 1, not 0!
 
@@ -62,7 +66,7 @@ SvmPerf.prototype = {
 			var command = "svm_perf_learn "+this.learn_args+" "+learnFile + " "+modelFile;
 			if (this.debug) console.log("running "+command);
 	
-			var result = execSync(command);
+			var result = child_process.execSync(command);
 			if (result.code>0) {
 				console.dir(result);
 				console.log(fs.readFileSync(learnFile, 'utf-8'));

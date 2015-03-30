@@ -8,15 +8,15 @@
     "url": "https://github.com/erelsgl/limdu.git"
   },
   "dependencies": {
-    "underscore": "*",
+    "brain": "*",
+    "graph-paths": "latest",
+    "languagemodel": "latest",
+    "natural": "^0.2.0",
     "sprintf": "*",
     "svm": "*",
     "temp": "*",
-    "wordsworth": "*",
-    "execSync": "*",
-    "brain": "*",
-    "graph-paths": "latest",
-    "languagemodel": "latest"
+    "underscore": "*",
+    "wordsworth": "*"
   },
   "devDependencies": {
     "mocha": ">=1.0.0",
@@ -26,15 +26,15 @@
     "test": "mocha"
   },
   "contributors": [
-                   {
-                     "name": "Erel Segal-Halevi",
-                     "email": "erelsgl@gmail.com"
-                   },
-                   {
-                       "name": "Vasily Konovalov",
-                       "email": "vasili.konov@gmail.com"
-                   }
-  ],   	
+    {
+      "name": "Erel Segal-Halevi",
+      "email": "erelsgl@gmail.com"
+    },
+    {
+      "name": "Vasily Konovalov",
+      "email": "vasili.konov@gmail.com"
+    }
+  ],
   "keywords": [
     "classifier",
     "classification",

@@ -11,7 +11,6 @@
 
 var _ = require('underscore')._;
 var fs = require('fs');
-var execSync = require('execSync')
 var partitions = require('./partitions');
 var trainAndTest = require('./trainAndTest').trainAndTest;
 var trainAndTest_hash= require('./trainAndTest').trainAndTest_hash;

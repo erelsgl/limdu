@@ -7,6 +7,9 @@
     "type": "git",
     "url": "https://github.com/erelsgl/limdu.git"
   },
+  "engines" : { 
+	  "node" : ">=0.12" 
+  },
   "dependencies": {
     "brain": "*",
     "graph-paths": "latest",
@@ -33,7 +36,10 @@
     {
       "name": "Vasily Konovalov",
       "email": "vasili.konov@gmail.com"
-    }
+    },
+    {
+        "name": "Mikkel Oscar Lyderik",
+      }
   ],
   "keywords": [
     "classifier",

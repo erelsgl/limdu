@@ -1,5 +1,5 @@
 /**
- * a unit-test for Threshold Classifier with Passiive Aggresive.
+ * a unit-test for Threshold Classifier with Passive Aggressive.
  * 
  * @author Vasily Konovalov
  */
@@ -26,7 +26,7 @@ var ThresholdPassiveAggressive = classifiers.multilabel.ThresholdClassifier.bind
 dataset = []
 _.times(500, function(e) { dataset.push({'input':wordcounts(random.random_string(5)), 'output':[{'class':Math.round(Math.random())}]}) })
 
-describe('Threshold classifier', function() {
+describe.skip('Threshold classifier', function() {
 
 	it('Threshold classifier on train set should find the best threshold for the train set', function() {
 

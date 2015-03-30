@@ -52,7 +52,7 @@ var kNNClassifierEF = classifiers.EnhancedClassifier.bind(this, {
 	featureExtractor: unigramext
 });
 
-describe('kNN classifier', function() {
+describe.skip('kNN classifier', function() {
 
 	it('simple', function(){
 

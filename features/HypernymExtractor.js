@@ -11,27 +11,19 @@
 
 /**
  * Adds hypernym features to the given feature-vector.
+ * 
  * @param hypernyms - an array of objects {regexp: /regexp/g, feature: "feature", confidence: confidence}
  * @param sample - a string.
- * @param features an initial hash of features (optional).
- * @return a hash with all the different letter n-grams contained in the given sentence.
+ * @param features an initial hash of features (optional). The hypernym features will be added to that array.
  */
 module.exports = function(hypernyms) {
 	return function(sample, features) {
 		hypernyms.forEach(function(hypernym) {
 			var matches = null;
-			if (hypernym.regexp instanceof RegExp) {
-				if (!hypernym.regexp.global) {
-					console.warn("hypernym regexp, "+hypernym.regexp+", is not global - skipping");
-					return;
-				}
-			} else {
-				hypernym.regexp = new RegExp(hypernym.regexp,"gi");
-			}
-			while ((matches = hypernym.regexp.exec(sample)) !== null) {
-				var feature = matches[0].replace(hypernym.regexp, hypernym.feature);
-				features[feature]=hypernym.confidence;
-			}
+			if (!(hypernym.regexp instanceof RegExp)) 
+				hypernym.regexp = new RegExp(hypernym.regexp, "gi");
+			if (hypernym.regexp.test(sample))
+				features[hypernym.feature]=hypernym.confidence;
 		});
 	}
 }

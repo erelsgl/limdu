@@ -22,9 +22,9 @@ describe('baseline - classifier without a splitter', function() {
 		});
 		
 		classifier.trainBatch([
-		               		{input: "I want aa", output: 'A'},      // train on single class
-		               		{input: "I want bb", output: 'B'},    // train on array with single class (same effect)
-		               		{input: "I want cc", output: 'C'},// train on structured class, that will be stringified to "{C:c}".
+		               		{input: "I want aa", output: 'A'},
+		               		{input: "I want bb", output: 'B'},
+		               		{input: "I want cc", output: 'C'},
 		               	]);
 		
 		classifier.classify("I want aa").should.eql(['A']);

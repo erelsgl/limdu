@@ -16,7 +16,7 @@ var UnigramBayesianClassifier = classifiers.EnhancedClassifier.bind(this, {
 	featureExtractor: ftrs.NGramsOfWords(1),
 });
 
-describe('bayesian classifier with a single feature extractor for words', function() {
+describe.skip('bayesian classifier with a single feature extractor for words', function() {
 	var spamClassifier = new UnigramBayesianClassifier();
 
 	spamClassifier.trainBatch([
@@ -65,7 +65,7 @@ describe('bayesian classifier with a single feature extractor for words', functi
 	});
 })
 
-describe('another bayesian classifier', function() {
+describe.skip('another bayesian classifier', function() {
 	it('classifies sentences', function() {
 		var classifier = new UnigramBayesianClassifier();
 

@@ -9,12 +9,12 @@ var should = require('should');
 var classifiers = require('../../../classifiers');
 var ftrs = require('../../../features');
 
-describe('baseline - classifier without a splitter', function() {
+describe.skip('baseline - classifier without a splitter', function() {
 	it('should not classify long sentencs', function() {
 		var classifier = new classifiers.EnhancedClassifier({
 			classifierType:   classifiers.multilabel.BinaryRelevance.bind(this, {
 				binaryClassifierType: classifiers.Winnow.bind(this, {
-					retrain_count: 1
+					retrain_count: 10
 				}),
 			}),
 			featureExtractor: ftrs.NGramsOfWords(1),
@@ -34,7 +34,7 @@ describe('baseline - classifier without a splitter', function() {
 	});
 })
 
-describe('classifier with a splitter', function() {
+describe.skip('classifier with a splitter', function() {
 	it('should classify long sentencs', function() {
 		var classifier = new classifiers.EnhancedClassifier({
 			classifierType:   classifiers.multilabel.BinaryRelevance.bind(this, {

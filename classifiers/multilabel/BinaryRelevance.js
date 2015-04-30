@@ -116,6 +116,7 @@ BinaryRelevance.prototype = {
 		var explanations = [];
 		var positive_explanations = {};
 		var negative_explanations = {};
+		var all_explanations = {}
 
 		for (var label in this.mapClassnameToClassifier) {
 			var classifier = this.mapClassnameToClassifier[label];
@@ -139,6 +140,8 @@ BinaryRelevance.prototype = {
 				}
 
 			scores[label] = score
+
+			all_explanations[label] = explanations_string
 		}
 
 		// only multi-class version
@@ -158,6 +161,7 @@ BinaryRelevance.prototype = {
 				explanation: {
 					positive: positive_explanations[score_list[0][0]], 
 					negative: negative_explanations[score_list[0][0]],
+					all: all_explanations
 				
 					// positive: positive_explanations, 
 					// negative: negative_explanations,

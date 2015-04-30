@@ -40,6 +40,16 @@ describe('PrecisionRecall object', function() {
 		results['Recall'].should.equal(7/9)
 	});
 
+	it('uniqueaggregate', function() {
+		var pr = new mlutils.PrecisionRecall();
+		var ac = [['Greet',[1,5]], ['Offer',[0,5]], ['Greet',[0,6]], ['Offer',[9,15]], ['Greet',[0,9]]]
+		var output = pr.uniqueaggregate(ac)
+		output.length.should.equal(3)
+
+		var actual = pr.uniquecandidate(output)
+		_.isEqual(actual[0], ['Greet',[0,9]]).should.be.true
+	})	
+
 	it('correctly calculates precision, recall, accuracy in sequence format.', function() {
         var pr = new mlutils.PrecisionRecall();
 		

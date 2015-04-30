@@ -7,6 +7,7 @@ var _ = require('underscore')._;
 var hash = require('../utils/hash');
 var util = require('../utils/list');
 var multilabelutils = require('./multilabel/multilabelutils');
+var fs = require('fs');
 
 /**
  * EnhancedClassifier - wraps any classifier with feature-extractors and feature-lookup-tables.
@@ -61,6 +62,7 @@ var EnhancedClassifier = function(opts) {
 	this.featureExpansionScale = opts.featureExpansionScale;
 	this.featureExpansionPhrase = opts.featureExpansionPhrase;
 	this.featureFine = opts.featureFine;
+	this.expansionParam = opts.expansionParam;
 
 	this.multiplyFeaturesByIDF = opts.multiplyFeaturesByIDF;
 	this.minFeatureDocumentFrequency = opts.minFeatureDocumentFrequency || 0;
@@ -84,6 +86,9 @@ var EnhancedClassifier = function(opts) {
 	this.InputSplitLabel = opts.InputSplitLabel
 	this.OutputSplitLabel = opts.OutputSplitLabel
 	this.TestSplitLabel = opts.TestSplitLabel
+
+	this.redis_buffer = {}
+	this.wordnet_buffer = {}
 }
 
 
@@ -161,7 +166,9 @@ EnhancedClassifier.prototype = {
 	},
 
 	sampleToFeatures: function(sample, featureExtractor) {
+		
 		var features = sample;
+
 		if (featureExtractor) {
 			try {
 				features = {};
@@ -372,6 +379,199 @@ EnhancedClassifier.prototype = {
 
 	},
 
+	// fetching with buffering
+	// fetchRedis: function(data, db)
+	// {
+	// 	if (data.length == 0)
+	// 		return []
+
+	// 	var execSync = require('execSync').exec
+
+	// 	var redis_path = __dirname + '/../../nlu-server/utils/getred.js'
+	// 	var buffer_path = __dirname + '/../../nlu-server/buffer.json'
+		
+	// 	if (this.redis_buffer_runs == 0)
+	// 		this.redis_buffer = JSON.parse(fs.readFileSync(buffer_path,'UTF-8'))
+
+	// 	if (!(db in this.redis_buffer))
+	// 		this.redis_buffer[db] = {}
+
+	// 	var data_reduced = []
+	// 	_.each(data, function(value, key, list){ 
+	// 		if (!(value in this.redis_buffer[db]))
+	// 			data_reduced.push(value)
+	// 	}, this)
+
+	// 	// var data_reduced = _.filter(data, function(num){ _.has(this.redis_buffer, num) == false }, this)
+
+
+	// 	if (data_reduced.length > 0)
+	// 	{
+	// 		console.log(data_reduced)
+	// 		var cmd = "node " + redis_path + " " + JSON.stringify(data_reduced).replace(/[\[\]]/g, ' ').replace(/\"\,\"/g,'" "') + " " + db
+	// 		console.log(cmd)
+	// 		// result is hash
+	// 		var result = JSON.parse(execSync(cmd)['stdout'])
+
+
+	// 		_.each(result, function(value, key, list){ 
+	// 			// this.redis_buffer[db][key] = {'data': value, 'count':0}
+	// 			this.redis_buffer[db][key] = value
+	// 		}, this)
+
+	// 		this.redis_buffer_runs = this.redis_buffer_runs + 1
+
+	// 		if (this.redis_buffer_runs % 10 == 0)
+	// 		{
+	// 			console.log("redis writing buffer ...")
+ //            	fs.writeFileSync(buffer_path, JSON.stringify(this.redis_buffer, null, 4))
+ //        	}
+	// 	}
+
+	// 	var data_result = []
+	// 	_.each(data, function(value, key, list){ 
+
+	// 		if (!(value in this.redis_buffer[db]))
+	// 		{
+	// 		console.log(value+' was not found in buffer')
+	// 		process.exit(0)
+	// 		}
+	// 		data_result.push(this.redis_buffer[db][value])
+	// 		// this.redis_buffer[db][value]['count'] += 1
+	// 	}, this)
+
+		
+
+	// 	return data_result
+
+	// },
+
+	// fetchWordnet: function(word, relation)
+	// {
+
+	// 	var execSync = require('execSync').exec
+
+	// 	var wordnet_path = __dirname + '/../../nlu-server/utils/getwordnet.js'
+	// 	var buffer_path = __dirname + '/../../nlu-server/buffer_wordnet.json'
+
+	// 	if (this.wordnet_buffer_runs == 0)
+	// 		this.wordnet_buffer = JSON.parse(fs.readFileSync(buffer_path,'UTF-8'))
+
+	// 	if (!(relation in this.wordnet_buffer))
+	// 		this.wordnet_buffer[relation] = {}
+
+	// 	if (!(word in this.wordnet_buffer[relation]))
+	// 	{
+	// 		var cmd =  "node " + wordnet_path + " \"" + word + "\""
+	// 		console.log(cmd)
+	// 		var candidates = JSON.parse(execSync(cmd)['stdout'])
+	// 		this.wordnet_buffer[relation][word] = candidates
+	// 		this.wordnet_buffer_runs = this.wordnet_buffer_runs + 1
+
+	// 		if (this.wordnet_buffer_runs % 10 == 0)
+	// 		{
+	// 			console.log("wordnet writing buffer ...")
+	//             fs.writeFileSync(buffer_path, JSON.stringify(this.wordnet_buffer, null, 4))
+ //    	    }	
+	// 	}
+
+		
+
+ //        return 	this.wordnet_buffer[relation][word]
+	
+	// },
+
+	editWordnetExpansion: function(features, sample){
+
+		_.each(features, function(value, key, list){ 
+			delete features[key]
+		}, this)
+
+		console.log(JSON.stringify(sample['$']['NEWID'], null, 4))
+
+		var featureLookupTable = this.featureLookupTable
+		var featureExpansioned = this.featureExpansioned
+
+		var expansioned = {}
+
+		_.each(sample['CORENLP']['sentences'], function(sentence, senkey, list){ 
+
+			_.each(sentence['tokens'], function(token, tokenkey, list){ 
+		
+				var feature = token['lemma'].toLowerCase()
+				var feature_num = token['index']
+			 
+				if ((featureLookupTable['featureIndexToFeatureName'].indexOf(feature) != -1))
+				{
+					features[feature] = 1
+				}
+				else
+				{
+				
+				if (['ORGANIZATION', 'DATE', 'NUMBER'].indexOf(token['ner']) != -1)
+					return 
+
+				var feature_emb = this.expansionParam['redis_exec']([feature], 14, this.redis_buffer)[0]
+
+				if (feature_emb.length > 0)
+				{
+
+					var candidates = this.expansionParam['wordnet_exec'](feature, token['pos'], 'syn', this.wordnet_buffer)
+
+				 	candidates  = _.map(candidates, function(value){ return value.toLowerCase() });
+				 	candidates = _.filter(candidates, function(num){ return featureLookupTable['featureIndexToFeatureName'].indexOf(num)  != -1 });
+
+				 	if (candidates.length > 0)
+				 	{
+					
+						var candidates_scores = this.expansionParam['redis_exec'](candidates, 14, this.redis_buffer)
+					 	
+						var candidates_with_scores = _.zip(candidates, candidates_scores)
+
+						var candidates_with_scores_filtered = _.filter(candidates_with_scores, function(num){ return num[1].length>0 })
+
+						if (candidates_with_scores_filtered.length > 0)
+						{
+
+							var candidates_filtered = _.map(candidates_with_scores_filtered, function(value){ return value[0]; });
+						
+							var scores_filtered = _.map(candidates_with_scores_filtered, function(value){ return value[1]; });
+
+							var context = []
+
+							_.each(sentence['collapsed-ccprocessed-dependencies'], function(value, key, list){ 
+								if (feature_num == value['governor'])
+									context.push(value['dep'].toLowerCase()+"_"+value['dependentGloss'].toLowerCase())
+								if (feature_num == value['dependent'])
+									context.push(value['dep'].toLowerCase()+"I_"+value['governorGloss'].toLowerCase())
+							}, this)
+								
+							var context_scores = this.expansionParam['redis_exec'](context, 13, this.redis_buffer)
+
+							if (context_scores.length > 0)
+								var context_scores = _.filter(context_scores, function(num){ return num.length>0 });
+
+							var rank = _.map(scores_filtered, function(value){ return  this.expansionParam['comparison'](feature_emb, value, context_scores)}, this)
+
+							var rank_with_candidates = _.zip(candidates_filtered, rank)
+
+							rank_with_candidates = _.sortBy(rank_with_candidates, function(num){ return num[1] }).reverse()
+
+							features[rank_with_candidates[0][0]] = 1
+
+							expansioned[feature] = rank_with_candidates[0][0]
+						}
+					}
+
+				}
+		
+			 }
+		}, this)
+		}, this)
+
+		return expansioned
+	},
+
 	editFeatureExpansion: function(features){
 		var featureLookupTable = this.featureLookupTable
 		var featureExpansioned = this.featureExpansioned
@@ -417,8 +617,14 @@ EnhancedClassifier.prototype = {
 		var features = this.sampleToFeatures(samplecorrected, this.featureExtractors);
 
 		var expansioned = {}
-		if (this.featureExpansion)
-			expansioned = this.editFeatureExpansion(features);
+		
+		// if (this.featureExpansion)
+			// expansioned = this.editFeatureExpansion(features);
+
+		if (this.expansionParam)
+		{
+			expansioned = this.editWordnetExpansion(features, sample)
+		}
 
 		this.editFeatureValues(features, /*remove_unknown_features=*/false);
 

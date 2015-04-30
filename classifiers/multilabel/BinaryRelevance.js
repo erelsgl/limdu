@@ -89,7 +89,7 @@ BinaryRelevance.prototype = {
 
 		// train all classifiers:
 		for (var label in mapClassnameToDataset) {
-			//console.dir("TRAIN class="+label);
+			console.dir("TRAIN class="+label);
 			this.mapClassnameToClassifier[label]
 					.trainBatch(mapClassnameToDataset[label]);
 		}
@@ -141,19 +141,32 @@ BinaryRelevance.prototype = {
 			scores[label] = score
 		}
 
-		labels = _.sortBy(labels, function(num){ return num[1] });
-		labels = _.map(labels.reverse(), function(num){ return num[0] });
+		// only multi-class version
+				
+		var score_list = _.pairs(scores) 
+		score_list = _.sortBy(score_list, function(num){ return num[1] }).reverse()	 
+
+		// labels = _.sortBy(labels, function(num){ return num[1] });
+		// labels = _.map(labels.reverse(), function(num){ return num[0] });
 
 		return (explain>0?
 			{
-				classes: labels, 
-				scores: scores,
+				// classes: labels, 
+				classes: score_list[0][0], 
+				scores: score_list[0][1], 
+				// scores: scores,
 				explanation: {
-					positive: positive_explanations, 
-					negative: negative_explanations,
+					positive: positive_explanations[score_list[0][0]], 
+					negative: negative_explanations[score_list[0][0]],
+				
+					// positive: positive_explanations, 
+					// negative: negative_explanations,
 				}
+
 			}:
-			labels);
+				// labels
+				score_list[0][0]
+			);
 	},
 	
 	getAllClasses: function() {

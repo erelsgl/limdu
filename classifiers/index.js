@@ -8,6 +8,7 @@ module.exports = {
 	
 	SvmJs: require('./svm/SvmJs'),
 	SvmPerf: require('./svm/SvmPerf'),
+	SvmPerf_multi: require('./svm/SvmPerf_multi'),
 	SvmLinear: require('./svm/SvmLinear'),
 	
 	//BayesClassifier: require('./apparatus/lib/apparatus/classifier/bayes_classifier'),

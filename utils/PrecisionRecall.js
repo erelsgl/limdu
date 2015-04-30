@@ -175,6 +175,12 @@ PrecisionRecall.prototype = {
 			explanations[key].sort()
 		}, this)
 
+		if (explanations['FP'].length == 0)
+			delete explanations['FP']
+
+		if (explanations['FN'].length == 0)
+			delete explanations['FN']
+
 		return explanations;
 	},
 
@@ -183,6 +189,7 @@ PrecisionRecall.prototype = {
 
 		var ex = []
 		var ac = []
+		var matchlist = []
 
 		// clean up expected list
 		_.each(expectedClasses, function(expected, key, list){ 
@@ -190,19 +197,30 @@ PrecisionRecall.prototype = {
 				ex.push(expected)
 		}, this)
 
-		
-		// filtering actual classes		
-		_.each(actualClasses, function(actual, key, list){ 
-			var found = _.filter(ac, function(num){ return ((num[0] == actual[0]) && (this.intersection(num[1], actual[1]) == true)) }, this);
-			if (found.length == 0)
-				ac.push(actual)
-		}, this)
+		// ac = actualClasses
+		// // filtering actual classes		
+		// _.each(actualClasses, function(actual, key, list){ 
+		// 	var found = _.filter(ac, function(num){ return ((num[0] == actual[0]) && (this.intersection(num[1], actual[1]) == true)) }, this);
+		// 	if (found.length == 0)
+		// 		ac.push(actual)
+		// }, this)
+
+		// console.log(JSON.stringify(actualClasses, null, 4))
+
+		// var ac = this.uniquecandidate(this.uniqueaggregate(actualClasses))
+		var ac = actualClasses
+
 
 		// filling interdependencies between labels 
+		// for every candidate (actual) it looks for intersection between actual labels with different 
+		// intents, intersection means that different intents came to the common substring, then arrange 
+		// all the data in the hash, and mention only keyphrases.
+
 		_.each(ac, function(actual, key, list){
 		if (actual.length > 3)
 			{	 
 			label = actual[0]
+			// keyphrase
 			str = actual[2]
 			if (!(label in this.dep))
 				{
@@ -211,17 +229,21 @@ PrecisionRecall.prototype = {
 				}
 			this.dep[label][label].push(str)
 
+			// intersection, different intents but actual intersection
 			var found = _.filter(ac, function(num){ return ((num[0] != actual[0]) && (this.intersection(num[1], actual[1]) == true)) }, this);
 			_.each(found, function(sublabel, key, list){
 				if (!(sublabel[0] in this.dep[label]))
 					this.dep[label][sublabel[0]] = []
-				this.dep[label][sublabel[0]].push([actual[2], sublabel[2]])
+				this.dep[label][sublabel[0]].push([[actual[2],actual[4]], [sublabel[2],sublabel[4]]])
 			}, this)
 			}
 		}, this)
 
 		var explanations = {};
 		explanations['TP'] = []; explanations['FP'] = []; explanations['FN'] = [];
+		
+		var explanations_detail = {};
+		explanations_detail['TP'] = []; explanations_detail['FP'] = []; explanations_detail['FN'] = [];
 		
 		var allTrue = true;
 		for (var actualClassindex in ac) {
@@ -238,11 +260,17 @@ PrecisionRecall.prototype = {
 				if (ac[actualClassindex][0] == exc[0])
 					{
 					if ((exc[1].length == 0) || (ac[actualClassindex][1][0] == -1))
+						{
 						found = true
+						matchlist.push(ac[actualClassindex])
+						}
 					else
 						{
 						if (this.intersection(ac[actualClassindex][1], exc[1]))
+							{
 							found = true
+							matchlist.push(ac[actualClassindex])
+							}
 						}
 					}
 			}, this)
@@ -251,11 +279,13 @@ PrecisionRecall.prototype = {
 				if (logTruePositives)
 					{
 						explanations['TP'].push(ac[actualClassindex][0]);
+						explanations_detail['TP'].push(ac[actualClassindex]);
 						this.labels[ac[actualClassindex][0]]['TP'] += 1
 						this.TP++
 					}
 			} else {
 				explanations['FP'].push(ac[actualClassindex][0]);
+				explanations_detail['FP'].push(ac[actualClassindex]);
 				this.labels[ac[actualClassindex][0]]['FP'] += 1
 				this.FP++
 				allTrue = false;
@@ -288,6 +318,7 @@ PrecisionRecall.prototype = {
 			if (!found)
 				{
 				explanations['FN'].push(ex[expectedClassindex][0]);
+				explanations_detail['FN'].push(ex[expectedClassindex]);
 				this.labels[ex[expectedClassindex][0]]['FN'] += 1
 				this.FN++;
 				allTrue = false;
@@ -305,9 +336,19 @@ PrecisionRecall.prototype = {
 			// explanations[key].sort()
 		// }, this)
 
-		return explanations;
+		// console.log(explanations)
+		// console.log(matchlist)
+		
+		// if (expectedClasses.length > 1)
+			// process.exit(0)
+
+		return {
+				'explanations': explanations,
+				'match': matchlist,
+				'explanations_detail': explanations_detail
+				}
 	},
-	
+
 	// simple intersection
 	intersection:function(begin, end)
 	{
@@ -320,6 +361,18 @@ PrecisionRecall.prototype = {
 	
 	retrieveLabels: function()
 	{
+		var labs = ['Offer', 'Accept', 'Reject', 'Greet']
+		
+		_.each(labs, function(lab, key, list){ 
+			if (!(lab in this.labels))
+				{
+					this.labels[lab] = {}
+					this.labels[lab]['TP'] = 0
+					this.labels[lab]['FP'] = 0
+					this.labels[lab]['FN'] = 0
+				}
+		}, this)
+
 		_.each(Object.keys(this.labels), function(label, key, list){ 
 			
 			this.labels[label]['Recall'] = this.labels[label]['TP'] / (this.labels[label]['TP'] + this.labels[label]['FN']);
@@ -327,7 +380,9 @@ PrecisionRecall.prototype = {
 			this.labels[label]['F1'] = 2 / (1/this.labels[label]['Recall'] + 1/this.labels[label]['Precision'])
 
 			if (!this.labels[label]['F1']) this.labels[label]['F1'] = -1
-			}, this)
+		}, this)
+
+		
 
 		return this.labels
 	},
@@ -356,11 +411,20 @@ PrecisionRecall.prototype = {
 		stats['shortStatsString'] = this.shortStatsString
 		stats['interdep'] = this.dep
 		stats['labels'] = this.labels
+
+		this.retrieveLabels()
+
+		_.each(this.labels, function(st, lab, list){ 
+			_.each(st, function(val, par, list){ 
+				stats[lab+"_"+par] = val
+			}, this)
+		}, this)
+
 		return stats
 	},
 
 	calculateStatsNoReturn: function() {
-		this.retrieveLabels()
+		
 
 		this.macroPrecision = 0
 		this.macroRecall = 0

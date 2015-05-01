@@ -82,7 +82,7 @@ module.exports.classifyWithModelMap = function (modelMap, bias, features, explai
 	}
 	if (explain>0) {
 		explanations.sort(function(a,b){return Math.abs(b.relevance)-Math.abs(a.relevance)});
-		explanations.splice(explain, explanations.length-explain);  // "explain" is the max length of explanation.
+		// explanations.splice(explain, explanations.length-explain);  // "explain" is the max length of explanation.
 		
 		if (!this.detailed_explanations) {
 			// var sprintf = require('sprintf').sprintf;

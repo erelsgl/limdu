@@ -63,6 +63,7 @@ var EnhancedClassifier = function(opts) {
 	this.featureExpansionPhrase = opts.featureExpansionPhrase;
 	this.featureFine = opts.featureFine;
 	this.expansionParam = opts.expansionParam;
+	this.stopwords = opts.stopwords;
 
 	this.multiplyFeaturesByIDF = opts.multiplyFeaturesByIDF;
 	this.minFeatureDocumentFrequency = opts.minFeatureDocumentFrequency || 0;
@@ -352,6 +353,8 @@ EnhancedClassifier.prototype = {
 				this.trainSpellChecker(datum.input);
 
 				var features = this.sampleToFeatures(datum.input, this.featureExtractors);
+
+				this.omitStopWords(features, this.stopwords)
 				
 				if (this.tfidf)
 					this.tfidf.addDocument(features);
@@ -487,8 +490,6 @@ EnhancedClassifier.prototype = {
 			delete features[key]
 		}, this)
 
-		console.log(JSON.stringify(sample['$']['NEWID'], null, 4))
-
 		var featureLookupTable = this.featureLookupTable
 		var featureExpansioned = this.featureExpansioned
 
@@ -499,7 +500,6 @@ EnhancedClassifier.prototype = {
 			_.each(sentence['tokens'], function(token, tokenkey, list){ 
 		
 				var feature = token['lemma'].toLowerCase()
-				var feature_num = token['index']
 			 
 				if ((featureLookupTable['featureIndexToFeatureName'].indexOf(feature) != -1))
 				{
@@ -507,62 +507,98 @@ EnhancedClassifier.prototype = {
 				}
 				else
 				{
-				
-				if (['ORGANIZATION', 'DATE', 'NUMBER'].indexOf(token['ner']) != -1)
-					return 
 
-				var feature_emb = this.expansionParam['redis_exec']([feature], 14, this.redis_buffer)[0]
-
-				if (feature_emb.length > 0)
-				{
-
-					var candidates = this.expansionParam['wordnet_exec'](feature, token['pos'], 'syn', this.wordnet_buffer)
-
-				 	candidates  = _.map(candidates, function(value){ return value.toLowerCase() });
-				 	candidates = _.filter(candidates, function(num){ return featureLookupTable['featureIndexToFeatureName'].indexOf(num)  != -1 });
-
-				 	if (candidates.length > 0)
-				 	{
+					if ((['ORGANIZATION', 'DATE', 'NUMBER'].indexOf(token['ner']) == -1) &&
+						this.stopwords.indexOf(feature) == -1
+						)
 					
-						var candidates_scores = this.expansionParam['redis_exec'](candidates, 14, this.redis_buffer)
-					 	
-						var candidates_with_scores = _.zip(candidates, candidates_scores)
+					{
 
-						var candidates_with_scores_filtered = _.filter(candidates_with_scores, function(num){ return num[1].length>0 })
+					expansioned[feature] = {'embedding_true': 0}
 
-						if (candidates_with_scores_filtered.length > 0)
-						{
+					var feature_emb = this.expansionParam['redis_exec']([feature], 14, this.redis_buffer)[0]
 
-							var candidates_filtered = _.map(candidates_with_scores_filtered, function(value){ return value[0]; });
-						
-							var scores_filtered = _.map(candidates_with_scores_filtered, function(value){ return value[1]; });
+					if (feature_emb.length > 0)
+					{
+						expansioned[feature]['embedding_true'] = 1
 
-							var context = []
+						var candidates = this.expansionParam['wordnet_exec'](feature, token['pos'], 'syn', this.wordnet_buffer)
 
-							_.each(sentence['collapsed-ccprocessed-dependencies'], function(value, key, list){ 
-								if (feature_num == value['governor'])
-									context.push(value['dep'].toLowerCase()+"_"+value['dependentGloss'].toLowerCase())
-								if (feature_num == value['dependent'])
-									context.push(value['dep'].toLowerCase()+"I_"+value['governorGloss'].toLowerCase())
-							}, this)
+					 	candidates  = _.map(candidates, function(value){ return value.toLowerCase() });
+					 	candidates = _.filter(candidates, function(num){ return featureLookupTable['featureIndexToFeatureName'].indexOf(num)  != -1 });
+
+					 	if (candidates.length > 0)
+					 	{
+							expansioned[feature]['candidates'] = candidates
+							
+							var candidates_scores = this.expansionParam['redis_exec'](candidates, 14, this.redis_buffer)
+						 	
+							var candidates_with_scores = _.zip(candidates, candidates_scores)
+
+							var candidates_with_scores_filtered = _.filter(candidates_with_scores, function(num){ return num[1].length>0 })
+
+							if (candidates_with_scores_filtered.length > 0)
+							{
+
+								var candidates_filtered = _.map(candidates_with_scores_filtered, function(value){ return value[0]; });
+							
+								expansioned[feature]['candidates_with_emb'] = candidates_filtered
+
+								var scores_filtered = _.map(candidates_with_scores_filtered, function(value){ return value[1]; });
+
+								if (this.expansionParam['context'])
+								{
+
+									var context = []
+
+									_.each(sentence['collapsed-dependencies'], function(valuec, key, list){ 
+										if (tokenkey + 1 == valuec['governor'])
+											if (token['word'].toLowerCase() == valuec['governorGloss'].toLowerCase())
+												context.push(valuec['dep'].toLowerCase()+"_"+valuec['dependentGloss'].toLowerCase())
+											else
+												throw new Error(JSON.stringify(token, null, 4) + JSON.stringify(valuec, null, 4) + JSON.stringify(sample, null, 4))
+
+
+										if (tokenkey + 1 == valuec['dependent'])
+											if (token['word'].toLowerCase() == valuec['dependentGloss'].toLowerCase())
+												context.push(valuec['dep'].toLowerCase()+"I_"+valuec['governorGloss'].toLowerCase())
+											else
+												throw new Error(JSON.stringify(token, null, 4) + JSON.stringify(valuec, null, 4) + JSON.stringify(sample, null, 4))
+
+									}, this)
+									
+									expansioned[feature]['context'] = context
+
+									var context_scores = this.expansionParam['redis_exec'](context, 13, this.redis_buffer)
+
+									// if (context_scores.length > 0)
+									var context_scores = _.filter(context_scores, function(num){ return num.length>0 });
+
+									expansioned[feature]['context_with_emb'] = context_scores.length
+
+									var rank = _.map(scores_filtered, function(value){ return  this.expansionParam['comparison'](feature_emb, value, context_scores)}, this)
+
+								}
+								else
+
+									var rank = _.map(scores_filtered, function(value){ return  this.expansionParam['comparison'](feature_emb, value)}, this)
+
+
+								var rank_with_candidates = _.zip(candidates_filtered, rank)
+
+								rank_with_candidates = _.sortBy(rank_with_candidates, function(num){ return num[1] }).reverse()
+
+								expansioned[feature]['scores'] = rank_with_candidates
 								
-							var context_scores = this.expansionParam['redis_exec'](context, 13, this.redis_buffer)
+								expansioned[feature]['expansion'] = [rank_with_candidates[0][0]]
 
-							if (context_scores.length > 0)
-								var context_scores = _.filter(context_scores, function(num){ return num.length>0 });
+								features[rank_with_candidates[0][0]] = 1
 
-							var rank = _.map(scores_filtered, function(value){ return  this.expansionParam['comparison'](feature_emb, value, context_scores)}, this)
-
-							var rank_with_candidates = _.zip(candidates_filtered, rank)
-
-							rank_with_candidates = _.sortBy(rank_with_candidates, function(num){ return num[1] }).reverse()
-
-							features[rank_with_candidates[0][0]] = 1
-
-							expansioned[feature] = rank_with_candidates[0][0]
+								// expansioned[feature] = rank_with_candidates[0][0]
+							}
 						}
-					}
 
+					}
 				}
 		
 			 }
@@ -605,6 +641,17 @@ EnhancedClassifier.prototype = {
 		return expansioned
 	},
 
+	omitStopWords: function(features, stopwords)
+	{
+		if (stopwords.length > 0)
+		{
+			_.each(features, function(value, key, list){ 
+				if (stopwords.indexOf(key) != -1)
+					delete features[key]
+			}, this)
+		}
+	},
+
 	/**
 	 * internal function - classify a single segment of the input (used mainly when there is an inputSplitter) 
 	 * @param sample a document.
@@ -612,9 +659,9 @@ EnhancedClassifier.prototype = {
 	 */
 	classifyPart: function(sample, explain, continuous_output) {
 
-		var samplecorrected = this.correctFeatureSpelling(sample);
+		// var samplecorrected = this.correctFeatureSpelling(sample);
 
-		var features = this.sampleToFeatures(samplecorrected, this.featureExtractors);
+		var features = this.sampleToFeatures(sample, this.featureExtractors);
 
 		var expansioned = {}
 		
@@ -625,6 +672,8 @@ EnhancedClassifier.prototype = {
 		{
 			expansioned = this.editWordnetExpansion(features, sample)
 		}
+
+		this.omitStopWords(features, this.stopwords)
 
 		this.editFeatureValues(features, /*remove_unknown_features=*/false);
 

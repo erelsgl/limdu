@@ -361,7 +361,9 @@ PrecisionRecall.prototype = {
 	
 	retrieveLabels: function()
 	{
-		var labs = ['Offer', 'Accept', 'Reject', 'Greet']
+		// var labs = ['Offer', 'Accept', 'Reject', 'Greet']
+		var labs = ['earn','trade','ship','grain','crude','acq','money-fx','interest']
+
 		
 		_.each(labs, function(lab, key, list){ 
 			if (!(lab in this.labels))

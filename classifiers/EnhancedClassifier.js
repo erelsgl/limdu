@@ -522,7 +522,7 @@ EnhancedClassifier.prototype = {
 					{
 						expansioned[feature]['embedding_true'] = 1
 
-						var candidates = this.expansionParam['wordnet_exec'](feature, token['pos'], 'syn', this.wordnet_buffer)
+						var candidates = this.expansionParam['wordnet_exec'](feature, token['pos'], this.expansionParam['wordnet_relation'], this.wordnet_buffer)
 
 					 	candidates  = _.map(candidates, function(value){ return value.toLowerCase() });
 					 	candidates = _.filter(candidates, function(num){ return featureLookupTable['featureIndexToFeatureName'].indexOf(num)  != -1 });
@@ -567,6 +567,8 @@ EnhancedClassifier.prototype = {
 
 									}, this)
 									
+									context = _.unique(context)
+
 									expansioned[feature]['context'] = context
 
 									var context_scores = this.expansionParam['redis_exec'](context, 13, this.redis_buffer)

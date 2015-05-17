@@ -60,3 +60,13 @@ exports.partitions_consistent = function(dataset, numOfPartitions, callback) {
 		callback(partition.train, partition.test, iPartition);
 	}
 }
+
+exports.partitions_reverese = function(dataset, numOfPartitions, callback) {
+	var testSetCount = dataset.length / numOfPartitions;
+	
+	for (var iPartition=0; iPartition<numOfPartitions; ++iPartition) {
+		var testSetStart = iPartition*testSetCount;
+		var partition = exports.partition(dataset, testSetStart, testSetCount);
+		callback(partition.test, partition.train, iPartition);
+	}
+}

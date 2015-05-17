@@ -362,9 +362,9 @@ PrecisionRecall.prototype = {
 	retrieveLabels: function()
 	{
 		// var labs = ['Offer', 'Accept', 'Reject', 'Greet']
-		var labs = ['earn','trade','ship','grain','crude','acq','money-fx','interest']
+		// var labs = ['earn','trade','ship','grain','crude','acq','money-fx','interest']
 
-		
+		/*
 		_.each(labs, function(lab, key, list){ 
 			if (!(lab in this.labels))
 				{
@@ -373,7 +373,7 @@ PrecisionRecall.prototype = {
 					this.labels[lab]['FP'] = 0
 					this.labels[lab]['FN'] = 0
 				}
-		}, this)
+		}, this)*/
 
 		_.each(Object.keys(this.labels), function(label, key, list){ 
 			
@@ -383,8 +383,6 @@ PrecisionRecall.prototype = {
 
 			if (!this.labels[label]['F1']) this.labels[label]['F1'] = -1
 		}, this)
-
-		
 
 		return this.labels
 	},

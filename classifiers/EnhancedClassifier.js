@@ -166,14 +166,14 @@ EnhancedClassifier.prototype = {
 		return sample;
 	},
 
-	sampleToFeatures: function(sample, featureExtractor) {
+	sampleToFeatures: function(sample, featureExtractor, wordnet_buffer, stopwords) {
 		
 		var features = sample;
 
 		if (featureExtractor) {
 			try {
 				features = {};
-				featureExtractor(sample, features);
+				featureExtractor(sample, features, wordnet_buffer, stopwords);
 			} catch (err) {
 				throw new Error("Cannot extract features from '"+sample+"': "+JSON.stringify(err));
 			}
@@ -352,7 +352,7 @@ EnhancedClassifier.prototype = {
 
 				this.trainSpellChecker(datum.input);
 
-				var features = this.sampleToFeatures(datum.input, this.featureExtractors);
+				var features = this.sampleToFeatures(datum.input, this.featureExtractors, this.wordnet_buffer, this.stopwords);
 
 				this.omitStopWords(features, this.stopwords)
 				
@@ -508,28 +508,43 @@ EnhancedClassifier.prototype = {
 				else
 				{
 
-					if ((['ORGANIZATION', 'DATE', 'NUMBER'].indexOf(token['ner']) == -1) &&
-						this.stopwords.indexOf(feature) == -1
+					if ((['ORGANIZATION', 'DATE', 'NUMBER', 'PERSON', 'DURATION'].indexOf(token['ner']) == -1) &&
+						(this.stopwords.indexOf(feature) == -1) &&
+						(['NN', 'NNS', 'NNP', 'NNPS'].indexOf(token['pos']) != -1) &&
+						!(feature in features)
 						)
 					
 					{
 
 					expansioned[feature] = {'embedding_true': 0}
+					console.log("FEATURE "+feature)
 
 					var feature_emb = this.expansionParam['redis_exec']([feature], 14, this.redis_buffer)[0]
+					console.log("FEATURE EMB "+ feature_emb.length)
+					expansioned[feature]['pos'] = token['pos']
+					expansioned[feature]['word'] = token['word']
+					expansioned[feature]['lemma'] = token['lemma']
+					expansioned[feature]['ner'] = token['ner']
 
-					if (feature_emb.length > 0)
+					if (feature_emb.length == 600)
 					{
 						expansioned[feature]['embedding_true'] = 1
-
+						
 						var candidates = this.expansionParam['wordnet_exec'](feature, token['pos'], this.expansionParam['wordnet_relation'], this.wordnet_buffer)
 
 					 	candidates  = _.map(candidates, function(value){ return value.toLowerCase() });
+					 	candidates  = _.filter(candidates, function(value){ if (this.stopwords.indexOf(value) == -1) return value }, this);
+
+					 	expansioned[feature]['wordnet_candidates'] = candidates
+
 					 	candidates = _.filter(candidates, function(num){ return featureLookupTable['featureIndexToFeatureName'].indexOf(num)  != -1 });
+					 	candidates = _.unique(candidates)
+
+					 	console.log("CANDIDATES "+candidates.length)
 
 					 	if (candidates.length > 0)
 					 	{
-							expansioned[feature]['candidates'] = candidates
+							expansioned[feature]['candidates_in_train'] = candidates
 							
 							var candidates_scores = this.expansionParam['redis_exec'](candidates, 14, this.redis_buffer)
 						 	
@@ -546,7 +561,7 @@ EnhancedClassifier.prototype = {
 
 								var scores_filtered = _.map(candidates_with_scores_filtered, function(value){ return value[1]; });
 
-								if (this.expansionParam['context'])
+								if (this.expansionParam['context'] == true)
 								{
 
 									var context = []
@@ -585,14 +600,29 @@ EnhancedClassifier.prototype = {
 
 									var rank = _.map(scores_filtered, function(value){ return  this.expansionParam['comparison'](feature_emb, value)}, this)
 
+								/*if (this.expansionParam['detail'])
+								{
+									var rank_without_context = _.map(scores_filtered, function(value){ return this.expansionParam['detail_distance'](feature_emb, value)}, this)
+									
+									var rank_with_candidates_without_context = _.zip(candidates_filtered, rank_without_context)
+
+									rank_with_candidates_without_context = _.sortBy(rank_with_candidates_without_context, function(num){ return num[1] }).reverse()
+								
+									expansioned[feature]['scores_without_context'] = rank_with_candidates_without_context
+
+									expansioned[feature]['expansion_without_context'] = [rank_with_candidates_without_context[0][0]]
+
+									features[rank_with_candidates_without_context[0][0]] = 1
+
+								}*/
 
 								var rank_with_candidates = _.zip(candidates_filtered, rank)
 
 								rank_with_candidates = _.sortBy(rank_with_candidates, function(num){ return num[1] }).reverse()
 
-								expansioned[feature]['scores'] = rank_with_candidates
+								expansioned[feature]['scores_with_context'] = rank_with_candidates
 								
-								expansioned[feature]['expansion'] = [rank_with_candidates[0][0]]
+								expansioned[feature]['expansion_with_context'] = [rank_with_candidates[0][0]]
 
 								features[rank_with_candidates[0][0]] = 1
 
@@ -663,7 +693,7 @@ EnhancedClassifier.prototype = {
 
 		// var samplecorrected = this.correctFeatureSpelling(sample);
 
-		var features = this.sampleToFeatures(sample, this.featureExtractors);
+		var features = this.sampleToFeatures(sample, this.featureExtractors, this.wordnet_buffer, this.stopwords);
 
 		var expansioned = {}
 		
@@ -671,9 +701,9 @@ EnhancedClassifier.prototype = {
 			// expansioned = this.editFeatureExpansion(features);
 
 		if (this.expansionParam)
-		{
 			expansioned = this.editWordnetExpansion(features, sample)
-		}
+		else
+			console.log("No expansion")
 
 		this.omitStopWords(features, this.stopwords)
 

@@ -499,7 +499,7 @@ EnhancedClassifier.prototype = {
 
 			_.each(sentence['tokens'], function(token, tokenkey, list){ 
 		
-				var feature = token['lemma'].toLowerCase()
+				var feature = token['word'].toLowerCase()
 			 
 				if ((featureLookupTable['featureIndexToFeatureName'].indexOf(feature) != -1))
 				{
@@ -540,7 +540,7 @@ EnhancedClassifier.prototype = {
 					 	candidates = _.filter(candidates, function(num){ return featureLookupTable['featureIndexToFeatureName'].indexOf(num)  != -1 });
 					 	candidates = _.unique(candidates)
 
-					 	console.log("CANDIDATES "+candidates.length)
+					 	console.log("CANDIDATES " + candidates.length)
 
 					 	if (candidates.length > 0)
 					 	{

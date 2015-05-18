@@ -439,25 +439,27 @@ PrecisionRecall.prototype = {
 		var macroRecall = []
 		var macroF1 = []
 
-		// isNaN
+		
 
-		// if (Object.keys(this.labels).length > 3)
-		// {
+		if (Object.keys(this.labels).length > 3)
+		{
 
-		// 	var list_lab = _.toArray(this.labels)
-		// 	var macro_stats = {}
+			var list_lab = _.toArray(this.labels)
+			var macro_stats = {}
 			
-		// 	_.each(['Precision', 'Recall', 'F1'], function(param, key, list){ 
-		// 		macro_stats[param] = _.pluck(list_lab, param)
-		// 		macro_stats[param] = _.filter(macro_stats[param], function(elem){ return (isNaN(elem))==false})
-		// 		macro_stats[param] = _.reduce(macro_stats[param], function(memo, num){ return memo + num; }) / macro_stats[param].length
-		// 	}, this)
+			console.log(JSON.stringify(_.pluck(list_lab, "F1"), null, 4))
 
-		// 	this.macroPrecision = macro_stats['Precision']
-		// 	this.macroRecall = macro_stats['Recall']
-		// 	this.macroF1 = macro_stats['F1']
+			_.each(['Precision', 'Recall', 'F1'], function(param, key, list){ 
+				macro_stats[param] = _.pluck(list_lab, param)
+				macro_stats[param] = _.filter(macro_stats[param], function(elem){ return (!_.isNaN(elem) && elem >=0)  })
+				macro_stats[param] = _.reduce(macro_stats[param], function(memo, num){ return memo + num; }) / macro_stats[param].length
+			}, this)
 
-		// }
+
+			this.macroPrecision = macro_stats['Precision']
+			this.macroRecall = macro_stats['Recall']
+			this.macroF1 = macro_stats['F1']
+		}
 
 		this.Accuracy = (this.TRUE) / (this.count);
 		this.HammingLoss = (this.FN+this.FP) / (this.FN+this.TP); // "the percentage of the wrong labels to the total number of labels"

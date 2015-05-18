@@ -48,18 +48,19 @@ PrecisionRecall.prototype = {
 
 	addCasesLabels: function (expectedClasses, actualClasses ) {
 		var explanations = [];
+
 		actualClasses = hash.normalized(actualClasses);
 		expectedClasses = hash.normalized(expectedClasses);
 
 		var allTrue = true;
 
-		if (!(expectedClasses[0] in this.confusion)) 
-			this.confusion[expectedClass[0]] = {}
+		if (!(Object.keys(expectedClasses)[0] in this.confusion)) 
+			this.confusion[Object.keys(expectedClasses)[0]] = {}
 
-		if (!(actualClasses[0] in this.confusion)) 
-			this.confusion[expectedClass[0]][actualClasses[0]] = 0
+		if (!(Object.keys(actualClasses)[0] in this.confusion[Object.keys(expectedClasses)[0]])) 
+			this.confusion[Object.keys(expectedClasses)[0]][Object.keys(actualClasses)[0]] = 0
 
-		this.confusion[expectedClasses[0]][actualClasses[0]] += 1 
+		this.confusion[Object.keys(expectedClasses)[0]][Object.keys(actualClasses)[0]] += 1 
 
 		for (var actualClass in actualClasses) {
 

@@ -53,15 +53,11 @@ PrecisionRecall.prototype = {
 
 		var allTrue = true;
 
-		for (var expectedClass in expectedClasses) 
-		{
-			if (!(expectedClass in this.confusion)) 
-				this.confusion[expectedClass] = {}
+		if (!(expectedClasses[0] in this.confusion)) 
+			this.confusion[expectedClass[0]] = {}
 
-			for (var actualClass in actualClasses)			
-				if (!(actualClass in this.confusion[expectedClass])) 
-					this.confusion[expectedClass][actualClass] = 0 
-		}
+		if (!(actualClasses[0] in this.confusion)) 
+			this.confusion[expectedClass[0]][actualClasses[0]] = 0
 
 		this.confusion[expectedClasses[0]][actualClasses[0]] += 1 
 

@@ -499,7 +499,7 @@ EnhancedClassifier.prototype = {
 
 			_.each(sentence['tokens'], function(token, tokenkey, list){ 
 		
-				var feature = token['word'].toLowerCase()
+				var feature = token['lemma'].toLowerCase()
 			 
 				if ((featureLookupTable['featureIndexToFeatureName'].indexOf(feature) != -1))
 				{

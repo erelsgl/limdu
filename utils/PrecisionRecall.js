@@ -18,6 +18,7 @@ var PrecisionRecall = function() {
 	this.startTime = new Date();
 	this.labels = {}
 	this.dep = {}
+	this.confusion = {}
 }
 
 PrecisionRecall.prototype = {
@@ -51,7 +52,23 @@ PrecisionRecall.prototype = {
 		expectedClasses = hash.normalized(expectedClasses);
 
 		var allTrue = true;
+
+		for (var expectedClass in expectedClasses) 
+		{
+			if (!(expectedClass in this.confusion)) 
+				this.confusion[expectedClass] = {}
+
+			for (var actualClass in actualClasses)			
+				if (!(actualClass in this.confusion[expectedClass])) 
+					this.confusion[expectedClass][actualClass] = 0 
+		}
+
+		this.confusion[expectedClasses[0]][actualClasses[0]] += 1 
+
 		for (var actualClass in actualClasses) {
+
+			if (!(actualClass in this.confusion)) 
+				this.confusion[actualClass]={}
 
 			if (!(actualClass in this.labels)) {
 				this.labels[actualClass]={}
@@ -64,7 +81,7 @@ PrecisionRecall.prototype = {
 				this.labels[actualClass]['TP'] += 1 
 
 			} else {
-				this.labels[actualClass]['FP'] += 1 
+				this.labels[actualClass]['FP'] += 1
 			}
 		}
 		for (var expectedClass in expectedClasses) {
@@ -361,20 +378,6 @@ PrecisionRecall.prototype = {
 	
 	retrieveLabels: function()
 	{
-		// var labs = ['Offer', 'Accept', 'Reject', 'Greet']
-		// var labs = ['earn','trade','ship','grain','crude','acq','money-fx','interest']
-
-		/*
-		_.each(labs, function(lab, key, list){ 
-			if (!(lab in this.labels))
-				{
-					this.labels[lab] = {}
-					this.labels[lab]['TP'] = 0
-					this.labels[lab]['FP'] = 0
-					this.labels[lab]['FN'] = 0
-				}
-		}, this)*/
-
 		_.each(Object.keys(this.labels), function(label, key, list){ 
 			
 			this.labels[label]['Recall'] = this.labels[label]['TP'] / (this.labels[label]['TP'] + this.labels[label]['FN']);
@@ -411,6 +414,7 @@ PrecisionRecall.prototype = {
 		stats['shortStatsString'] = this.shortStatsString
 		stats['interdep'] = this.dep
 		stats['labels'] = this.labels
+		stats['confusion'] = this.confusion
 
 		this.retrieveLabels()
 

@@ -384,6 +384,10 @@ PrecisionRecall.prototype = {
 			if (!this.labels[label]['F1']) this.labels[label]['F1'] = -1
 		}, this)
 
+		var arlabels = _.pairs(this.labels) 
+		arlabels = _.sortBy(arlabels, function(num){ return arlabels[0] })
+		this.labels = _.object(arlabels)
+
 		return this.labels
 	},
 

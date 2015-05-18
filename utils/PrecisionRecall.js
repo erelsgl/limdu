@@ -451,8 +451,8 @@ PrecisionRecall.prototype = {
 
 			_.each(['Precision', 'Recall', 'F1'], function(param, key, list){ 
 				macro_stats[param] = _.pluck(list_lab, param)
-				macro_stats[param] = _.filter(macro_stats[param], function(elem){ return (!_.isNaN(elem) && elem >=0)  })
-				macro_stats[param] = _.reduce(macro_stats[param], function(memo, num){ return memo + num; }) / macro_stats[param].length
+				// macro_stats[param] = _.filter(macro_stats[param], function(elem){ return (!_.isNaN(elem) && elem >=0)  })
+				macro_stats[param] = _.reduce(macro_stats[param], function(memo, num){ if (!_.isNaN(num) && num >=0) return memo + num else return memo }) / macro_stats[param].length
 			}, this)
 
 

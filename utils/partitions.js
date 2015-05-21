@@ -70,3 +70,29 @@ exports.partitions_reverese = function(dataset, numOfPartitions, callback) {
 		callback(partition.test, partition.train, iPartition);
 	}
 }
+
+
+exports.partitions_hash = function(dataset, numOfPartitions, callback) {
+
+	var count = dataset[Object.keys(dataset)[0]].length
+	var testSetCount = count / numOfPartitions;
+	
+	for (var iPartition=0; iPartition<numOfPartitions; ++iPartition) {
+		var testSetStart = iPartition*testSetCount;
+
+		var test = []
+		var train = []
+
+		_(count - testSetCount).times(function(n){ train.push([]) })
+		
+		_.each(dataset, function(value, key, list){ 
+			var res = value.splice(testSetStart, testSetCount)
+			test = test.concat(res)
+			_.each(value, function(elem, key1, list1){ 
+				train[key1].push(elem)
+			}, this)
+		}, this)
+	
+		callback(train, test, iPartition);
+	}
+}

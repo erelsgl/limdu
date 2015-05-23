@@ -92,7 +92,6 @@ BinaryRelevance.prototype = {
 			console.dir("TRAIN class="+label);
 			this.mapClassnameToClassifier[label]
 					.trainBatch(mapClassnameToDataset[label]);
-			console.dir("STOP TRAIN class="+label);
 
 		}
 	},

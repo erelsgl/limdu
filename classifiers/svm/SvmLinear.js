@@ -69,6 +69,7 @@ SvmLinear.prototype = {
 			var command = "liblinear_train "+this.learn_args+" "+learnFile + " "+modelFile;
 			if (this.debug) console.log("running "+command);
 
+			console.log(command)
 			var result = execSync(command);
 			if (result.code>0) {
 				console.dir(result);

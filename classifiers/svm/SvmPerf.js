@@ -62,7 +62,6 @@ SvmPerf.prototype = {
 			var command = "svm_perf_learn "+this.learn_args+" "+learnFile + " "+modelFile;
 			if (this.debug) console.log("running "+command);
 	
-			console.log(command)
 			var result = execSync(command);
 			if (result.code>0) {
 				console.dir(result);
@@ -70,7 +69,6 @@ SvmPerf.prototype = {
 				throw new Error("Failed to execute: "+command);
 			}
 			
-			console.log("Finished run")
 			this.setModel(fs.readFileSync(modelFile, "utf-8"));
 			if (this.debug) console.log("trainBatch end");
 		},

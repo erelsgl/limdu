@@ -517,10 +517,10 @@ EnhancedClassifier.prototype = {
 					{
 
 					expansioned[feature] = {'embedding_true': 0}
-					console.log("FEATURE "+feature)
+					// console.log("FEATURE "+feature)
 
 					var feature_emb = this.expansionParam['redis_exec']([feature], 14, this.redis_buffer)[0]
-					console.log("FEATURE EMB "+ feature_emb.length)
+					// console.log("FEATURE EMB "+ feature_emb.length)
 					expansioned[feature]['pos'] = token['pos']
 					expansioned[feature]['word'] = token['word']
 					expansioned[feature]['lemma'] = token['lemma']
@@ -675,6 +675,7 @@ EnhancedClassifier.prototype = {
 
 	omitStopWords: function(features, stopwords)
 	{
+		if (stopwords)
 		if (stopwords.length > 0)
 		{
 			_.each(features, function(value, key, list){ 

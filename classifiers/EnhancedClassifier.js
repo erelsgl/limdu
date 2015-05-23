@@ -540,7 +540,7 @@ EnhancedClassifier.prototype = {
 					 	candidates = _.filter(candidates, function(num){ return featureLookupTable['featureIndexToFeatureName'].indexOf(num)  != -1 });
 					 	candidates = _.unique(candidates)
 
-					 	console.log("CANDIDATES " + candidates.length)
+					 	// console.log("CANDIDATES " + candidates.length)
 
 					 	if (candidates.length > 0)
 					 	{

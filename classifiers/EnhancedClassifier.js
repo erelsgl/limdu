@@ -488,11 +488,11 @@ EnhancedClassifier.prototype = {
 
 	editWordnetExpansion: function(features, sample, callback){
 
-		console.log("expan")		
+		// console.log("expan")		
 
 		// callback(null, [])
 
-		console.log("LEAK")
+		// console.log("LEAK")
 
 		_.each(features, function(value, key, list){ 
 			delete features[key]
@@ -510,8 +510,8 @@ EnhancedClassifier.prototype = {
 
 			async.forEachOfSeries(sentence['tokens'], function (token, tokenkey, callback2) {
 
-				console.log("new token")
-				console.log(token)
+				// console.log("new token")
+				// console.log(token)
 				var feature = token['lemma'].toLowerCase()
 
 				// console.log(feature)
@@ -519,7 +519,7 @@ EnhancedClassifier.prototype = {
 				if ((featureLookupTable['featureIndexToFeatureName'].indexOf(feature) != -1))
 				{
 					features[feature] = 1
-					console.log("token in train")
+					// console.log("token in train")
 					callback2()
 				}
 				else
@@ -534,7 +534,7 @@ EnhancedClassifier.prototype = {
 					
 					{
 
-					console.log("good token to proceed")
+					// console.log("good token to proceed")
 
 					expansioned[feature] = {'embedding_true': 0}
 					expansioned[feature]['pos'] = token['pos']
@@ -550,14 +550,14 @@ EnhancedClassifier.prototype = {
 
 						if (feature_emb.length == 600)
 						{
-							console.log("has embedding")
+							// console.log("has embedding")
 
 							expansioned[feature]['embedding_true'] = 1
 
 							expansionParam['wordnet_exec'](feature, token['pos'], expansionParam['wordnet_relation'], function(error, results){
 
 								var candidates = results
-								console.log("num of candidates before "+candidates.length)
+								// console.log("num of candidates before "+candidates.length)
 
 								candidates  = _.map(candidates, function(value){ return value.toLowerCase() });
 					 			candidates  = _.filter(candidates, function(value){ if (stopwords.indexOf(value) == -1) return value }, this);
@@ -567,8 +567,8 @@ EnhancedClassifier.prototype = {
 					 			candidates = _.filter(candidates, function(num){ return featureLookupTable['featureIndexToFeatureName'].indexOf(num)  != -1 });
 					 			candidates = _.unique(candidates)
 
-					 			console.log("num of candidates after "+candidates.length)
-					 			console.log(candidates)
+					 			// console.log("num of candidates after "+candidates.length)
+					 			// console.log(candidates)
 
 							 	if (candidates.length > 0)
 							 	{
@@ -577,7 +577,7 @@ EnhancedClassifier.prototype = {
 									expansionParam['redis_exec'](candidates, 14, 
 											function(error,candidates_scores){
 
-									console.log("candidates with score "+candidates_scores.length)
+									// console.log("candidates with score "+candidates_scores.length)
 
 									var candidates_with_scores = _.zip(candidates, candidates_scores)
 
@@ -618,22 +618,22 @@ EnhancedClassifier.prototype = {
 									
 											context = _.unique(context)
 
-											console.log("size of context "+context.length)
+											// console.log("size of context "+context.length)
 
 											expansioned[feature]['context'] = context
 
-											console.log("enter")
+											// console.log("enter")
 
 											expansionParam['redis_exec'](context, 13, function(error, context_scores){
 
-												console.log("context with emd "+context_scores.length)
+												// console.log("context with emd "+context_scores.length)
 
 												var context_scores = _.filter(context_scores, function(num){ return num.length>0 });
 												// expansioned[feature]['context_with_emb'] = context_scores.length
 
 												var rank = _.map(scores_filtered, function(value){ return  expansionParam['comparison'](feature_emb, value, context_scores)}, this)
 
-												console.log("rank size "+rank.length)
+												// console.log("rank size "+rank.length)
 
 												var rank_with_candidates = _.zip(candidates_filtered, rank)
 
@@ -645,7 +645,7 @@ EnhancedClassifier.prototype = {
 
 												features[rank_with_candidates[0][0]] = 1
 
-												console.log("exit")
+												// console.log("exit")
 												callback2()
 
 

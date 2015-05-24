@@ -8,6 +8,8 @@ var hash = require('../utils/hash');
 var util = require('../utils/list');
 var multilabelutils = require('./multilabel/multilabelutils');
 var fs = require('fs');
+var async = require('async');
+
 
 /**
  * EnhancedClassifier - wraps any classifier with feature-extractors and feature-lookup-tables.
@@ -484,7 +486,13 @@ EnhancedClassifier.prototype = {
 	
 	// },
 
-	editWordnetExpansion: function(features, sample){
+	editWordnetExpansion: function(features, sample, callback){
+
+		console.log("expan")		
+
+		// callback(null, [])
+
+		console.log("LEAK")
 
 		_.each(features, function(value, key, list){ 
 			delete features[key]
@@ -493,151 +501,189 @@ EnhancedClassifier.prototype = {
 		var featureLookupTable = this.featureLookupTable
 		var featureExpansioned = this.featureExpansioned
 
+		var expansionParam = this.expansionParam
+		var stopwords = this.stopwords
+
 		var expansioned = {}
 
-		_.each(sample['CORENLP']['sentences'], function(sentence, senkey, list){ 
+		async.forEachOfSeries(sample['CORENLP']['sentences'], function (sentence, senkey, callback1) {
 
-			_.each(sentence['tokens'], function(token, tokenkey, list){ 
-		
+			async.forEachOfSeries(sentence['tokens'], function (token, tokenkey, callback2) {
+
+				console.log("new token")
+				console.log(token)
 				var feature = token['lemma'].toLowerCase()
+
+				// console.log(feature)
 			 
 				if ((featureLookupTable['featureIndexToFeatureName'].indexOf(feature) != -1))
 				{
 					features[feature] = 1
+					console.log("token in train")
+					callback2()
 				}
 				else
 				{
+					// console.log("not in train")
 
 					if ((['ORGANIZATION', 'DATE', 'NUMBER', 'PERSON', 'DURATION'].indexOf(token['ner']) == -1) &&
-						(this.stopwords.indexOf(feature) == -1) &&
+						(stopwords.indexOf(feature) == -1) &&
 						(['NN', 'NNS', 'NNP', 'NNPS'].indexOf(token['pos']) != -1) &&
 						!(feature in features)
 						)
 					
 					{
 
-					expansioned[feature] = {'embedding_true': 0}
-					// console.log("FEATURE "+feature)
+					console.log("good token to proceed")
 
-					var feature_emb = this.expansionParam['redis_exec']([feature], 14, this.redis_buffer)[0]
-					// console.log("FEATURE EMB "+ feature_emb.length)
+					expansioned[feature] = {'embedding_true': 0}
 					expansioned[feature]['pos'] = token['pos']
 					expansioned[feature]['word'] = token['word']
 					expansioned[feature]['lemma'] = token['lemma']
 					expansioned[feature]['ner'] = token['ner']
 
-					if (feature_emb.length == 600)
-					{
-						expansioned[feature]['embedding_true'] = 1
-						
-						var candidates = this.expansionParam['wordnet_exec'](feature, token['pos'], this.expansionParam['wordnet_relation'], this.wordnet_buffer)
+					expansionParam['redis_exec']([feature], 14, function(error, results){
 
-					 	candidates  = _.map(candidates, function(value){ return value.toLowerCase() });
-					 	candidates  = _.filter(candidates, function(value){ if (this.stopwords.indexOf(value) == -1) return value }, this);
+						// console.log("sdad")
 
-					 	expansioned[feature]['wordnet_candidates'] = candidates
+						feature_emb = results[0]
 
-					 	candidates = _.filter(candidates, function(num){ return featureLookupTable['featureIndexToFeatureName'].indexOf(num)  != -1 });
-					 	candidates = _.unique(candidates)
+						if (feature_emb.length == 600)
+						{
+							console.log("has embedding")
 
-					 	// console.log("CANDIDATES " + candidates.length)
+							expansioned[feature]['embedding_true'] = 1
 
-					 	if (candidates.length > 0)
-					 	{
-							expansioned[feature]['candidates_in_train'] = candidates
+							expansionParam['wordnet_exec'](feature, token['pos'], expansionParam['wordnet_relation'], function(error, results){
+
+								var candidates = results
+								console.log("num of candidates before "+candidates.length)
+
+								candidates  = _.map(candidates, function(value){ return value.toLowerCase() });
+					 			candidates  = _.filter(candidates, function(value){ if (stopwords.indexOf(value) == -1) return value }, this);
+
+					 			expansioned[feature]['wordnet_candidates'] = candidates
+
+					 			candidates = _.filter(candidates, function(num){ return featureLookupTable['featureIndexToFeatureName'].indexOf(num)  != -1 });
+					 			candidates = _.unique(candidates)
+
+					 			console.log("num of candidates after "+candidates.length)
+					 			console.log(candidates)
+
+							 	if (candidates.length > 0)
+							 	{
+									expansioned[feature]['candidates_in_train'] = candidates
 							
-							var candidates_scores = this.expansionParam['redis_exec'](candidates, 14, this.redis_buffer)
-						 	
-							var candidates_with_scores = _.zip(candidates, candidates_scores)
+									expansionParam['redis_exec'](candidates, 14, 
+											function(error,candidates_scores){
 
-							var candidates_with_scores_filtered = _.filter(candidates_with_scores, function(num){ return num[1].length>0 })
+									console.log("candidates with score "+candidates_scores.length)
 
-							if (candidates_with_scores_filtered.length > 0)
-							{
+									var candidates_with_scores = _.zip(candidates, candidates_scores)
 
-								var candidates_filtered = _.map(candidates_with_scores_filtered, function(value){ return value[0]; });
-							
-								expansioned[feature]['candidates_with_emb'] = candidates_filtered
+									var candidates_with_scores_filtered = _.filter(candidates_with_scores, function(num){ return num[1].length>0 })
 
-								var scores_filtered = _.map(candidates_with_scores_filtered, function(value){ return value[1]; });
+									if (candidates_with_scores_filtered.length > 0)
+									{
 
-								if (this.expansionParam['context'] == true)
-								{
-
-									var context = []
-
-									_.each(sentence['collapsed-dependencies'], function(valuec, key, list){ 
-										if (tokenkey + 1 == valuec['governor'])
-											if (token['word'].toLowerCase() == valuec['governorGloss'].toLowerCase())
-												context.push(valuec['dep'].toLowerCase()+"_"+valuec['dependentGloss'].toLowerCase())
-											else
-												throw new Error(JSON.stringify(token, null, 4) + JSON.stringify(valuec, null, 4) + JSON.stringify(sample, null, 4))
-
-
-										if (tokenkey + 1 == valuec['dependent'])
-											if (token['word'].toLowerCase() == valuec['dependentGloss'].toLowerCase())
-												context.push(valuec['dep'].toLowerCase()+"I_"+valuec['governorGloss'].toLowerCase())
-											else
-												throw new Error(JSON.stringify(token, null, 4) + JSON.stringify(valuec, null, 4) + JSON.stringify(sample, null, 4))
-
-									}, this)
+										var candidates_filtered = _.map(candidates_with_scores_filtered, function(value){ return value[0]; });
 									
-									context = _.unique(context)
+										expansioned[feature]['candidates_with_emb'] = candidates_filtered
 
-									expansioned[feature]['context'] = context
+										var scores_filtered = _.map(candidates_with_scores_filtered, function(value){ return value[1]; });
 
-									var context_scores = this.expansionParam['redis_exec'](context, 13, this.redis_buffer)
+										// if (expansionParam['context'] == true)
+										// {
 
-									// if (context_scores.length > 0)
-									var context_scores = _.filter(context_scores, function(num){ return num.length>0 });
+											var context = []
 
-									expansioned[feature]['context_with_emb'] = context_scores.length
+											_.each(sentence['collapsed-dependencies'], function(valuec, key, list){ 
+												var tokenindex = parseInt(tokenkey) + 1
+												if (tokenindex == parseInt(valuec['governor']))
+												{
+													if (token['word'].toLowerCase() == valuec['governorGloss'].toLowerCase())
+														context.push(valuec['dep'].toLowerCase()+"_"+valuec['dependentGloss'].toLowerCase())
+													else
+														throw new Error(tokenindex +" "+ valuec['governor']+ JSON.stringify(token, null, 4) + JSON.stringify(valuec, null, 4))
+												}
 
-									var rank = _.map(scores_filtered, function(value){ return  this.expansionParam['comparison'](feature_emb, value, context_scores)}, this)
+												if (tokenindex == parseInt(valuec['dependent']))
+												{
+													if (token['word'].toLowerCase() == valuec['dependentGloss'].toLowerCase())
+														context.push(valuec['dep'].toLowerCase()+"I_"+valuec['governorGloss'].toLowerCase())
+													else
+														throw new Error(tokenindex +" "+ valuec['dependent']+JSON.stringify(token, null, 4) + JSON.stringify(valuec, null, 4) )
+												}
+											}, this)
+									
+											context = _.unique(context)
 
+											console.log("size of context "+context.length)
+
+											expansioned[feature]['context'] = context
+
+											console.log("enter")
+
+											expansionParam['redis_exec'](context, 13, function(error, context_scores){
+
+												console.log("context with emd "+context_scores.length)
+
+												var context_scores = _.filter(context_scores, function(num){ return num.length>0 });
+												// expansioned[feature]['context_with_emb'] = context_scores.length
+
+												var rank = _.map(scores_filtered, function(value){ return  expansionParam['comparison'](feature_emb, value, context_scores)}, this)
+
+												console.log("rank size "+rank.length)
+
+												var rank_with_candidates = _.zip(candidates_filtered, rank)
+
+												rank_with_candidates = _.sortBy(rank_with_candidates, function(num)		{ return num[1] }).reverse()
+
+												// expansioned[feature]['scores_with_context'] = rank_with_candidates
+								
+												// expansioned[feature]['expansion_with_context'] = [rank_with_candidates[0][0]]
+
+												features[rank_with_candidates[0][0]] = 1
+
+												console.log("exit")
+												callback2()
+
+
+											})
+									
+										// }
+										// else
+
+											// var rank = _.map(scores_filtered, function(value){ return  expansionParam['comparison'](feature_emb, value)})
+
+										
+								// expansioned[feature] = rank_with_candidates[0][0]
+									}
+									else 
+									callback2()
+									})
 								}
 								else
+								callback2()
 
-									var rank = _.map(scores_filtered, function(value){ return  this.expansionParam['comparison'](feature_emb, value)}, this)
-
-								/*if (this.expansionParam['detail'])
-								{
-									var rank_without_context = _.map(scores_filtered, function(value){ return this.expansionParam['detail_distance'](feature_emb, value)}, this)
-									
-									var rank_with_candidates_without_context = _.zip(candidates_filtered, rank_without_context)
-
-									rank_with_candidates_without_context = _.sortBy(rank_with_candidates_without_context, function(num){ return num[1] }).reverse()
-								
-									expansioned[feature]['scores_without_context'] = rank_with_candidates_without_context
-
-									expansioned[feature]['expansion_without_context'] = [rank_with_candidates_without_context[0][0]]
-
-									features[rank_with_candidates_without_context[0][0]] = 1
-
-								}*/
-
-								var rank_with_candidates = _.zip(candidates_filtered, rank)
-
-								rank_with_candidates = _.sortBy(rank_with_candidates, function(num){ return num[1] }).reverse()
-
-								expansioned[feature]['scores_with_context'] = rank_with_candidates
-								
-								expansioned[feature]['expansion_with_context'] = [rank_with_candidates[0][0]]
-
-								features[rank_with_candidates[0][0]] = 1
-
-								// expansioned[feature] = rank_with_candidates[0][0]
-							}
+							})
 						}
+						else
+						callback2()
 
-					}
+					})
 				}
+				else
+				callback2()
+			}
 		
-			 }
-		}, this)
-		}, this)
+		}, function (err) {
+			  callback1()
+			})
 
-		return expansioned
+		}, function (err) {
+			  callback(err, expansioned)
+			})
 	},
 
 	editFeatureExpansion: function(features){
@@ -690,6 +736,52 @@ EnhancedClassifier.prototype = {
 	 * @param sample a document.
 	 * @return an array whose VALUES are classes.
 	 */
+
+	classifyPart_async: function(sample, callbackm) {
+
+		console.log("sample")
+
+		var features = this.sampleToFeatures(sample, this.featureExtractors, this.wordnet_buffer, this.stopwords);
+
+		// if (this.featureExpansion)
+			// expansioned = this.editFeatureExpansion(features);
+		
+
+	async.waterfall([
+    	(function(callback) {
+
+    		// console.log(this.featureExpansion)
+
+			if (this.expansionParam)
+				this.editWordnetExpansion(features, sample, function(error, expansioned){
+					callback(error, expansioned)
+				})
+			else
+				callback(null, {})
+
+    	}).bind(this),
+
+    	(function(expansioned, callback) {
+
+		this.omitStopWords(features, this.stopwords)
+
+		this.editFeatureValues(features, /*remove_unknown_features=*/false);
+
+		var array = this.featuresToArray(features);
+
+		var classification = this.classifier.classify(array, 50, 50);
+
+			// classification['expansioned'] = expansioned
+		classification['features'] = features
+
+			callback(null ,classification)
+    	}).bind(this),
+	], function (err, result) {
+		callbackm(err, result)
+	})
+	
+	},
+
 	classifyPart: function(sample, explain, continuous_output) {
 
 		// var samplecorrected = this.correctFeatureSpelling(sample);
@@ -701,10 +793,10 @@ EnhancedClassifier.prototype = {
 		// if (this.featureExpansion)
 			// expansioned = this.editFeatureExpansion(features);
 
-		if (this.expansionParam)
-			expansioned = this.editWordnetExpansion(features, sample)
-		else
-			console.log("No expansion")
+		// if (this.expansionParam)
+			// expansioned = this.editWordnetExpansion(features, sample)
+		// else
+			// console.log("No expansion")
 
 		this.omitStopWords(features, this.stopwords)
 
@@ -738,6 +830,42 @@ EnhancedClassifier.prototype = {
 		}, this);
 		return dataset
 	},
+
+
+	classify_async: function(sample, original, callback)
+	{
+		var normalized = this.normalizedSample(sample)
+
+		this.classifyPart_async(normalized, function(error, classesWithExplanation){
+
+			var classes = classesWithExplanation.classes
+			var scores =  classesWithExplanation.scores
+			var explanations = classesWithExplanation.explanation
+
+			callback(error, {
+				classes: classes,
+				scores: scores,
+				expansioned: classesWithExplanation.expansioned,
+				features: classesWithExplanation.features,
+				explanation: explanations
+			})
+
+		})
+	},
+
+		// if (this.labelLookupTable) {
+		// 	if (Array.isArray(classes)) {
+		// 		classes = classes.map(function(label) {
+		// 				if (_.isArray(label))
+		// 					label[0] = this.labelLookupTable.numberToFeature(label[0]);
+		// 				else
+		// 					label = this.labelLookupTable.numberToFeature(label);
+		// 				return label;
+		// 			}, this);
+		// 	} else {
+		// 		classes = this.labelLookupTable.numberToFeature(classes);
+		// 	}
+		// }
 
 	/**
 	 * Use the model trained so far to classify a new sample.

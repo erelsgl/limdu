@@ -72,13 +72,15 @@ exports.partitions_reverese = function(dataset, numOfPartitions, callback) {
 }
 
 
-exports.partitions_hash = function(dataset, numOfPartitions, callback) {
+exports.partitions_hash = function(datasetor, numOfPartitions, callback) {
 
-	var count = dataset[Object.keys(dataset)[0]].length
-	var testSetCount = count / numOfPartitions;
-	
+	var count = datasetor[Object.keys(datasetor)[0]].length
+	var testSetCount = Math.floor(count / numOfPartitions)
+
 	for (var iPartition=0; iPartition<numOfPartitions; ++iPartition) {
 		var testSetStart = iPartition*testSetCount;
+
+		var dataset = JSON.parse(JSON.stringify(datasetor))
 
 		var test = []
 		var train = []
@@ -86,8 +88,7 @@ exports.partitions_hash = function(dataset, numOfPartitions, callback) {
 		_(count - testSetCount).times(function(n){ train.push([]) })
 		
 		_.each(dataset, function(value, key, list){ 
-			var res = value.splice(testSetStart, testSetCount)
-			test = test.concat(res)
+			test = test.concat(value.splice(testSetStart, testSetCount))
 			_.each(value, function(elem, key1, list1){ 
 				train[key1].push(elem)
 			}, this)

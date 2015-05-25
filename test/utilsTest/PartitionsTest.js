@@ -10,6 +10,15 @@ var mlutils = require('../../utils');
 var _ = require('underscore');
 
 describe('partitions', function() {
+
+	it('partition hash', function() {
+		var dataset = {'label1':[1,3,5,7,9,11,13], 'label2':[0,2,4,6,8,10,12]}
+		mlutils.partitions.partitions_hash(dataset, 2, function(train, test, index) {
+			test.should.have.lengthOf(6);
+			train.should.have.lengthOf(4);
+		})
+	})
+	
 	// A dummy dataset with 10 documents:
 	var dataset = [1,2,3,4,5,6,7,8,9,10];
 	it('creates 5 partitions, with a test-set of 2 in each', function() {

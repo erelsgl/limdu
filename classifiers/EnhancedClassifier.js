@@ -90,8 +90,8 @@ var EnhancedClassifier = function(opts) {
 	this.OutputSplitLabel = opts.OutputSplitLabel
 	this.TestSplitLabel = opts.TestSplitLabel
 
-	this.redis_buffer = {}
-	this.wordnet_buffer = {}
+	// this.redis_buffer = {}
+	// this.wordnet_buffer = {}
 }
 
 
@@ -168,14 +168,14 @@ EnhancedClassifier.prototype = {
 		return sample;
 	},
 
-	sampleToFeatures: function(sample, featureExtractor, wordnet_buffer, stopwords) {
+	sampleToFeatures: function(sample, featureExtractor, stopwords) {
 		
 		var features = sample;
 
 		if (featureExtractor) {
 			try {
 				features = {};
-				featureExtractor(sample, features, wordnet_buffer, stopwords);
+				featureExtractor(sample, features, stopwords);
 			} catch (err) {
 				throw new Error("Cannot extract features from '"+sample+"': "+JSON.stringify(err));
 			}
@@ -354,7 +354,7 @@ EnhancedClassifier.prototype = {
 
 				this.trainSpellChecker(datum.input);
 
-				var features = this.sampleToFeatures(datum.input, this.featureExtractors, this.wordnet_buffer, this.stopwords);
+				var features = this.sampleToFeatures(datum.input, this.featureExtractors, this.stopwords);
 
 				this.omitStopWords(features, this.stopwords)
 				
@@ -741,7 +741,7 @@ EnhancedClassifier.prototype = {
 
 		console.log("sample")
 
-		var features = this.sampleToFeatures(sample, this.featureExtractors, this.wordnet_buffer, this.stopwords);
+		var features = this.sampleToFeatures(sample, this.featureExtractors, this.stopwords);
 
 		// if (this.featureExpansion)
 			// expansioned = this.editFeatureExpansion(features);
@@ -786,7 +786,7 @@ EnhancedClassifier.prototype = {
 
 		// var samplecorrected = this.correctFeatureSpelling(sample);
 
-		var features = this.sampleToFeatures(sample, this.featureExtractors, this.wordnet_buffer, this.stopwords);
+		var features = this.sampleToFeatures(sample, this.featureExtractors, this.stopwords);
 
 		var expansioned = {}
 		

@@ -400,7 +400,9 @@ EnhancedClassifier.prototype = {
 
 		processed_dataset = []
 
-		async.eachSeries(dataset, (function(datum, callback2){ 
+		async.forEachOfSeries(dataset, (function(datum, dind, callback2){ 
+
+			console.log("trainBatch sample "+dind+" from "+dataset.length)
 
 			datum.output = normalizeClasses(datum.output, this.labelLookupTable);
 			datum = _(datum).clone();
@@ -794,14 +796,8 @@ EnhancedClassifier.prototype = {
 	 */
 
 	classifyPart_async: function(sample, callbackm) {
-
-		console.log("sample")
-
-
-		// if (this.featureExpansion)
-			// expansioned = this.editFeatureExpansion(features);
 			
-		var features = {}
+	var features = {}
 
 	async.waterfall([
     	(function(callback) {
@@ -811,20 +807,20 @@ EnhancedClassifier.prototype = {
 				callback()
 			})
 		}).bind(this),
-    	(function(features, callback) {
-
-    		// console.log(this.featureExpansion)
+    	(function(callback12) {
 
 			if (this.expansionParam)
+			{
 				this.editWordnetExpansion(features, sample, function(error, expansioned){
-					callback(error, expansioned)
+					callback12(error, expansioned)
 				})
+			}
 			else
-				callback(null, {})
+				callback12(null, [])
 
     	}).bind(this),
 
-    	(function(expansioned, callback) {
+    	(function(expansioned, callback2) {
 
 		this.omitStopWords(features, this.stopwords)
 
@@ -837,8 +833,8 @@ EnhancedClassifier.prototype = {
 			// classification['expansioned'] = expansioned
 		classification['features'] = features
 
-			callback(null ,classification)
-    	}).bind(this),
+			callback2(null ,classification)
+    	}).bind(this)
 	], function (err, result) {
 		callbackm(err, result)
 	})

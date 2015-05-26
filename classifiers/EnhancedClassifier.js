@@ -402,6 +402,7 @@ EnhancedClassifier.prototype = {
 		var pastTrainingSamples = this.pastTrainingSamples;
 
 		processed_dataset = []
+		console.log("trainBatch inside")
 
 		async.forEachOfSeries(dataset, (function(datum, dind, callback2){ 
 

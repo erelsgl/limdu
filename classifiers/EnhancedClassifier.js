@@ -169,10 +169,13 @@ EnhancedClassifier.prototype = {
 	},
 
 	sampleToFeatures_async: function(sample, featureExtractor, stopwords, callback) {
-		var features = sample;
-		features = {};
+		
+		features = {}
 
 		featureExtractor(sample, features, stopwords, function(err, results){
+
+			console.log(Object.keys(features).length)
+			
 			callback(err, features)
 		})
 	},
@@ -418,7 +421,7 @@ EnhancedClassifier.prototype = {
 				if (featureLookupTable)
 					featureLookupTable.addFeatures(features)
 
-				datum.input = features;
+				datum.input = features
 				processed_dataset.push(datum)
 
 				callback2()

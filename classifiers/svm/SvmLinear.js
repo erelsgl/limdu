@@ -150,7 +150,8 @@ SvmLinear.prototype = {
 			var result = (
 				!continuous_output?   labels[0][0]:
 					!this.multiclass? (labels[0][0]>0? labels[0][1]: labels[1][1]):
-					                  labels);
+					                  // labels);
+					                  labels[0][0]);
 			return (explain>0? 
 				{
 					classes: result,

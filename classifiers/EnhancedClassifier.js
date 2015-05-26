@@ -168,6 +168,16 @@ EnhancedClassifier.prototype = {
 		return sample;
 	},
 
+	sampleToFeatures_async: function(sample, featureExtractor, stopwords, callback) {
+		var features = sample;
+		features = {};
+
+		featureExtractor(sample, features, stopwords, function(err, results){
+			callback(err, features)
+		})
+	},
+
+
 	sampleToFeatures: function(sample, featureExtractor, stopwords) {
 		
 		var features = sample;
@@ -741,14 +751,21 @@ EnhancedClassifier.prototype = {
 
 		console.log("sample")
 
-		var features = this.sampleToFeatures(sample, this.featureExtractors, this.stopwords);
 
 		// if (this.featureExpansion)
 			// expansioned = this.editFeatureExpansion(features);
-		
+			
+		var features = {}
 
 	async.waterfall([
     	(function(callback) {
+			this.sampleToFeatures_async(sample, this.featureExtractors, this.stopwords, function(err, results){
+				console.log("FEATURS are returned")
+				features = results
+				callback()
+			})
+		}).bind(this),
+    	(function(features, callback) {
 
     		// console.log(this.featureExpansion)
 

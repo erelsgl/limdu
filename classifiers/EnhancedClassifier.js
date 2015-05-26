@@ -394,6 +394,52 @@ EnhancedClassifier.prototype = {
 
 	},
 
+	trainBatch_async: function(dataset, callbackg) {
+		var featureLookupTable = this.featureLookupTable;
+		var pastTrainingSamples = this.pastTrainingSamples;
+
+		processed_dataset = []
+
+		async.eachSeries(dataset, (function(datum, callback2){ 
+
+			datum.output = normalizeClasses(datum.output, this.labelLookupTable);
+			datum = _(datum).clone();
+			datum.input = this.normalizedSample(datum.input);
+			
+			this.sampleToFeatures_async(datum.input, this.featureExtractors, this.stopwords, (function(err, features){
+				
+				this.omitStopWords(features, this.stopwords)
+
+				if (this.tfidf)
+					this.tfidf.addDocument(features)
+				
+				if (featureLookupTable)
+					featureLookupTable.addFeatures(features)
+
+				datum.input = features;
+				processed_dataset.push(datum)
+
+				callback2()
+			}).bind(this))
+
+		}).bind(this), (function(err){
+
+			processed_dataset = _.compact(processed_dataset)
+
+			processed_dataset.forEach(function(datum) {
+			
+				this.editFeatureValues(datum.input, /*remove_unknown_features=*/false);
+				if (featureLookupTable)
+					datum.input = featureLookupTable.hashToArray(datum.input);
+			}, this)
+
+			this.classifier.trainBatch(processed_dataset)
+			callbackg(null,[])
+		
+		}).bind(this))
+
+	},
+
 	// fetching with buffering
 	// fetchRedis: function(data, db)
 	// {

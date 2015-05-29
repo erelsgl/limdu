@@ -173,8 +173,6 @@ EnhancedClassifier.prototype = {
 		features = {}
 
 		featureExtractor(sample, features, stopwords, function(err, results){
-
-			console.log(Object.keys(features).length)
 			
 			callback(err, features)
 		})
@@ -406,7 +404,7 @@ EnhancedClassifier.prototype = {
 
 		async.forEachOfSeries(dataset, (function(datum, dind, callback2){ 
 
-			console.log("trainBatch sample "+dind+" from "+dataset.length)
+			// console.log("trainBatch sample "+dind+" from "+dataset.length)
 
 			datum.output = normalizeClasses(datum.output, this.labelLookupTable);
 			datum = _(datum).clone();
@@ -806,7 +804,6 @@ EnhancedClassifier.prototype = {
 	async.waterfall([
     	(function(callback) {
 			this.sampleToFeatures_async(sample, this.featureExtractors, this.stopwords, function(err, results){
-				console.log("FEATURS are returned")
 				features = results
 				callback()
 			})

@@ -4,7 +4,6 @@
  * @author Erel Segal-haLevi
  * @since 2013-06
  */
-
 var _ = require("underscore")._;
 
 
@@ -94,6 +93,32 @@ exports.partitions_hash = function(datasetor, numOfPartitions, callback) {
 			}, this)
 		}, this)
 	
+
 		callback(train, test, iPartition);
 	}
+}
+
+
+exports.partitions_hash_fold = function(datasetor, numOfPartitions, fold ) {
+
+	var count = datasetor[Object.keys(datasetor)[0]].length
+	var testSetCount = Math.floor(count / numOfPartitions)
+
+	var testSetStart = fold*testSetCount;
+	var dataset = JSON.parse(JSON.stringify(datasetor))
+
+	var test = []
+	var train = []
+
+	_(count - testSetCount).times(function(n){ train.push([]) })
+		
+	_.each(dataset, function(value, key, list){ 
+		test = test.concat(value.splice(testSetStart, testSetCount))
+		console.log(value.length)
+		_.each(value, function(elem, key1, list1){ 
+			train[key1].push(elem)
+		}, this)
+	}, this)
+	
+	return {"train": train, "test": test}
 }

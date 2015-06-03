@@ -11,6 +11,14 @@ var _ = require('underscore');
 
 describe('partitions', function() {
 
+	it('partitions_hash_fold', function() {
+		var dataset = {'label1':[1,3,5,7,9,11,13], 'label2':[0,2,4,6,8,10,12]}
+		var data = mlutils.partitions.partitions_hash_fold(dataset, 2, 1) 
+		_.isEqual(data["test"], [7,9,11,6,8,10]).should.be.true		
+		var data = mlutils.partitions.partitions_hash_fold(dataset, 3, 2) 
+		_.isEqual(data["test"], [9,11,8,10]).should.be.true
+	})
+
 	it('partition hash', function() {
 		var dataset = {'label1':[1,3,5,7,9,11,13], 'label2':[0,2,4,6,8,10,12]}
 		mlutils.partitions.partitions_hash(dataset, 2, function(train, test, index) {

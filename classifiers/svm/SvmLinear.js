@@ -40,7 +40,7 @@ var util  = require('util')
   , fs   = require('fs')
   , svmcommon = require('./svmcommon')
   , _ = require('underscore')._
-  timestamp = new Date().getTime()
+  // timestamp = _.uniqueId() + new Date().getTime() + _.random(0, 100)
 
 var FIRST_FEATURE_NUMBER=1;  // in lib linear, feature numbers start with 1
 
@@ -56,6 +56,8 @@ SvmLinear.prototype = {
 		 * @param dataset an array of samples of the form {input: [value1, value2, ...] , output: 0/1} 
 		 */
 		trainBatch: function(dataset) {
+
+			var timestamp = new Date().getTime()
 			this.allLabels = _(dataset).map(function(datum){return datum.output});
 			this.allLabels = _.uniq(this.allLabels);
 			if (this.allLabels.length==1) // a single label
@@ -63,7 +65,7 @@ SvmLinear.prototype = {
 			//console.log(util.inspect(dataset,{depth:1}));
 			if (this.debug) console.log("trainBatch start");
 			var learnFile = svmcommon.writeDatasetToFile(
-					dataset, this.bias, /*binarize=*/false, this.model_file_prefix+timestamp, "SvmLinear-"+timestamp, FIRST_FEATURE_NUMBER);
+					dataset, this.bias, /*binarize=*/false, this.model_file_prefix+"_"+timestamp, "SvmLinear", FIRST_FEATURE_NUMBER);
 			var modelFile = learnFile.replace(/[.]learn/,".model")
 
 			var command = "liblinear_train "+this.learn_args+" "+learnFile + " "+modelFile;

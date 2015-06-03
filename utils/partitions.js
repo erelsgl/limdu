@@ -114,7 +114,6 @@ exports.partitions_hash_fold = function(datasetor, numOfPartitions, fold ) {
 		
 	_.each(dataset, function(value, key, list){ 
 		test = test.concat(value.splice(testSetStart, testSetCount))
-		console.log(value.length)
 		_.each(value, function(elem, key1, list1){ 
 			train[key1].push(elem)
 		}, this)

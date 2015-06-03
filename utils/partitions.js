@@ -105,14 +105,14 @@ exports.partitions_hash_fold = function(datasetor, numOfPartitions, fold ) {
 	var testSetCount = Math.floor(count / numOfPartitions)
 
 	var testSetStart = fold*testSetCount;
-	var dataset = JSON.parse(JSON.stringify(datasetor))
+	// var dataset = JSON.parse(JSON.stringify(datasetor))
 
 	var test = []
 	var train = []
 
 	_(count - testSetCount).times(function(n){ train.push([]) })
 		
-	_.each(dataset, function(value, key, list){ 
+	_.each(datasetor, function(value, key, list){ 
 		test = test.concat(value.splice(testSetStart, testSetCount))
 		_.each(value, function(elem, key1, list1){ 
 			train[key1].push(elem)

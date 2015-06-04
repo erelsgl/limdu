@@ -811,6 +811,7 @@ EnhancedClassifier.prototype = {
 
 			if (this.expansionParam)
 			{
+				console.log("EXPANSION")
 				this.editWordnetExpansion(features, sample, function(error, expansioned){
 					callback12(error, expansioned)
 				})
@@ -828,7 +829,8 @@ EnhancedClassifier.prototype = {
 
 		var array = this.featuresToArray(features);
 
-		var classification = this.classifier.classify(array, 50, 50);
+		// var classification = this.classifier.classify(array, 50, 50);
+		var classification = this.classifier.classify(array);
 
 			// classification['expansioned'] = expansioned
 		classification['features'] = features

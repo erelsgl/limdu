@@ -17,11 +17,11 @@
  */
 
 function SvmLinear(opts) {
-	if (!SvmLinear.isInstalled()) {
-		var msg = "Cannot find the executable 'liblinear_train'. Please download it from the LibLinear website, and put a link to it in your path.";
-		console.error(msg)
-		throw new Error(msg); 
-	}
+	// if (!SvmLinear.isInstalled()) {
+	// 	var msg = "Cannot find the executable 'liblinear_train'. Please download it from the LibLinear website, and put a link to it in your path.";
+	// 	console.error(msg)
+	// 	throw new Error(msg); 
+	// }
 	this.learn_args = opts.learn_args || "";
 	this.model_file_prefix = opts.model_file_prefix || null;
 	this.bias = opts.bias || 1.0;
@@ -35,11 +35,10 @@ SvmLinear.isInstalled = function() {
 }
 
 var util  = require('util')
-  , execSync = require('execSync').exec
-  , exec = require('child_process').exec
-  , fs   = require('fs')
+  , child_process   = require('child_process')
+  , fs   = require('fs')var result = child_process.execSync(command);
   , svmcommon = require('./svmcommon')
-  , _ = require('underscore')._
+  , _ = require('underscore')._var result = child_process.execSync(command);
   // timestamp = _.uniqueId() + new Date().getTime() + _.random(0, 100)
 
 var FIRST_FEATURE_NUMBER=1;  // in lib linear, feature numbers start with 1
@@ -72,7 +71,8 @@ SvmLinear.prototype = {
 			if (this.debug) console.log("running "+command);
 
 			console.log(command)
-			var result = execSync(command);
+			var result = child_process.execSync(command);
+			// var result = execSync(command);
 			if (result.code>0) {
 				console.dir(result);
 				console.log(fs.readFileSync(learnFile, 'utf-8'));

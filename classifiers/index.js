@@ -1,24 +1,24 @@
 module.exports = {
 	// basic classifiers:
 	//NeuralNetwork: require('./brain/lib/neuralnetwork').NeuralNetwork,
-	NeuralNetwork: require('./neural/NeuralNetwork'),
-	Bayesian: require('./bayesian/bayesian'),
+	// NeuralNetwork: require('./neural/NeuralNetwork'),
+	// Bayesian: require('./bayesian/bayesian'),
 
-	kNN: require('./kNN/kNN'),
+	// kNN: require('./kNN/kNN'),
 	
-	SvmJs: require('./svm/SvmJs'),
-	SvmPerf: require('./svm/SvmPerf'),
-	SvmPerf_multi: require('./svm/SvmPerf_multi'),
+	// SvmJs: require('./svm/SvmJs'),
+	// SvmPerf: require('./svm/SvmPerf'),
+	// SvmPerf_multi: require('./svm/SvmPerf_multi'),
 	SvmLinear: require('./svm/SvmLinear'),
 	
 	//BayesClassifier: require('./apparatus/lib/apparatus/classifier/bayes_classifier'),
 	//LogisticRegressionClassifier: require('./apparatus/lib/apparatus/classifier/logistic_regression_classifier'),
-	Perceptron: require('./perceptron/PerceptronHash'),
-	Winnow: require('./winnow/WinnowHash'),
+	// Perceptron: require('./perceptron/PerceptronHash'),
+	// Winnow: require('./winnow/WinnowHash'),
 
-	DecisionTree: require('./decisiontree/DecisionTree'),
+	// DecisionTree: require('./decisiontree/DecisionTree'),
 
-	multilabel: require('./multilabel'),
+	// multilabel: require('./multilabel'),
 	
 	// meta classifier:
 	EnhancedClassifier: require('./EnhancedClassifier'),

@@ -13,7 +13,7 @@
     "svm": "*",
     "temp": "*",
     "wordsworth": "*",
-    "execSync": "*",
+    "async": "*",
     "brain": "*",
     "graph-paths": "latest",
     "languagemodel": "latest"

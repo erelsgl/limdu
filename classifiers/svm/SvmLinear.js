@@ -27,6 +27,8 @@ function SvmLinear(opts) {
 	this.bias = opts.bias || 1.0;
 	this.multiclass = opts.multiclass || false;
 	this.debug = opts.debug||false;
+	this.timestamp = ""
+	this.modelFile = ""
 }
 
 SvmLinear.isInstalled = function() {
@@ -36,9 +38,9 @@ SvmLinear.isInstalled = function() {
 
 var util  = require('util')
   , child_process   = require('child_process')
-  , fs   = require('fs')var result = child_process.execSync(command);
+  , fs   = require('fs')
   , svmcommon = require('./svmcommon')
-  , _ = require('underscore')._var result = child_process.execSync(command);
+  , _ = require('underscore')._
   // timestamp = _.uniqueId() + new Date().getTime() + _.random(0, 100)
 
 var FIRST_FEATURE_NUMBER=1;  // in lib linear, feature numbers start with 1
@@ -56,7 +58,7 @@ SvmLinear.prototype = {
 		 */
 		trainBatch: function(dataset) {
 
-			var timestamp = new Date().getTime()
+			this.timestamp = new Date().getTime()
 			this.allLabels = _(dataset).map(function(datum){return datum.output});
 			this.allLabels = _.uniq(this.allLabels);
 			if (this.allLabels.length==1) // a single label
@@ -64,10 +66,10 @@ SvmLinear.prototype = {
 			//console.log(util.inspect(dataset,{depth:1}));
 			if (this.debug) console.log("trainBatch start");
 			var learnFile = svmcommon.writeDatasetToFile(
-					dataset, this.bias, /*binarize=*/false, this.model_file_prefix+"_"+timestamp, "SvmLinear", FIRST_FEATURE_NUMBER);
-			var modelFile = learnFile.replace(/[.]learn/,".model")
+					dataset, this.bias, /*binarize=*/false, this.model_file_prefix+"_"+this.timestamp, "SvmLinear", FIRST_FEATURE_NUMBER);
+				this.modelFile = learnFile.replace(/[.]learn/,".model")
 
-			var command = "liblinear_train "+this.learn_args+" "+learnFile + " "+modelFile;
+			var command = "liblinear_train "+this.learn_args+" "+learnFile + " "+this.modelFile;
 			if (this.debug) console.log("running "+command);
 
 			console.log(command)
@@ -79,7 +81,7 @@ SvmLinear.prototype = {
 				throw new Error("Failed to execute: "+command);
 			}
 
-			this.setModel(fs.readFileSync(modelFile, "utf-8"));
+			// this.setModel(fs.readFileSync(this.modelFile, "utf-8"));
 			if (this.debug) console.log("trainBatch end");
 		},
 		
@@ -94,7 +96,28 @@ SvmLinear.prototype = {
 			return (this.multiclass? this.mapLabelToMapFeatureToWeight: this.mapLabelToMapFeatureToWeight[1]);
 		},
 	
-		
+		classifyBatch: function(testSet) {
+
+			var testFile = svmcommon.writeDatasetToFile(
+					testSet, this.bias, /*binarize=*/false, this.model_file_prefix+"_test_"+this.timestamp, "SvmLinear", FIRST_FEATURE_NUMBER);
+			
+			outputFile = this.modelFile.replace(/[.]model/,".output")
+
+			var command = "liblinear_test " + testFile + " " + this.modelFile + " " + outputFile
+			if (this.debug) console.log("running "+command);
+
+			console.log(command)
+			var result = child_process.execSync(command).toString('utf8')
+			// if (result.code>0) {
+				// console.dir(result);
+				// console.log(fs.readFileSync(learnFile, 'utf-8'));
+				// throw new Error("Failed to execute: "+command);
+			// }
+
+			var Accuracy = result.match(/=.*%/g)[0].slice(2,-1)
+
+			return {"stats":{"Accuracy":parseFloat(Accuracy)}}
+		},
 
 		/**
 		 * @param features - a feature-value hash.

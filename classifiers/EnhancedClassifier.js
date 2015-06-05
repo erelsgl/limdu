@@ -830,12 +830,11 @@ EnhancedClassifier.prototype = {
 		var array = this.featuresToArray(features);
 
 		// var classification = this.classifier.classify(array, 50, 50);
-		var classification = this.classifier.classify(array);
 
 			// classification['expansioned'] = expansioned
-		classification['features'] = features
+		// classification['features'] = features
 
-			callback2(null ,classification)
+			callback2(null ,array)
     	}).bind(this)
 	], function (err, result) {
 		callbackm(err, result)
@@ -893,11 +892,32 @@ EnhancedClassifier.prototype = {
 	},
 
 
+	classifyBatch_async: function(testSet, callback)
+	{
+		var output = []
+		async.forEachOfSeries(testSet, (function (testSample, testKey, callback1) {
+
+			var normalized = this.normalizedSample(testSample['input'])
+			
+			this.classifyPart_async(normalized, function(error, array){
+				output.push({'input': array, 'output': testSample['output'][0]})
+				callback1()
+			})
+		}).bind(this), (function(err){
+			
+			var result = this.classifier.classifyBatch(output)
+			callback(err, result)
+
+		}).bind(this))
+	},
+
 	classify_async: function(sample, original, callback)
 	{
 		var normalized = this.normalizedSample(sample)
 
-		this.classifyPart_async(normalized, function(error, classesWithExplanation){
+		this.classifyPart_async(normalized, function(error, array){
+
+			var classesWithExplanation = this.classifier.classify(array)
 
 			var classes = classesWithExplanation.classes
 			var scores =  classesWithExplanation.scores

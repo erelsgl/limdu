@@ -7,7 +7,7 @@ module.exports = {
 	// kNN: require('./kNN/kNN'),
 	
 	// SvmJs: require('./svm/SvmJs'),
-	// SvmPerf: require('./svm/SvmPerf'),
+	SvmPerf: require('./svm/SvmPerf'),
 	// SvmPerf_multi: require('./svm/SvmPerf_multi'),
 	SvmLinear: require('./svm/SvmLinear'),
 	
@@ -18,7 +18,7 @@ module.exports = {
 
 	// DecisionTree: require('./decisiontree/DecisionTree'),
 
-	// multilabel: require('./multilabel'),
+	multilabelB: require('./multilabel/BinaryRelevance'),
 	
 	// meta classifier:
 	EnhancedClassifier: require('./EnhancedClassifier'),

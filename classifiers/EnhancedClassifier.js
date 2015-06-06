@@ -173,22 +173,9 @@ EnhancedClassifier.prototype = {
 		
 		features = {}
 
-		if (_.isArray(featureExtractor))
-		{
-			async.eachSeries(featureExtractor, function(FE, callback1){ 
-				FE(sample, features, stopwords, function(err, results){			
-					callback1()
-				})
-			}, function(err){
-				callback(null, features)
-			})
-		}
-		else
-		{
-			featureExtractor(sample, features, stopwords, function(err, results){	
-				callback(err, features)
-			})
-		}
+		featureExtractor(sample, features, stopwords, function(err, results){	
+			callback(err, features)
+		})
 	},
 
 

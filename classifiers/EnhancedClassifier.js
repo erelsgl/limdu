@@ -103,8 +103,7 @@ EnhancedClassifier.prototype = {
 
 	/** Set the main feature extractor, used for both training and classification. */
 	setFeatureExtractor: function (featureExtractor) {
-		// this.featureExtractors = ftrs.normalize(featureExtractor);
-		this.featureExtractors = featureExtractor
+		this.featureExtractors = ftrs.normalize(featureExtractor);
 	},
 
 	setFeatureExpansion: function (featureExpansion) {

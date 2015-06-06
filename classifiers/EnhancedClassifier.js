@@ -103,7 +103,8 @@ EnhancedClassifier.prototype = {
 
 	/** Set the main feature extractor, used for both training and classification. */
 	setFeatureExtractor: function (featureExtractor) {
-		this.featureExtractors = ftrs.normalize(featureExtractor);
+		// this.featureExtractors = ftrs.normalize(featureExtractor);
+		this.featureExtractors = featureExtractor
 	},
 
 	setFeatureExpansion: function (featureExpansion) {
@@ -172,10 +173,22 @@ EnhancedClassifier.prototype = {
 		
 		features = {}
 
-		featureExtractor(sample, features, stopwords, function(err, results){
-			
-			callback(err, features)
-		})
+		if (_.isArray(featureExtractor))
+		{
+			async.eachSeries(featureExtractor, function(FE, callback1){ 
+				FE(sample, features, stopwords, function(err, results){			
+					callback1()
+				})
+			}, function(err){
+				callback(null, features)
+			})
+		}
+		else
+		{
+			featureExtractor(sample, features, stopwords, function(err, results){	
+				callback(err, features)
+			})
+		}
 	},
 
 

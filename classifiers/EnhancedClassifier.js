@@ -911,6 +911,7 @@ EnhancedClassifier.prototype = {
 		async.forEachOfSeries(testSet, (function (testSample, testKey, callback1) {
 
 			// var normalized = this.normalizedSample(testSample['input'])
+			var normalized = testSample['input']
 			
 			this.classifyPart_async(normalized, function(error, array){
 				output.push({'input': array, 'output': testSample['output'][0]})

@@ -12,14 +12,20 @@
  * @param bias if nonzero, add it at the beginning of the vector.
  * @param binarize if true, change output to -1/1. If false, leave output as it is
  */
+
+
+
 exports.toSvmLight = function(dataset, bias, binarize, firstFeatureNumber) {
 	var lines = "";
 	for (var i=0; i<dataset.length; ++i) {
-		var line = (i>0? "\n": "") + 
-			(binarize? (dataset[i].output>0? "1": "-1"): dataset[i].output) +  // in svm-light, the output comes first:
-			featureArrayToFeatureString(dataset[i].input, bias, firstFeatureNumber)
-			;
-		lines += line;
+		if (isInt(dataset[i].output))
+		{
+			var line = (i>0? "\n": "") + 
+				(binarize? (dataset[i].output>0? "1": "-1"): dataset[i].output) +  // in svm-light, the output comes first:
+				featureArrayToFeatureString(dataset[i].input, bias, firstFeatureNumber)
+				;
+			lines += line;
+		}
 	};
 	lines += "\n";
 	return lines;
@@ -40,4 +46,11 @@ function featureArrayToFeatureString(features, bias, firstFeatureNumber) {
 			line += (" "+(feature+firstFeatureNumber+(bias?1:0))+":"+value.toPrecision(5));
 	}
 	return line;
+}
+
+
+function isInt(value) {
+  return !isNaN(value) && 
+         parseInt(Number(value)) == value && 
+         !isNaN(parseInt(value, 10));
 }

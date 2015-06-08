@@ -116,7 +116,11 @@ SvmLinear.prototype = {
 
 			var Accuracy = result.match(/=.*%/g)[0].slice(2,-1)
 
-			return {"stats":{"Accuracy":parseFloat(Accuracy)}}
+	        return {"stats":{
+                           "Accuracy":parseFloat(Accuracy),
+                           "id": this.timestamp
+                            }
+                    }
 		},
 
 		/**

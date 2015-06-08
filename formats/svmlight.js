@@ -13,8 +13,6 @@
  * @param binarize if true, change output to -1/1. If false, leave output as it is
  */
 
-
-
 exports.toSvmLight = function(dataset, bias, binarize, firstFeatureNumber) {
 	var lines = "";
 	for (var i=0; i<dataset.length; ++i) {
@@ -31,8 +29,6 @@ exports.toSvmLight = function(dataset, bias, binarize, firstFeatureNumber) {
 	return lines;
 }
 
-
-
 /**
  * convert an array of features to a single line in SVM-light format. The line starts with a space.
  */
@@ -47,7 +43,6 @@ function featureArrayToFeatureString(features, bias, firstFeatureNumber) {
 	}
 	return line;
 }
-
 
 function isInt(value) {
   return !isNaN(value) && 

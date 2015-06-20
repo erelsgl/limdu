@@ -19,9 +19,10 @@ exports.toSvmLight = function(dataset, bias, binarize, firstFeatureNumber) {
 		if (isInt(dataset[i].output))
 		{
 			var line = (i>0? "\n": "") + 
-				(binarize? (dataset[i].output>0? "1": "-1"): dataset[i].output) +  // in svm-light, the output comes first:
+				//(binarize? (dataset[i].output>0? "1": "-1"): dataset[i].output) +  // in svm-light, the output comes first:
+				dataset[i].output +  // in svm-light, the output comes first:
 				featureArrayToFeatureString(dataset[i].input, bias, firstFeatureNumber)
-				;
+				
 			lines += line;
 		}
 	};

@@ -15,3 +15,18 @@ module.exports = function(extractors) {
 	}
 }
 
+
+//var async = require('async');
+/*
+module.exports = function(extractors) {
+        return function(sample, features, stopwords, callback){
+                async.eachSeries(extractors, function(extractor, callback1){
+                extractor(sample, features, stopwords, function(err, result){
+                callback1()
+            })
+        }, function(err){
+                callback()
+        })
+    }
+}
+*/

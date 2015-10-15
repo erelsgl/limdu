@@ -17,18 +17,17 @@
 
 var fs   = require('fs')
   , util  = require('util')
-  , child_process = require('child_process')
-  , exec = require('child_process').exec
+  , execSync = require('child_process').execSync
   , svmcommon = require('./svmcommon')	
   , _ = require("underscore")._;
   
 
 function SvmPerf(opts) {
-	if (!SvmPerf.isInstalled()) {
-		var msg = "Cannot find the executable 'svm_perf_learn'. Please download it from the SvmPerf website, and put a link to it in your path.";
-		console.error(msg)
-		throw new Error(msg); 
-	}
+	// if (!SvmPerf.isInstalled()) {
+	// 	var msg = "Cannot find the executable 'svm_perf_learn'. Please download it from the SvmPerf website, and put a link to it in your path.";
+	// 	console.error(msg)
+	// 	throw new Error(msg); 
+	// }
 	this.learn_args = opts.learn_args || "";
 	this.learn_args += " --b 0 ";  // we add the bias here, so we don't need SvmPerf to add it
 	this.model_file_prefix = opts.model_file_prefix || null;
@@ -38,13 +37,10 @@ function SvmPerf(opts) {
 }
 
 SvmPerf.isInstalled = function() {
-  try {
-    var result = child_process.execSync("svm_perf_learn -c 1 a");
-    return true;
-  } catch (e) {
-    return (e.status != 127);
-  }
-};
+	//var result = execSync("svm_perf_learn -c 1 a");
+	//return (result.code!=127);
+	return true
+}
 
 var FIRST_FEATURE_NUMBER=1;  // in svm perf, feature numbers start with 1, not 0!
 
@@ -65,14 +61,15 @@ SvmPerf.prototype = {
 			var modelFile = learnFile.replace(/[.]learn/,".model");
 			var command = "svm_perf_learn "+this.learn_args+" "+learnFile + " "+modelFile;
 			if (this.debug) console.log("running "+command);
+			console.log(command)
 	
-			var result = child_process.execSync(command);
+			var result = execSync(command);
 			if (result.code>0) {
 				console.dir(result);
 				console.log(fs.readFileSync(learnFile, 'utf-8'));
 				throw new Error("Failed to execute: "+command);
 			}
-			
+
 			this.setModel(fs.readFileSync(modelFile, "utf-8"));
 			if (this.debug) console.log("trainBatch end");
 		},
@@ -81,6 +78,8 @@ SvmPerf.prototype = {
 			this.modelString = modelString;
 			this.mapFeatureToWeight = modelStringToModelMap(modelString);  // weights in modelMap start from 0 (- the bias).
 			if (this.debug) console.dir(this.mapFeatureToWeight);
+			// console.log("maps"+JSON.stringify(_.keys(this.mapFeatureToWeight).length, null, 4))
+			// process.exit(0)
 		},
 
 		getFeatures: function() {

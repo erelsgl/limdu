@@ -5,6 +5,7 @@ lib-cov
 *.dat
 *.out
 *.pid
+*.bk
 *.gz
 .project
 node_modules

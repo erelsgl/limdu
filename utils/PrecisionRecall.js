@@ -18,6 +18,7 @@ var PrecisionRecall = function() {
 	this.startTime = new Date();
 	this.labels = {}
 	this.dep = {}
+	this.confusion = {}
 }
 
 PrecisionRecall.prototype = {
@@ -47,11 +48,24 @@ PrecisionRecall.prototype = {
 
 	addCasesLabels: function (expectedClasses, actualClasses ) {
 		var explanations = [];
+
 		actualClasses = hash.normalized(actualClasses);
 		expectedClasses = hash.normalized(expectedClasses);
 
 		var allTrue = true;
+
+		if (!(Object.keys(expectedClasses)[0] in this.confusion)) 
+			this.confusion[Object.keys(expectedClasses)[0]] = {}
+
+		if (!(Object.keys(actualClasses)[0] in this.confusion[Object.keys(expectedClasses)[0]])) 
+			this.confusion[Object.keys(expectedClasses)[0]][Object.keys(actualClasses)[0]] = 0
+
+		this.confusion[Object.keys(expectedClasses)[0]][Object.keys(actualClasses)[0]] += 1 
+
 		for (var actualClass in actualClasses) {
+
+			if (!(actualClass in this.confusion)) 
+				this.confusion[actualClass]={}
 
 			if (!(actualClass in this.labels)) {
 				this.labels[actualClass]={}
@@ -64,7 +78,7 @@ PrecisionRecall.prototype = {
 				this.labels[actualClass]['TP'] += 1 
 
 			} else {
-				this.labels[actualClass]['FP'] += 1 
+				this.labels[actualClass]['FP'] += 1
 			}
 		}
 		for (var expectedClass in expectedClasses) {
@@ -175,6 +189,12 @@ PrecisionRecall.prototype = {
 			explanations[key].sort()
 		}, this)
 
+		if (explanations['FP'].length == 0)
+			delete explanations['FP']
+
+		if (explanations['FN'].length == 0)
+			delete explanations['FN']
+
 		return explanations;
 	},
 
@@ -183,6 +203,7 @@ PrecisionRecall.prototype = {
 
 		var ex = []
 		var ac = []
+		var matchlist = []
 
 		// clean up expected list
 		_.each(expectedClasses, function(expected, key, list){ 
@@ -190,19 +211,30 @@ PrecisionRecall.prototype = {
 				ex.push(expected)
 		}, this)
 
-		
-		// filtering actual classes		
-		_.each(actualClasses, function(actual, key, list){ 
-			var found = _.filter(ac, function(num){ return ((num[0] == actual[0]) && (this.intersection(num[1], actual[1]) == true)) }, this);
-			if (found.length == 0)
-				ac.push(actual)
-		}, this)
+		// ac = actualClasses
+		// // filtering actual classes		
+		// _.each(actualClasses, function(actual, key, list){ 
+		// 	var found = _.filter(ac, function(num){ return ((num[0] == actual[0]) && (this.intersection(num[1], actual[1]) == true)) }, this);
+		// 	if (found.length == 0)
+		// 		ac.push(actual)
+		// }, this)
+
+		// console.log(JSON.stringify(actualClasses, null, 4))
+
+		// var ac = this.uniquecandidate(this.uniqueaggregate(actualClasses))
+		var ac = actualClasses
+
 
 		// filling interdependencies between labels 
+		// for every candidate (actual) it looks for intersection between actual labels with different 
+		// intents, intersection means that different intents came to the common substring, then arrange 
+		// all the data in the hash, and mention only keyphrases.
+
 		_.each(ac, function(actual, key, list){
 		if (actual.length > 3)
 			{	 
 			label = actual[0]
+			// keyphrase
 			str = actual[2]
 			if (!(label in this.dep))
 				{
@@ -211,17 +243,21 @@ PrecisionRecall.prototype = {
 				}
 			this.dep[label][label].push(str)
 
+			// intersection, different intents but actual intersection
 			var found = _.filter(ac, function(num){ return ((num[0] != actual[0]) && (this.intersection(num[1], actual[1]) == true)) }, this);
 			_.each(found, function(sublabel, key, list){
 				if (!(sublabel[0] in this.dep[label]))
 					this.dep[label][sublabel[0]] = []
-				this.dep[label][sublabel[0]].push([actual[2], sublabel[2]])
+				this.dep[label][sublabel[0]].push([[actual[2],actual[4]], [sublabel[2],sublabel[4]]])
 			}, this)
 			}
 		}, this)
 
 		var explanations = {};
 		explanations['TP'] = []; explanations['FP'] = []; explanations['FN'] = [];
+		
+		var explanations_detail = {};
+		explanations_detail['TP'] = []; explanations_detail['FP'] = []; explanations_detail['FN'] = [];
 		
 		var allTrue = true;
 		for (var actualClassindex in ac) {
@@ -238,11 +274,17 @@ PrecisionRecall.prototype = {
 				if (ac[actualClassindex][0] == exc[0])
 					{
 					if ((exc[1].length == 0) || (ac[actualClassindex][1][0] == -1))
+						{
 						found = true
+						matchlist.push(ac[actualClassindex])
+						}
 					else
 						{
 						if (this.intersection(ac[actualClassindex][1], exc[1]))
+							{
 							found = true
+							matchlist.push(ac[actualClassindex])
+							}
 						}
 					}
 			}, this)
@@ -251,11 +293,13 @@ PrecisionRecall.prototype = {
 				if (logTruePositives)
 					{
 						explanations['TP'].push(ac[actualClassindex][0]);
+						explanations_detail['TP'].push(ac[actualClassindex]);
 						this.labels[ac[actualClassindex][0]]['TP'] += 1
 						this.TP++
 					}
 			} else {
 				explanations['FP'].push(ac[actualClassindex][0]);
+				explanations_detail['FP'].push(ac[actualClassindex]);
 				this.labels[ac[actualClassindex][0]]['FP'] += 1
 				this.FP++
 				allTrue = false;
@@ -288,6 +332,7 @@ PrecisionRecall.prototype = {
 			if (!found)
 				{
 				explanations['FN'].push(ex[expectedClassindex][0]);
+				explanations_detail['FN'].push(ex[expectedClassindex]);
 				this.labels[ex[expectedClassindex][0]]['FN'] += 1
 				this.FN++;
 				allTrue = false;
@@ -305,9 +350,19 @@ PrecisionRecall.prototype = {
 			// explanations[key].sort()
 		// }, this)
 
-		return explanations;
+		// console.log(explanations)
+		// console.log(matchlist)
+		
+		// if (expectedClasses.length > 1)
+			// process.exit(0)
+
+		return {
+				'explanations': explanations,
+				'match': matchlist,
+				'explanations_detail': explanations_detail
+				}
 	},
-	
+
 	// simple intersection
 	intersection:function(begin, end)
 	{
@@ -327,7 +382,11 @@ PrecisionRecall.prototype = {
 			this.labels[label]['F1'] = 2 / (1/this.labels[label]['Recall'] + 1/this.labels[label]['Precision'])
 
 			if (!this.labels[label]['F1']) this.labels[label]['F1'] = -1
-			}, this)
+		}, this)
+
+		var arlabels = _.pairs(this.labels) 
+		arlabels = _.sortBy(arlabels, function(num){ return arlabels[0] })
+		this.labels = _.object(arlabels)
 
 		return this.labels
 	},
@@ -356,11 +415,21 @@ PrecisionRecall.prototype = {
 		stats['shortStatsString'] = this.shortStatsString
 		stats['interdep'] = this.dep
 		stats['labels'] = this.labels
+		stats['confusion'] = this.confusion
+
+		this.retrieveLabels()
+
+		_.each(this.labels, function(st, lab, list){ 
+			_.each(st, function(val, par, list){ 
+				stats[lab+"_"+par] = val
+			}, this)
+		}, this)
+
 		return stats
 	},
 
 	calculateStatsNoReturn: function() {
-		this.retrieveLabels()
+		
 
 		this.macroPrecision = 0
 		this.macroRecall = 0
@@ -370,25 +439,24 @@ PrecisionRecall.prototype = {
 		var macroRecall = []
 		var macroF1 = []
 
-		// isNaN
+		
 
-		// if (Object.keys(this.labels).length > 3)
-		// {
+		if (Object.keys(this.labels).length > 3)
+		{
 
-		// 	var list_lab = _.toArray(this.labels)
-		// 	var macro_stats = {}
+			var list_lab = _.toArray(this.labels)
+			var macro_stats = {}
 			
-		// 	_.each(['Precision', 'Recall', 'F1'], function(param, key, list){ 
-		// 		macro_stats[param] = _.pluck(list_lab, param)
-		// 		macro_stats[param] = _.filter(macro_stats[param], function(elem){ return (isNaN(elem))==false})
-		// 		macro_stats[param] = _.reduce(macro_stats[param], function(memo, num){ return memo + num; }) / macro_stats[param].length
-		// 	}, this)
+			_.each(['Precision', 'Recall', 'F1'], function(param, key, list){ 
+				macro_stats[param] = _.pluck(list_lab, param)
+				// macro_stats[param] = _.filter(macro_stats[param], function(elem){ return (!_.isNaN(elem) && elem >=0)  })
+				macro_stats[param] = _.reduce(macro_stats[param], function(memo, num){ if (!_.isNaN(num) && num >=0) {return memo + num} else {return memo} }) / macro_stats[param].length
+			}, this)
 
-		// 	this.macroPrecision = macro_stats['Precision']
-		// 	this.macroRecall = macro_stats['Recall']
-		// 	this.macroF1 = macro_stats['F1']
-
-		// }
+			this.macroPrecision = macro_stats['Precision']
+			this.macroRecall = macro_stats['Recall']
+			this.macroF1 = macro_stats['F1']
+		}
 
 		this.Accuracy = (this.TRUE) / (this.count);
 		this.HammingLoss = (this.FN+this.FP) / (this.FN+this.TP); // "the percentage of the wrong labels to the total number of labels"

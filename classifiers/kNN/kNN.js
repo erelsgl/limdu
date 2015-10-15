@@ -61,7 +61,11 @@ kNN.prototype = {
 			if (this.mode == 'binary')
 				return {'classification': -1, 'explanation': 'not number'}
 		}
-		var knn = distances.slice(0, this.k)
+
+		var metrics = _.unique(_.sortBy(_.pluck(distances, 'distance')))
+		var margin = metrics[this.k]
+		var real_k = distances.length - _.find(distances.reverse(), function(num){ return num['distance'] == margin })
+		var knn = distances.slice(0, real_k)
 
 		var output = _.groupBy(knn, function(num){ return num['output'] })
 

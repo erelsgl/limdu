@@ -71,7 +71,7 @@ SvmLinear.prototype = {
 			var modelFile = learnFile.replace(/[.]learn/,".model");
 
 			var command = "liblinear_train "+this.learn_args+" "+learnFile + " "+modelFile;
-			if (this.debug) console.log("running "+command);
+			console.log("running "+command);
 
 			var result = child_process.execSync(command);
 			if (result.code>0) {
@@ -137,7 +137,7 @@ SvmLinear.prototype = {
 			}
 			
 			labels.sort(function(a,b) {return b[1]-a[1]}); // sort by decreasing score
-			
+
 			if (explain>0) {
 				if (this.multiclass) {
 					var explanations = [];
@@ -157,6 +157,7 @@ SvmLinear.prototype = {
 			return (explain>0? 
 				{
 					classes: result,
+					classification: result,
 					explanation: explanations,
 				}:
 				result);

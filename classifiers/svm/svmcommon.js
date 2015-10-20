@@ -82,7 +82,10 @@ module.exports.classifyWithModelMap = function (modelMap, bias, features, explai
 	}
 	if (explain>0) {
 		explanations.sort(function(a,b){return Math.abs(b.relevance)-Math.abs(a.relevance)});
+		var explanations = _.filter(explanations, function(num){ return num.relevance!=0 });
+
 		// explanations.splice(explain, explanations.length-explain);  // "explain" is the max length of explanation.
+
 		
 		if (!this.detailed_explanations) {
 			// var sprintf = require('sprintf').sprintf;
@@ -90,6 +93,9 @@ module.exports.classifyWithModelMap = function (modelMap, bias, features, explai
 				// return sprintf("%s%+1.2f", e.feature, e.relevance);
 				return [e.feature, e.relevance];
 			});
+
+			explanations = _.sortBy(explanations, function(num){ return num[1] }).reverse()
+
 		}
 		return {
 			classification: result,

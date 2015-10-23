@@ -17,6 +17,7 @@ var BinaryRelevance = function(opts) {
 		throw new Error("opts.binaryClassifierType not found");
 	}
 	this.binaryClassifierType = opts.binaryClassifierType;
+	this.debug = opts.debug || false
 	this.mapClassnameToClassifier = {};
 }
 
@@ -89,7 +90,7 @@ BinaryRelevance.prototype = {
 
 		// train all classifiers:
 		for (var label in mapClassnameToDataset) {
-			//console.dir("TRAIN class="+label);
+			if (this.debug) console.dir("TRAIN class="+label);
 			this.mapClassnameToClassifier[label]
 					.trainBatch(mapClassnameToDataset[label]);
 		}
@@ -112,18 +113,23 @@ BinaryRelevance.prototype = {
 
 	classify: function(sample, explain, withScores) {
 		var labels = []
-		var scores = {}
+		var scores = []
 		var explanations = [];
 		var positive_explanations = {};
-		var negative_explanations = {};
+		var negative_explanations = []
 
 		for (var label in this.mapClassnameToClassifier) {
 			var classifier = this.mapClassnameToClassifier[label];
+
+			if (this.debug) console.dir("Classify for class="+label)
 			
 			// fs.writeFileSync('/tmp/labels/'+label, JSON.stringify(classifier.getFeatures(), null, 4), 'utf8');
 
 			var scoreWithExplain = classifier.classify(sample, explain, withScores);
+			if (this.debug) console.log(JSON.stringify(scoreWithExplain, null, 4))
+
 			var score = scoreWithExplain.explanation?  scoreWithExplain.classification: scoreWithExplain;
+			if (this.debug) console.dir("score="+score)
 
 			explanations_string = scoreWithExplain.explanation
 
@@ -135,11 +141,21 @@ BinaryRelevance.prototype = {
 				}
 			else
 				{
-				if (explanations_string) negative_explanations[label]=explanations_string;
+				if (explanations_string) negative_explanations.push([label, score, explanations_string])
 				}
 
-			scores[label] = score
+			scores.push([label,score])
 		}
+
+		if (this.debug) console.dir(scores)
+
+		scores = _.sortBy(scores, function(num){ return num[1] }).reverse()
+		var scores_hash = _.object(scores)
+
+		negative_explanations = _.sortBy(negative_explanations, function(num){ return num[1] }).reverse()
+		negative_explanations = _.map(negative_explanations, function(num){ return [num[0],num[2]] });
+
+		var negative_explanations_hash = _.object(negative_explanations)
 
 		labels = _.sortBy(labels, function(num){ return num[1] });
 		labels = _.map(labels.reverse(), function(num){ return num[0] });
@@ -147,10 +163,10 @@ BinaryRelevance.prototype = {
 		return (explain>0?
 			{
 				classes: labels, 
-				scores: scores,
+				scores: scores_hash,
 				explanation: {
 					positive: positive_explanations, 
-					negative: negative_explanations,
+					negative: negative_explanations_hash,
 				}
 			}:
 			labels);

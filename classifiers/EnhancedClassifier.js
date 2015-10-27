@@ -167,6 +167,7 @@ EnhancedClassifier.prototype = {
 				features = {};
 				featureExtractor(sample, features);
 			} catch (err) {
+				console.log(err)
 				throw new Error("Cannot extract features from '"+sample+"': "+JSON.stringify(err));
 			}
 		}
@@ -258,20 +259,6 @@ EnhancedClassifier.prototype = {
 					console.error("Infinity "+feature)
 					delete features[feature]
 					}
-
-				/*if (this.featureExpansioned)
-				{
-					if (feature in this.featureExpansioned)
-					{	
-						var feature_max = feature
-						_.each(this.featureExpansioned[feature], function(value, key, list){ 
-							if (this.tfidf.idf(value[0]) > this.tfidf.idf(feature_max)) 
-								feature_max = value[0]
-						}, this)
-						delete features[feature]
-						features[feature_max] = this.tfidf.idf(feature_max)
-					}
-				}*/
 			}
 
 			if (this.bias && !features.bias)
@@ -314,23 +301,13 @@ EnhancedClassifier.prototype = {
 		var featureLookupTable = this.featureLookupTable;
 		var pastTrainingSamples = this.pastTrainingSamples;
 
-			if (this.spellChecker) {
-				// var seeds = fs.readFileSync('./node_modules/wordsworth/data/seed.txt')
-				// var trainings = fs.readFileSync('./node_modules/wordsworth/data/training.txt')
-				var seeds = []
-				var trainings = []
-				this.spellChecker[0].initializeSync(seeds.toString().split("\r\n"), trainings.toString().split("\r\n"))
-				}
+			// if (this.spellChecker) {
+				// var seeds = []
+				// var trainings = []
+				// this.spellChecker[0].initializeSync(seeds.toString().split("\r\n"), trainings.toString().split("\r\n"))
+				// }
 
 			dataset = dataset.map(function(datum) {
-
-				if (typeof this.InputSplitLabel === 'function') {
-					datum.output = (this.InputSplitLabel(multilabelutils.normalizeOutputLabels(datum.output)))	
-				}
-				else
-				{
-					datum.output = normalizeClasses(datum.output, this.labelLookupTable);
-				}
 
 				if (pastTrainingSamples && dataset!=pastTrainingSamples)
 					pastTrainingSamples.push(datum);
@@ -339,12 +316,20 @@ EnhancedClassifier.prototype = {
 				datum.input = this.normalizedSample(datum.input);
 
 				/*true - this instance is filtered as not useful*/
-				if (this.instanceFilterRun(datum) == true)
-					return null
+				// if (this.instanceFilterRun(datum) == true)
+					// return null
 
-				this.trainSpellChecker(datum.input);
+				// this.trainSpellChecker(datum.input);
+
+				// if (datum.output.length == 0)
+				// {
+					// console.log(JSON.stringify(datum, null, 4))
+					// return null
+				// }
 
 				var features = this.sampleToFeatures(datum.input, this.featureExtractors);
+
+				// this.omitStopWords(features, this.stopwords)
 				
 				if (this.tfidf)
 					this.tfidf.addDocument(features);
@@ -367,58 +352,16 @@ EnhancedClassifier.prototype = {
 
 		this.classifier.trainBatch(dataset);
 
-		if (this.featureExpansion)
-			this.applyFeatureExpansion()
-
 	},
 
-	editFeatureExpansion: function(features){
-		var featureLookupTable = this.featureLookupTable
-		var featureExpansioned = this.featureExpansioned
 
-		var expansioned = {}
-
-		_.each(features, function(value, feature, list){
-			 if (featureLookupTable['featureIndexToFeatureName'].indexOf(feature) == -1)
-			 {
-			 	if (feature in featureExpansioned)
-			 		{
-			 			delete features[feature]
-			 			var syn_feature = featureExpansioned[feature][0]
-			 			
-			 			features[syn_feature[0]] = 1
-
-			 			if (this.featureFine)
-			 				features[syn_feature[0]] = 1/Math.log(syn_feature[2])
-
-			 			if (featureLookupTable['featureIndexToFeatureName'].indexOf(syn_feature[0]) == -1)
-			 				{
-			 				console.error("sanity check "+ feature+" -> "+syn_feature[0])
-			 				console.error(JSON.stringify(featureLookupTable, null, 4))
-			 				}
-			 			console.log("-expansion from '"+ feature + "' to '"+ featureExpansioned[feature][0][0]+"'")
-			 			expansioned[feature] = featureExpansioned[feature][0][0]
-			 		}
-			 }
-		}, this)
-
-		return expansioned
-	},
-
-	/**
-	 * internal function - classify a single segment of the input (used mainly when there is an inputSplitter) 
-	 * @param sample a document.
-	 * @return an array whose VALUES are classes.
-	 */
 	classifyPart: function(sample, explain, continuous_output) {
 
-		var samplecorrected = this.correctFeatureSpelling(sample);
+		// var samplecorrected = this.correctFeatureSpelling(sample);
 
-		var features = this.sampleToFeatures(samplecorrected, this.featureExtractors);
+		var features = this.sampleToFeatures(sample, this.featureExtractors);
 
-		var expansioned = {}
-		if (this.featureExpansion)
-			expansioned = this.editFeatureExpansion(features);
+		// this.omitStopWords(features, this.stopwords)
 
 		this.editFeatureValues(features, /*remove_unknown_features=*/false);
 
@@ -433,24 +376,24 @@ EnhancedClassifier.prototype = {
 				// classification.explanation['SpellCorrectedFeatures']=JSON.stringify(features);
 		// }
 
-		classification['expansioned'] = expansioned
 		classification['features'] = features
 
 		return classification;
 	},
 
-	outputToFormat: function(data) {
-		dataset = util.clonedataset(data)
-		dataset = dataset.map(function(datum) {
-		var normalizedLabels = multilabelutils.normalizeOutputLabels(datum.output);
-		return {
-			input: datum.input,
-			output: this.TestSplitLabel(normalizedLabels)
-		}
-		}, this);
-		return dataset
-	},
+	// outputToFormat: function(data) {
+	// 	dataset = util.clonedataset(data)
+	// 	dataset = dataset.map(function(datum) {
+	// 	var normalizedLabels = multilabelutils.normalizeOutputLabels(datum.output);
+	// 	return {
+	// 		input: datum.input,
+	// 		output: this.TestSplitLabel(normalizedLabels)
+	// 	}
+	// 	}, this);
+	// 	return dataset
+	// },
 
+	
 	/**
 	 * Use the model trained so far to classify a new sample.
 	 * @param sample a document.
@@ -461,17 +404,17 @@ EnhancedClassifier.prototype = {
 		var initial = sample
 		sample = this.normalizedSample(sample)
 
-		if (this.instanceFilterRun(sample))
-			{	if (explain>0) 
-				return {
-					classes: [],
-					scores: {},
-					explanation: {} 
-					// bonus: bonus
-				};
-			else
-				return []
-			}		
+		// if (this.instanceFilterRun(sample))
+		// 	{	if (explain>0) 
+		// 		return {
+		// 			classes: [],
+		// 			scores: {},
+		// 			explanation: {} 
+		// 			// bonus: bonus
+		// 		};
+		// 	else
+		// 		return []
+		// 	}		
 		
 		if (!this.inputSplitter) {
 			var classesWithExplanation = this.classifyPart(sample, explain, continuous_output);
@@ -523,26 +466,26 @@ EnhancedClassifier.prototype = {
 			}
 		}
 
-		if ((typeof this.OutputSplitLabel === 'function')) {
+		// if ((typeof this.OutputSplitLabel === 'function')) {
 
-			// classes = this.OutputSplitLabel(classes, this.Observable, sample, explanations)
-			// var classes = []
-			// if (_.isArray(explanations))
-			// var bonus = []
+		// 	// classes = this.OutputSplitLabel(classes, this.Observable, sample, explanations)
+		// 	// var classes = []
+		// 	// if (_.isArray(explanations))
+		// 	// var bonus = []
 		
-			if ((explain>0) && (this.inputSplitter))
-				{ nclasses = []
-				_(explanations.length).times(function(n){
-					var clas = this.OutputSplitLabel(classes, this, parts[n], explanations[n], original, classifier_compare, initial)
-					nclasses = nclasses.concat(clas)
-				}, this)
-				classes = nclasses
-				}
-			else
-				{
-				var classes = this.OutputSplitLabel(classes, this, sample, explanations, original, classifier_compare, initial)
-				}
-			}
+		// 	if ((explain>0) && (this.inputSplitter))
+		// 		{ nclasses = []
+		// 		_(explanations.length).times(function(n){
+		// 			var clas = this.OutputSplitLabel(classes, this, parts[n], explanations[n], original, classifier_compare, initial)
+		// 			nclasses = nclasses.concat(clas)
+		// 		}, this)
+		// 		classes = nclasses
+		// 		}
+		// 	else
+		// 		{
+		// 		var classes = this.OutputSplitLabel(classes, this, sample, explanations, original, classifier_compare, initial)
+		// 		}
+		// 	}
 
 		if (explain>0) 
 			return {

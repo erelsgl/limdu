@@ -19,7 +19,7 @@ describe('partitions', function() {
 	})
 
 
-	it('partitions_hash_fold', function() {
+	it.skip('partitions_hash_fold', function() {
 		var dataset = {'label1':[1,3,5,7,9,11,13], 'label2':[0,2,4,6,8,10,12]}
 		var data = mlutils.partitions.partitions_hash_fold(dataset, 2, 1) 
 		_.isEqual(data["test"], [7,9,11,6,8,10]).should.be.true		

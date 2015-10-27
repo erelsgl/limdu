@@ -51,9 +51,9 @@ describe('PrecisionRecall object', function() {
 		pr.microRecall.should.equal(4/(4+5));
 		pr.microF1.should.equal(2*pr.microPrecision*pr.microRecall/(pr.microPrecision+pr.microRecall));
 
-		pr.macroRecall.should.equal((0.5 + 0 + 0.5 + 0 + 1)/5)
-		pr.macroPrecision.should.equal(3/6)
-		pr.macroF1.should.equal((1+2/3+2/3)/3)
+		pr.macroRecall.should.equal((0.5 + 0 + 0.5 + 0 + 1)/7)
+		pr.macroPrecision.should.equal(3/7)
+		pr.macroF1.should.equal((1+2/3+2/3)/7)
 
 		var expl = pr.addCasesHash([5,2,7,8], [2,3,7,4,8],true)
 
@@ -61,7 +61,7 @@ describe('PrecisionRecall object', function() {
 		
 		pr.calculateStats();
 
-		pr.macroF1.should.equal((2/3+2/3+0.5+0.5+0.5+1)/6)
+		pr.macroF1.should.equal((2/3+2/3+0.5+0.5+0.5+1)/7)
 		pr.macroPrecision.should.equal((1+0.5+0.5+0+1+0.5+0.5)/7)
 		pr.macroRecall.should.equal((1+0.5+0.5+0+1/3+1+1)/7)
 	});
@@ -81,7 +81,37 @@ describe('PrecisionRecall object', function() {
 		pr.Accuracy.should.equal(1/3)
 		pr.microPrecision.should.equal(7/9)
 		pr.microRecall.should.equal(7/9)
-	});
+	})
+
+	it('scikit example', function() {
+		var pr = new mlutils.PrecisionRecall();
+		pr.addCasesHash([0], [0], 1);
+		pr.addCasesHash([1], [2], 1);
+		pr.addCasesHash([2], [1], 1);
+		pr.addCasesHash([0], [0], 1);
+		pr.addCasesHash([1], [0], 1);
+		pr.addCasesHash([2], [1], 1);
+
+		pr.calculateStats()
+
+		pr.macroF1.should.equal(0.8/3)
+		pr.microF1.should.equal(1/3)
+
+		pr.addCasesHash([2], [2], 1);
+
+		pr.calculateStats()
+
+		pr.macroF1.should.equal((0.8+0.4)/3)
+		pr.microF1.should.equal(0.42857142857142855)
+
+		pr.addCasesHash([1], [1], 1);
+
+		pr.calculateStats()
+
+		// pr.macroF1.should.be.closeTo((0.8+0.4+1/3)/3, 0.0001)
+	})
+
+
 
 	// it.skip('uniqueaggregate', function() {
 	// 	var pr = new mlutils.PrecisionRecall();

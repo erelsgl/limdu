@@ -61,7 +61,7 @@ SvmLinear.prototype = {
 		 * @param dataset an array of samples of the form {input: [value1, value2, ...] , output: 0/1} 
 		 */
 		trainBatch: function(dataset) {
-			this.timestamp = new Date().getTime()
+			this.timestamp = new Date().getTime()+"_"+process.pid
 			this.allLabels = _(dataset).map(function(datum){return datum.output});
 			this.allLabels = _.uniq(this.allLabels);
 			if (this.allLabels.length==1) // a single label

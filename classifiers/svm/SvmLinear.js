@@ -27,6 +27,7 @@ function SvmLinear(opts) {
 	this.bias = opts.bias || 1.0;
 	this.multiclass = opts.multiclass || false;
 	this.debug = opts.debug||false;
+	this.timestamp = ""
 }
 
 SvmLinear.isInstalled = function() {
@@ -60,6 +61,7 @@ SvmLinear.prototype = {
 		 * @param dataset an array of samples of the form {input: [value1, value2, ...] , output: 0/1} 
 		 */
 		trainBatch: function(dataset) {
+			this.timestamp = new Date().getTime()
 			this.allLabels = _(dataset).map(function(datum){return datum.output});
 			this.allLabels = _.uniq(this.allLabels);
 			if (this.allLabels.length==1) // a single label
@@ -67,11 +69,11 @@ SvmLinear.prototype = {
 			//console.log(util.inspect(dataset,{depth:1}));
 			if (this.debug) console.log("trainBatch start");
 			var learnFile = svmcommon.writeDatasetToFile(
-					dataset, this.bias, /*binarize=*/false, this.model_file_prefix, "SvmLinear", FIRST_FEATURE_NUMBER);
+					dataset, this.bias, /*binarize=*/false, this.model_file_prefix+"_"+this.timestamp, "SvmLinear", FIRST_FEATURE_NUMBER);
 			var modelFile = learnFile.replace(/[.]learn/,".model");
 
 			var command = "liblinear_train "+this.learn_args+" "+learnFile + " "+modelFile;
-			console.log("running "+command);
+			// console.log("running "+command);
 
 			var result = child_process.execSync(command);
 			if (result.code>0) {

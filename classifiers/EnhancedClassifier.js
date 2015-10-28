@@ -400,7 +400,7 @@ EnhancedClassifier.prototype = {
 	 * @return an array whose VALUES are classes.
 	 * @original is the original gold standard labels is used only for statistics.
 	 */
-	classify: function(sample, explain, continuous_output, original, classifier_compare) {
+	classify: function(sample, explain) {
 		var initial = sample
 		sample = this.normalizedSample(sample)
 
@@ -417,9 +417,10 @@ EnhancedClassifier.prototype = {
 		// 	}		
 		
 		if (!this.inputSplitter) {
-			var classesWithExplanation = this.classifyPart(sample, explain, continuous_output);
+			var classesWithExplanation = this.classifyPart(sample, explain);
 			var classes = (explain>0? classesWithExplanation.classes: classesWithExplanation);
-			var scores =  (continuous_output? classesWithExplanation.scores: null)
+			var scores =  classesWithExplanation.scores
+			// var scores =  (continuous_output? classesWithExplanation.scores: null)
 			var explanations = (explain>0? classesWithExplanation.explanation: null);
 		} else {
 			var parts = this.inputSplitter(sample);

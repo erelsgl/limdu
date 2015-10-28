@@ -57,7 +57,9 @@ SvmPerf.prototype = {
 		 */
 		trainBatch: function(dataset) {
 			if (this.debug) console.log("trainBatch start");
-			var learnFile = svmcommon.writeDatasetToFile(dataset, this.bias, /*binarize=*/true, this.model_file_prefix, "SvmPerf", FIRST_FEATURE_NUMBER);
+			
+			var timestamp = new Date().getTime()+"_"+process.pid
+			var learnFile = svmcommon.writeDatasetToFile(dataset, this.bias, /*binarize=*/true, this.model_file_prefix+"_"+timestamp, "SvmPerf", FIRST_FEATURE_NUMBER);
 			var modelFile = learnFile.replace(/[.]learn/,".model");
 			var command = "svm_perf_learn "+this.learn_args+" "+learnFile + " "+modelFile;
 			if (this.debug) console.log("running "+command);

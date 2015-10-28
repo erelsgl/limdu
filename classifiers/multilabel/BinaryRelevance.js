@@ -149,13 +149,16 @@ BinaryRelevance.prototype = {
 
 		if (this.debug) console.dir(scores)
 
-		scores = _.sortBy(scores, function(num){ return num[1] }).reverse()
-		var scores_hash = _.object(scores)
+		if (explain>0)
+		{
+			scores = _.sortBy(scores, function(num){ return num[1] }).reverse()
+			var scores_hash = _.object(scores)
 
-		negative_explanations = _.sortBy(negative_explanations, function(num){ return num[1] }).reverse()
-		negative_explanations = _.map(negative_explanations, function(num){ return [num[0],num[2]] });
+			negative_explanations = _.sortBy(negative_explanations, function(num){ return num[1] }).reverse()
+			negative_explanations = _.map(negative_explanations, function(num){ return [num[0],num[2]] });
 
-		var negative_explanations_hash = _.object(negative_explanations)
+			var negative_explanations_hash = _.object(negative_explanations)
+		}
 
 		labels = _.sortBy(labels, function(num){ return num[1] });
 		labels = _.map(labels.reverse(), function(num){ return num[0] });

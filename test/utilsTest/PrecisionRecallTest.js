@@ -18,6 +18,12 @@ describe('PrecisionRecall object', function() {
 		_.keys(pr.labels).length.should.equal(0)
 	})
 
+	it('confusion', function() {
+		var pr = new mlutils.PrecisionRecall();
+		var expl = pr.addCasesHash([1], [1,3], true)
+		_.isEqual(pr.confusion, {"1": {"1": 1,"3": 1}}).should.be.true
+	})
+
 	it('correctly calculates precision, recall, etc.', function() {
 		var pr = new mlutils.PrecisionRecall();
 		var expl = pr.addCasesHash([1,2,3,4,5], [1,3,5,7], true)

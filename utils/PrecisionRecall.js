@@ -10,6 +10,7 @@ var _ = require('underscore')._;
  */
 var PrecisionRecall = function() {
 	this.labels = {}
+	this.confusion = {} // only in single label case
 	
 	this.count = 0;
 	this.TRUE = 0;
@@ -85,6 +86,18 @@ PrecisionRecall.prototype = {
 	addCasesHash: function (expectedClasses, actualClasses, logTruePositives ) {
 		var explanations = {};
 		explanations['TP'] = []; explanations['FP'] = []; explanations['FN'] = [];
+
+		if (expectedClasses.length == 1)
+		{
+			var expected = expectedClasses[0]
+			if (!(expected in this.confusion))
+					this.confusion[expected] = {}
+			_.each(actualClasses, function(actualClass, key, list){
+				if (!(actualClass in this.confusion[expected]))
+					this.confusion[expected][actualClass] = 0
+				this.confusion[expected][actualClass] +=1
+			}, this)
+		}
 
 		actualClasses = hash.normalized(actualClasses);
 		expectedClasses = hash.normalized(expectedClasses);
@@ -199,7 +212,6 @@ PrecisionRecall.prototype = {
 		this.microF1 = 2 / (1/this.microRecall + 1/this.microPrecision);
 		this.HammingLoss = (stats.FN+stats.FP) / (stats.FN+stats.TP); // "the percentage of the wrong labels to the total number of labels"
 		this.HammingGain = 1-this.HammingLoss;
-		
 		
 		// this.shortStatsString = sprintf("Accuracy=%d/%d=%1.0f%% HammingGain=1-%d/%d=%1.0f%% Precision=%1.0f%% Recall=%1.0f%% F1=%1.0f%% timePerSample=%1.0f[ms]",
 				// this.TRUE, this.count, this.Accuracy*100, (this.FN+this.FP), (this.FN+this.TP), this.HammingGain*100, this.Precision*100, this.Recall*100, this.F1*100, this.timePerSampleMillis);

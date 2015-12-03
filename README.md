@@ -230,7 +230,9 @@ You can also make 'featureExtractor' an array of several feature extractors, tha
 	console.dir(intentClassifier.classify("I want an apple and a banana"));  // ['apl','bnn']
 	console.dir(intentClassifier.classify("I WANT AN APPLE AND A BANANA"));  // ['apl','bnn'] 
 
-Of course you can use any other function as an input normalizer. You can also make 'normalizer' an array of several normalizers, that will be executed in the order you include them.
+Of course you can use any other function as an input normalizer. For example, if you know how to write a spell-checker, you can create a normalizer that corrects typos in the input.
+
+You can also make 'normalizer' an array of several normalizers. These will be executed in the order you include them.
 
 ### Feature lookup table - convert custom features to integer features
 

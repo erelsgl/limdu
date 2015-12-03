@@ -115,7 +115,7 @@ SvmLinear.prototype = {
 			trainset.output = 0
 
 			var testFile = svmcommon.writeDatasetToFile(
-                                        [trainset], this.bias, /*binarize=*/false, "test_"+this.timestamp, "SvmLinear", FIRST_FEATURE_NUMBER);
+                                        [trainset], this.bias, /*binarize=*/false, "/tmp/test_"+this.timestamp, "SvmLinear", FIRST_FEATURE_NUMBER);
 
 			var command = "liblinear_test "+testFile + " " + this.modelFileString + " /tmp/out_" + this.timestamp;
  			

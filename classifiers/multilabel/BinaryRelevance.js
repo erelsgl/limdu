@@ -174,6 +174,28 @@ BinaryRelevance.prototype = {
 			}:
 			labels);
 	},
+
+	classifyBatch: function(testSet) {
+		var labels = []
+		var results = {}
+		var output = []
+
+		for (var label in this.mapClassnameToClassifier) {
+			var classifier = this.mapClassnameToClassifier[label]
+			var scoreWithExplain = classifier.classifyBatch(testSet)
+			results[label] = scoreWithExplain
+		}
+
+		_.each(testSet, function(value, key, list){
+			testSet[key]['output'] = []
+			_.each(results, function(ar, label, list){
+				if (ar[key]!=0)
+					testSet[key]['output'].push(label)
+			}, this)
+		}, this)
+
+		return testSet
+	},
 	
 	getAllClasses: function() {
 		return Object.keys(this.mapClassnameToClassifier);
@@ -225,3 +247,4 @@ BinaryRelevance.prototype = {
 
 
 module.exports = BinaryRelevance;
+

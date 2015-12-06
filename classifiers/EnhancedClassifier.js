@@ -354,6 +354,18 @@ EnhancedClassifier.prototype = {
 
 	},
 
+	classifyBatch: function(testSet)
+        {
+            _.each(testSet, function(value, key, list){
+                testSet[key]["input"] = this.normalizedSample(testSet[key]["input"])
+                var features = this.sampleToFeatures(testSet[key]["input"], this.featureExtractors, this.stopwords);
+                // this.omitStopWords(features, this.stopwords)
+                this.editFeatureValues(features, /*remove_unknown_features=*/false);
+                var array = this.featuresToArray(features);
+                testSet[key]["input"] = array
+            }, this)
+            return this.classifier.classifyBatch(testSet);
+        },
 
 	classifyPart: function(sample, explain, continuous_output) {
 

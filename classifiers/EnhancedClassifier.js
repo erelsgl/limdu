@@ -81,9 +81,9 @@ var EnhancedClassifier = function(opts) {
 	
 	this.pastTrainingSamples = []
 
-	this.InputSplitLabel = opts.InputSplitLabel
-	this.OutputSplitLabel = opts.OutputSplitLabel
-	this.TestSplitLabel = opts.TestSplitLabel
+	this.preProcessor = opts.preProcessor
+	this.postProcessor = opts.postProcessor
+	// this.TestSplitLabel = opts.TestSplitLabel
 }
 
 
@@ -305,15 +305,28 @@ EnhancedClassifier.prototype = {
 				// var seeds = []
 				// var trainings = []
 				// this.spellChecker[0].initializeSync(seeds.toString().split("\r\n"), trainings.toString().split("\r\n"))
-				// }
+			// }
+
+			dataset = _.map(dataset, function(datum){ 
+						if (_.isObject(datum.input))
+							datum.input.text = this.normalizedSample(datum.input.text);
+						else	
+							datum.input = this.normalizedSample(datum.input);
+						return datum
+					}, this);
+			
+			if ((typeof this.preProcessor === 'function')) {
+				// console.log(JSON.stringify(this.postProcessor, null, 4))
+				dataset = _.map(dataset, function(value){ return this.preProcessor(value) }, this);
+			}
+
+			dataset = _.compact(dataset)
 
 			dataset = dataset.map(function(datum) {
 
-				if (pastTrainingSamples && dataset!=pastTrainingSamples)
-					pastTrainingSamples.push(datum);
+				// if (pastTrainingSamples && dataset!=pastTrainingSamples)
+					// pastTrainingSamples.push(datum);
 				datum = _(datum).clone();
-
-				datum.input = this.normalizedSample(datum.input);
 
 				/*true - this instance is filtered as not useful*/
 				// if (this.instanceFilterRun(datum) == true)
@@ -413,8 +426,20 @@ EnhancedClassifier.prototype = {
 	 * @original is the original gold standard labels is used only for statistics.
 	 */
 	classify: function(sample, explain) {
+
+		console.log("To classify: ")
+		console.log(JSON.stringify(sample, null, 4))
+
 		var initial = sample
-		sample = this.normalizedSample(sample)
+		
+		if (_.isObject(sample)) 
+			sample.text = this.normalizedSample(sample.text)
+		else
+			sample = this.normalizedSample(sample)
+
+
+		console.log("Normalized")
+		console.log(JSON.stringify(sample, null, 4))
 
 		// if (this.instanceFilterRun(sample))
 		// 	{	if (explain>0) 
@@ -429,6 +454,10 @@ EnhancedClassifier.prototype = {
 		// 	}		
 		
 		if (!this.inputSplitter) {
+
+			if (typeof this.preProcessor === 'function')
+				sample = this.preProcessor(sample)
+
 			var classesWithExplanation = this.classifyPart(sample, explain);
 			var classes = (explain>0? classesWithExplanation.classes: classesWithExplanation);
 			var scores =  classesWithExplanation.scores
@@ -440,9 +469,28 @@ EnhancedClassifier.prototype = {
 			var accumulatedClasses = [];
 			var explanations = [];
 			parts.forEach(function(part) {
+
+				console.log("PART:"+part)
+
 				if (part.length==0) return;
-				var classesWithExplanation = this.classifyPart(part, explain, continuous_output);
+
+				var part_filtered = part
+
+				if (typeof this.preProcessor === 'function')
+					part_filtered = this.preProcessor(part)
+
+				console.log("PART PREPROCESS:"+part_filtered)
+
+				var classesWithExplanation = this.classifyPart(part_filtered, explain);
 				var classes = (explain>0? classesWithExplanation.classes: classesWithExplanation);
+
+				console.log("PART PREPROCESS CLASSES:"+classes)
+				
+				if (typeof this.postProcessor === 'function')
+					classes = this.postProcessor(part, classes)
+
+				console.log("PART POSTPROCESS CLASSES:"+classes)
+
 				// for (var i in classes)
 				// 	accumulatedClasses[classes[i]]=true;
 				accumulatedClasses.push(classes)
@@ -451,18 +499,22 @@ EnhancedClassifier.prototype = {
 					explanations.push(classesWithExplanation.explanation);
 				}
 			}, this);
-    		classes = []
-    		if (accumulatedClasses[0])
-    		{
-			if (accumulatedClasses[0][0] instanceof Array)
-				_(accumulatedClasses[0].length).times(function(n){
-					classes.push(_.flatten(_.pluck(accumulatedClasses,n)))
-				 });
-			else
-			{
-				classes = _.flatten(accumulatedClasses)
-			}
-			}
+
+			console.log("final classes")
+			console.log(JSON.stringify(accumulatedClasses, null, 4))
+			
+   //  		classes = []
+   //  		if (accumulatedClasses[0])
+   //  		{
+			// if (accumulatedClasses[0][0] instanceof Array)
+			// 	_(accumulatedClasses[0].length).times(function(n){
+			// 		classes.push(_.flatten(_.pluck(accumulatedClasses,n)))
+			// 	 });
+			// else
+			// {
+			classes = _.flatten(accumulatedClasses)
+			// }
+			// }
 		}
 
 		if (this.labelLookupTable) {
@@ -500,14 +552,14 @@ EnhancedClassifier.prototype = {
 		// 		}
 		// 	}
 
+
 		if (explain>0) 
 			return {
 				classes: classes,
 				scores: scores,
-				expansioned: classesWithExplanation.expansioned,
-				features: classesWithExplanation.features,
-				explanation: explanations
-				// bonus: bonus
+				// expansioned: classesWithExplanation.expansioned,
+				// features: classesWithExplanation.features,
+				// explanation: explanations
 			};
 		else
 			return classes;

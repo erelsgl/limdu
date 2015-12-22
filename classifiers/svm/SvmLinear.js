@@ -27,10 +27,9 @@ function SvmLinear(opts) {
 	this.bias = opts.bias || 1.0;
 	this.multiclass = opts.multiclass || false;
 	this.debug = opts.debug||false;
-	this.timestamp = ""
-
-  	this.train_command = opts.train_command || 'liblinear_train'
-  	this.test_command = opts.test_command || 'liblinear_test'
+  	this.train_command = opts.train_command //|| 'liblinear_train'
+  	this.test_command = opts.test_command //|| 'liblinear_test'
+  	this.timestamp = ""
 }
 
 SvmLinear.isInstalled = function() {

@@ -139,7 +139,6 @@ EnhancedClassifier.prototype = {
 	},
 
 	applyFeatureExpansion: function(){
-		console.log("start expansion generation")
 	 	this.featureExpansioned = this.featureExpansion(this.featureLookupTable['featureIndexToFeatureName'], this.featureExpansionScale, this.featureExpansionPhrase)
 	},
 	// private function: use this.normalizers to normalize the given sample:
@@ -387,37 +386,17 @@ EnhancedClassifier.prototype = {
 					}, this);
 			
 			if ((typeof this.preProcessor === 'function')) {
-				// console.log(JSON.stringify(this.postProcessor, null, 4))
 				dataset = _.map(dataset, function(value){ return this.preProcessor(value) }, this);
 			}
 
 			dataset = _.compact(dataset)
 
 			dataset = dataset.map(function(datum) {
-
-				// if (pastTrainingSamples && dataset!=pastTrainingSamples)
-					// pastTrainingSamples.push(datum);
 				datum = _(datum).clone();
 
-				/*true - this instance is filtered as not useful*/
-				// if (this.instanceFilterRun(datum) == true)
-					// return null
-
-				// this.trainSpellChecker(datum.input);
-
-				// if (datum.output.length == 0)
-				// {
-					// console.log(JSON.stringify(datum, null, 4))
-					// return null
-				// }
-
 				var features = this.sampleToFeatures(datum.input, this.featureExtractors);
-
-				// this.omitStopWords(features, this.stopwords)
-				
 				if (this.tfidf)
 					this.tfidf.addDocument(features);
-				// this.trainSpellChecker(features);
 				if (featureLookupTable)
 					featureLookupTable.addFeatures(features);
 
@@ -443,7 +422,6 @@ EnhancedClassifier.prototype = {
             _.each(testSet, function(value, key, list){
                 testSet[key]["input"] = this.normalizedSample(testSet[key]["input"])
                 var features = this.sampleToFeatures(testSet[key]["input"], this.featureExtractors, this.stopwords);
-                // this.omitStopWords(features, this.stopwords)
                 this.editFeatureValues(features, /*remove_unknown_features=*/false);
                 var array = this.featuresToArray(features);
                 testSet[key]["input"] = array
@@ -462,56 +440,25 @@ EnhancedClassifier.prototype = {
 	},
 
 	classifyPart: function(sample, explain, continuous_output) {
-
-		// var samplecorrected = this.correctFeatureSpelling(sample);
-
 		var features = this.sampleToFeatures(sample, this.featureExtractors);
-
-		// this.omitStopWords(features, this.stopwords)
-
-		this.editFeatureValues(features, /*remove_unknown_features=*/false);
-
-		var array = this.featuresToArray(features);
-
+        //console.log("features="+JSON.stringify(features));
+		this.editFeatureValues(features, /*remove_unknown_features=*/false);  // change the value of each feature according to the TF/IDF method
+        //console.log("features="+JSON.stringify(features));
+		var array = this.featuresToArray(features);  // convert textual features to numeric features using a lookup table
+        //console.log("array="+JSON.stringify(array));
 		var classification = this.classifier.classify(array, explain, continuous_output);
-		
-		// if (this.spellChecker && classification.explanation) {
-			// if (Array.isArray(classification.explanation))
-				// classification.explanation.unshift({SpellCorrectedFeatures: JSON.stringify(features)});
-			// else
-				// classification.explanation['SpellCorrectedFeatures']=JSON.stringify(features);
-		// }
-
+        //console.log("classification="+JSON.stringify(classification));
 		classification['features'] = features
-
 		return classification;
 	},
-
-	// outputToFormat: function(data) {
-	// 	dataset = util.clonedataset(data)
-	// 	dataset = dataset.map(function(datum) {
-	// 	var normalizedLabels = multilabelutils.normalizeOutputLabels(datum.output);
-	// 	return {
-	// 		input: datum.input,
-	// 		output: this.TestSplitLabel(normalizedLabels)
-	// 	}
-	// 	}, this);
-	// 	return dataset
-	// },
 	
 	classifyAsync: function(sample, explain, callback_global) {
-
-		console.log("To classify in async mode: ")
-		console.log(JSON.stringify(sample, null, 4))
 		var classes = []
 
 		async.series([
    			(function(callback){
        		
         		if(!this.inputSplitter) {
-
-        			console.log(JSON.stringify("no split", null, 4))
-
         			if (typeof this.preProcessor === 'function')
 						sample = this.preProcessor(sample)
 
@@ -537,29 +484,19 @@ EnhancedClassifier.prototype = {
 					var explanations = [];
 			
 					async.eachSeries(parts, (function(part, callback1){
-						
-						console.log("PART:"+part)
-
 						if (part.length==0) return;
 
 						var part_filtered = part
 
 						if (typeof this.preProcessor === 'function')
 							part_filtered = this.preProcessor(part)
-
-						console.log("PART PREPROCESS:"+part_filtered)
-						
+					
 						this.classifyPartAsync(part_filtered, explain, (function(error, classesWithExplanation){
 
 							classes = (explain>0? classesWithExplanation.classes: classesWithExplanation);
-
-							console.log(JSON.stringify(classesWithExplanation, null, 4))
-							console.log("PART PREPROCESS CLASSES:"+classes)
-					
+				
 							if (typeof this.postProcessor === 'function')
 								classes = this.postProcessor(part, classes)
-
-							console.log("PART POSTPROCESS CLASSES:"+classes)
 
 							accumulatedClasses.push(classes)
 							if (explain>0) 
@@ -569,8 +506,6 @@ EnhancedClassifier.prototype = {
 						}).bind(this))
 
 				    }).bind(this), function(err){
-				    	console.log("final classes")
-						console.log(JSON.stringify(accumulatedClasses, null, 4))
 	   					classes = _.flatten(accumulatedClasses)
 	             	   	callback(null, null)
 	                })
@@ -605,96 +540,45 @@ EnhancedClassifier.prototype = {
 	 * @original is the original gold standard labels is used only for statistics.
 	 */
 	classify: function(sample, explain) {
-
-		console.log("To classify: ")
-		console.log(JSON.stringify(sample, null, 4))
-
 		var initial = sample
-		
+
 		if (_.isObject(sample)) 
 			sample.text = this.normalizedSample(sample.text)
 		else
 			sample = this.normalizedSample(sample)
 
-
-		console.log("Normalized")
-		console.log(JSON.stringify(sample, null, 4))
-
-		// if (this.instanceFilterRun(sample))
-		// 	{	if (explain>0) 
-		// 		return {
-		// 			classes: [],
-		// 			scores: {},
-		// 			explanation: {} 
-		// 			// bonus: bonus
-		// 		};
-		// 	else
-		// 		return []
-		// 	}		
-		
 		if (!this.inputSplitter) {
 
 			if (typeof this.preProcessor === 'function')
 				sample = this.preProcessor(sample)
 
 			var classesWithExplanation = this.classifyPart(sample, explain);
+            //console.log("classesWithExplanation="+JSON.stringify(classesWithExplanation));
 			var classes = (explain>0? classesWithExplanation.classes: classesWithExplanation);
+            //console.log("classes="+JSON.stringify(classes));
 			var scores =  classesWithExplanation.scores
-			// var scores =  (continuous_output? classesWithExplanation.scores: null)
+            //console.log("scores="+JSON.stringify(scores));
 			var explanations = (explain>0? classesWithExplanation.explanation: null);
+            //console.log("explanations="+JSON.stringify(explanations));
 		} else {
 			var parts = this.inputSplitter(sample);
-			// var accumulatedClasses = {};
 			var accumulatedClasses = [];
 			var explanations = [];
 			parts.forEach(function(part) {
-
-				console.log("PART:"+part)
-
 				if (part.length==0) return;
-
 				var part_filtered = part
-
 				if (typeof this.preProcessor === 'function')
 					part_filtered = this.preProcessor(part)
-
-				console.log("PART PREPROCESS:"+part_filtered)
-
 				var classesWithExplanation = this.classifyPart(part_filtered, explain);
 				var classes = (explain>0? classesWithExplanation.classes: classesWithExplanation);
-
-				console.log(JSON.stringify(classesWithExplanation, null, 4))
-				console.log("PART PREPROCESS CLASSES:"+classes)
-				
 				if (typeof this.postProcessor === 'function')
 					classes = this.postProcessor(part, classes)
-
-				console.log("PART POSTPROCESS CLASSES:"+classes)
-
-				// for (var i in classes)
-				// 	accumulatedClasses[classes[i]]=true;
 				accumulatedClasses.push(classes)
 				if (explain>0) {
-					// explanations.push(part);
 					explanations.push(classesWithExplanation.explanation);
 				}
 			}, this);
-
-			console.log("final classes")
-			console.log(JSON.stringify(accumulatedClasses, null, 4))
-			
-   //  		classes = []
-   //  		if (accumulatedClasses[0])
-   //  		{
-			// if (accumulatedClasses[0][0] instanceof Array)
-			// 	_(accumulatedClasses[0].length).times(function(n){
-			// 		classes.push(_.flatten(_.pluck(accumulatedClasses,n)))
-			// 	 });
-			// else
-			// {
 			classes = _.flatten(accumulatedClasses)
-			// }
-			// }
 		}
 
 		if (this.labelLookupTable) {

@@ -23,11 +23,11 @@ var fs   = require('fs')
   
 
 function SvmPerf(opts) {
-	// if (!SvmPerf.isInstalled()) {
-	// 	var msg = "Cannot find the executable 'svm_perf_learn'. Please download it from the SvmPerf website, and put a link to it in your path.";
-	// 	console.error(msg)
-	// 	throw new Error(msg); 
-	// }
+	if (!SvmPerf.isInstalled()) {
+	 	var msg = "Cannot find the executable 'svm_perf_learn'. Please download it from the SvmPerf website, and put a link to it in your path.";
+	 	console.error(msg)
+	 	throw new Error(msg); 
+	}
 	this.learn_args = opts.learn_args || "";
 	this.learn_args += " --b 0 ";  // we add the bias here, so we don't need SvmPerf to add it
 	this.model_file_prefix = opts.model_file_prefix || null;
@@ -37,9 +37,12 @@ function SvmPerf(opts) {
 }
 
 SvmPerf.isInstalled = function() {
-	//var result = execSync("svm_perf_learn -c 1 a");
-	//return (result.code!=127);
-	return true
+    try {
+        var result = execSync("svm_perf_learn -c 1 a");
+        return true;
+    } catch (err) {
+        return false;
+    }
 }
 
 var FIRST_FEATURE_NUMBER=1;  // in svm perf, feature numbers start with 1, not 0!

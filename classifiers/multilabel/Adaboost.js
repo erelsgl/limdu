@@ -37,8 +37,12 @@ var Adaboost = function(opts) {
 }
 
 Adaboost.isInstalled = function() {
-	var result = execSync("icsiboost");
-	return (result.code!=127);
+    try {
+        var result = execSync("icsiboost");
+        return true;
+    } catch (err) {
+        return false;
+    }
 }
 
 Adaboost.prototype = {

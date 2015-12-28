@@ -37,5 +37,3 @@ if (classifiers.multilabel.Adaboost.isInstalled())
 	test("Adaboost", classifiers.multilabel.Adaboost.bind(this,{}));
 else
 	console.warn("icsiboost not found - Adaboost tests skipped.")
-
-	

@@ -56,8 +56,11 @@ BinaryRelevance.prototype = {
 		var mapClassnameToDataset = {}; 
 
 		// create positive samples for each class:
-		for (var d in dataset) {
+
+		 _.each(dataset, function(value, d, list){
+		//for (var d in dataset) {
 			var sample = dataset[d].input;
+
 			dataset[d].output = multilabelutils.normalizeOutputLabels(dataset[d].output);
 			var labels = dataset[d].output;
 
@@ -71,10 +74,11 @@ BinaryRelevance.prototype = {
 					output : 1
 				})
 			}
-		}
+		},this)
 
 		// create negative samples for each class (after all labels are in the array):
-		for (var d in dataset) {
+		_.each(dataset, function(value, d, list){
+//		for (var d in dataset) {
 			var sample = dataset[d].input;
 			var labels = dataset[d].output;
 			for (var negativeLabel in this.mapClassnameToClassifier) {
@@ -86,7 +90,7 @@ BinaryRelevance.prototype = {
 						output : 0
 					});
 			}
-		}
+		}, this)
 
 		// train all classifiers:
 		for (var label in mapClassnameToDataset) {

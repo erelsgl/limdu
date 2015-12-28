@@ -270,9 +270,6 @@ EnhancedClassifier.prototype = {
 	
 	editFeatureValues: function(features, remove_unknown_features) {
 		
-		console.log("multiplyFeaturesByIDF")
-		console.log(this.multiplyFeaturesByIDF)
-
 		if (this.multiplyFeaturesByIDF) { 
 			for (var feature in features) { 
 

@@ -566,9 +566,10 @@ EnhancedClassifier.prototype = {
 						
 						this.classifyPartAsync(part_filtered, explain, (function(error, classesWithExplanation){
 
-							classes = (explain>0? classesWithExplanation.classes: classesWithExplanation);
+							// var classes = (explain>0? classesWithExplanation.classes: classesWithExplanation);
+							var classes = classesWithExplanation.classes
 
-							console.log(JSON.stringify(classesWithExplanation, null, 4))
+							console.log(classes)
 							console.log("PART PREPROCESS CLASSES:"+classes)
 					
 							if (typeof this.postProcessor === 'function')

@@ -144,19 +144,29 @@ EnhancedClassifier.prototype = {
 	},
 	// private function: use this.normalizers to normalize the given sample:
 	normalizedSample: function(sample) {
-		if (!(_.isArray(sample)))
-		{
-			if (this.normalizers) {
-				try {
-					for (var i in this.normalizers) {					
-						sample = this.normalizers[i](sample);
-					}
-				} catch (err) {
-					console.log(err)
-					throw new Error("Cannot normalize '"+sample+"': "+JSON.stringify(err));
-				}
-			}
-		}
+		
+	//	console.log(this.normalizers.length)
+	//
+	//	if (!(_.isArray(sample)))
+	//	{
+	//		if (this.normalizers) {
+	//			try {
+	//				for (var i in this.normalizers) {					
+	//					console.log("inside norm")
+	//					console.log(sample)
+	//					sample = this.normalizers[i](sample);
+	//					console.log("after norm")
+	//					console.log(sample)
+	//				}
+	//			} catch (err) {
+	//				console.log(err)
+	//				throw new Error("Cannot normalize '"+sample+"': "+JSON.stringify(err));
+	//			}
+	//		}
+	//	}
+	//	
+
+		sample = this.normalizers[0](sample)
 
 		return sample;
 	},
@@ -259,7 +269,7 @@ EnhancedClassifier.prototype = {
 	},
 	
 	editFeatureValues: function(features, remove_unknown_features) {
-
+		
 		if (this.multiplyFeaturesByIDF) { 
 			for (var feature in features) { 
 
@@ -313,12 +323,12 @@ EnhancedClassifier.prototype = {
 		var featureLookupTable = this.featureLookupTable;
 		var pastTrainingSamples = this.pastTrainingSamples;
 
-		processed_dataset = []
+		var processed_dataset = []
 
 		async.forEachOfSeries(dataset, (function(datum, dind, callback2){ 
 			
 			if (_.isObject(datum.input))
-				datum.input.text = this.normalizedSample(datum.input.text);
+				datum.input.text = this.normalizedSample(datum.input.text);	
 			else	
 				datum.input = this.normalizedSample(datum.input);
 
@@ -330,12 +340,27 @@ EnhancedClassifier.prototype = {
 				this.sampleToFeaturesAsync(datum.input, this.featureExtractors, (function(err, features){
 			
 					// this.omitStopWords(features, this.stopwords)
+					if (_.isNaN(features.w2v15))
+                                {
+					console.log(datum.input)
+                                        console.log("STOPHERE")
+                                        process.exit(0)
+                                }
+					
 
 					if (this.tfidf)
 						this.tfidf.addDocument(features)
 					
 					if (featureLookupTable)
 						featureLookupTable.addFeatures(features)
+
+
+					    if (_.isNaN(features.w2v15))
+                                {
+                                        console.log("after first edit")
+                                        process.exit(0)
+                                }
+
 
 					datum.input = features
 					processed_dataset.push(datum)
@@ -348,14 +373,44 @@ EnhancedClassifier.prototype = {
 
 		}).bind(this), (function(err){
 
-			processed_dataset = _.compact(processed_dataset)
+//			processed_dataset = _.compact(processed_dataset)
 
 			processed_dataset.forEach(function(datum) {
+				
+				console.log("another one")
+				console.log(datum)		
+				
+				if (_.isNaN(datum.input.w2v15))
+                                {
+                                        console.log("ERE")
+                                        process.exit(0)
+                                }
 			
 				this.editFeatureValues(datum.input, /*remove_unknown_features=*/false);
 				if (featureLookupTable)
 					datum.input = featureLookupTable.hashToArray(datum.input);
+
+				
+				if (_.isUndefined(datum.input))
+				{	
+				console.log("IIINSIDE")
+				console.log(datum.input)
+				
+				process.exit(0)
+
+				}
+				
+				if (_.isNaN(datum.input[3]))
+                                {
+                                        console.log("HHERE")
+                                        process.exit(0)
+                                }
+
+
+
 			}, this)
+
+			console.log("FINPROC")
 
 			this.classifier.trainBatch(processed_dataset)
 			callbackg(null,[])
@@ -501,9 +556,15 @@ EnhancedClassifier.prototype = {
 	
 	classifyAsync: function(sample, explain, callback_global) {
 
+		var classes = []
+
 		console.log("To classify in async mode: ")
 		console.log(JSON.stringify(sample, null, 4))
-		var classes = []
+
+		if (_.isObject(sample)) 
+			sample.text = this.normalizedSample(sample.text)
+		else
+			sample = this.normalizedSample(sample)
 
 		async.series([
    			(function(callback){

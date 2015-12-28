@@ -17,11 +17,11 @@
  */
 
 function SvmLinear(opts) {
-	if (!SvmLinear.isInstalled()) {
+	/*if (!SvmLinear.isInstalled()) {
 		var msg = "Cannot find the executable 'liblinear_train'. Please download it from the LibLinear website, and put a link to it in your path.";
 		console.error(msg)
 		throw new Error(msg); 
-	}
+	}*/
 	this.learn_args = opts.learn_args || "";
 	this.model_file_prefix = opts.model_file_prefix || null;
 	this.bias = opts.bias || 1.0;

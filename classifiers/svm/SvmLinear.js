@@ -75,7 +75,21 @@ SvmLinear.prototype = {
 					}
             }, this)
 
-            //  convert all arraay-like outputs to just values
+            // filter out all "out of domain" istances
+			dataset = _.map(dataset, function(datum){
+				if (_.isArray(datum.output))
+					if (datum.output.length == 0)
+						return undefined
+
+				if (datum.output=="")
+					return undefined					
+
+				return datum
+            }, this)
+
+            dataset = _.compact(dataset)
+
+            //  convert all array-like outputs to just values
 			dataset = _.map(dataset, function(datum){ 
 				if (_.isArray(datum.output))
 					datum.output = datum.output[0]
@@ -84,9 +98,11 @@ SvmLinear.prototype = {
 			this.allLabels = _(dataset).map(function(datum){return datum.output});
 			this.allLabels = _.uniq(_.flatten(this.allLabels))
 
-			// dataset = _.map(dataset, function(datum){ 
-			// 	datum.output = this.allLabels.indexOf(datum.output)
-			// 	return datum });
+			console.log(JSON.stringify(this.allLabels, null, 4))
+
+			 dataset = _.map(dataset, function(datum){ 
+				datum.output = this.allLabels.indexOf(datum.output)
+				return datum }, this);
 
 			if (this.allLabels.length==1) // a single label
 				return;
@@ -115,7 +131,7 @@ SvmLinear.prototype = {
 			// this.modelFileString = modelFileString;
 			this.modelString = fs.readFileSync(modelFileString, "utf-8")
 			this.mapLabelToMapFeatureToWeight = modelStringToModelMap(this.modelString);
-			this.allLabels = Object.keys(this.mapLabelToMapFeatureToWeight);
+			// this.allLabels = Object.keys(this.mapLabelToMapFeatureToWeight);
 			if (this.debug) console.dir(this.mapLabelToMapFeatureToWeight);
 		},
 		
@@ -177,7 +193,7 @@ SvmLinear.prototype = {
 				
 				var score = (explain>0? scoreWithExplain.classification: scoreWithExplain);
 				
-				var labelAndScore = [parseInt(label), score];
+				var labelAndScore = [this.allLabels[parseInt(label)], score];
 				if (scoreWithExplain.explanation && explain>0) {
 					labelAndScore.push(this.multiclass? 
 						scoreWithExplain.explanation.join(" "):
@@ -201,10 +217,14 @@ SvmLinear.prototype = {
 				}
 			}
 			
-			var result = (
-				!continuous_output?   labels[0][0]:
-					!this.multiclass? (labels[0][0]>0? labels[0][1]: labels[1][1]):
-					                  labels);
+			var result = 
+				(labels[0][1]>0? labels[0][0]: [])
+
+			// var result = (
+			// 	!continuous_output?   labels[0][0]:
+			// 		!this.multiclass? (labels[0][0]>0? labels[0][1]: labels[1][1]):
+			// 		                  labels);
+
 			return (explain>0? 
 				{
 					classes: result,

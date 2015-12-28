@@ -33,12 +33,12 @@ function SvmLinear(opts) {
 }
 
 SvmLinear.isInstalled = function() {
-  try {
-    var result = child_process.execSync("liblinear_train");
-    return true;
-  } catch (e) {
-    return (e.status != 127);
-  }
+    try {
+        var result = execSync("liblinear_train");
+        return true;
+    } catch (err) {
+        return false;
+    }
 };
 
 var util  = require('util')

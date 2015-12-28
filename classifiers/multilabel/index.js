@@ -9,7 +9,6 @@ module.exports = {
 	ThresholdClassifier:    require('./ThresholdClassifier'),
 	Adaboost:  				require('./Adaboost'),
 	PartialClassification:  require('./PartialClassification'),
-	Rulebased:  require('./Rulebased'),
 }
 
 // add a "classify and log" method to all classifiers, for demos:

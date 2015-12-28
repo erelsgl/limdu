@@ -267,7 +267,6 @@ EnhancedClassifier.prototype = {
 			this.pastTrainingSamples.push({input: sample, output: classes});
 	},
 
-<<<<<<< HEAD
 	trainBatchAsync: function(dataset, callbackg) {
 		var featureLookupTable = this.featureLookupTable;
 		var pastTrainingSamples = this.pastTrainingSamples;
@@ -288,28 +287,13 @@ EnhancedClassifier.prototype = {
 			{
 				this.sampleToFeaturesAsync(datum.input, this.featureExtractors, (function(err, features){
 			
-					// this.omitStopWords(features, this.stopwords)
-					if (_.isNaN(features.w2v15))
-                                {
-					console.log(datum.input)
-                                        console.log("STOPHERE")
-                                        process.exit(0)
-                                }
-					
+					// this.omitStopWords(features, this.stopwords)			
 
 					if (this.tfidf)
 						this.tfidf.addDocument(features)
 					
 					if (featureLookupTable)
 						featureLookupTable.addFeatures(features)
-
-
-					    if (_.isNaN(features.w2v15))
-                                {
-                                        console.log("after first edit")
-                                        process.exit(0)
-                                }
-
 
 					datum.input = features
 					processed_dataset.push(datum)
@@ -325,41 +309,12 @@ EnhancedClassifier.prototype = {
 //			processed_dataset = _.compact(processed_dataset)
 
 			processed_dataset.forEach(function(datum) {
-				
-				console.log("another one")
-				console.log(datum)		
-				
-				if (_.isNaN(datum.input.w2v15))
-                                {
-                                        console.log("ERE")
-                                        process.exit(0)
-                                }
 			
-				this.editFeatureValues(datum.input, /*remove_unknown_features=*/false);
-				if (featureLookupTable)
-					datum.input = featureLookupTable.hashToArray(datum.input);
-
-				
-				if (_.isUndefined(datum.input))
-				{	
-				console.log("IIINSIDE")
-				console.log(datum.input)
-				
-				process.exit(0)
-
-				}
-				
-				if (_.isNaN(datum.input[3]))
-                                {
-                                        console.log("HHERE")
-                                        process.exit(0)
-                                }
-
-
+			this.editFeatureValues(datum.input, /*remove_unknown_features=*/false);
+			if (featureLookupTable)
+				datum.input = featureLookupTable.hashToArray(datum.input);
 
 			}, this)
-
-			console.log("FINPROC")
 
 			this.classifier.trainBatch(processed_dataset)
 			callbackg(null,[])
@@ -367,8 +322,6 @@ EnhancedClassifier.prototype = {
 		}).bind(this))
 	},
 
-=======
->>>>>>> 6c343a61962837c1d8d3b3ae15dd50c51d6876ba
 	/**
 	 * Batch training: 
 	 * Train the classifier with all the given documents.

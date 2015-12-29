@@ -63,8 +63,8 @@ exports.partitions_consistent_by_fold = function(dataset, numOfPartitions, parti
 
 	if (numOfPartitions==1)
 		return {
-			'train': a.slice(0,Math.ceil(a.length / 2)),
-			'test': a.slice(Math.ceil(a.length / 2))
+			'train': dataset.slice(0,Math.ceil(dataset.length / 2)),
+			'test': dataset.slice(Math.ceil(dataset.length / 2))
 			}
 
 	var testSetCount = dataset.length / numOfPartitions;

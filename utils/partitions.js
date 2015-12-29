@@ -61,6 +61,12 @@ exports.partitions_consistent_by_fold = function(dataset, numOfPartitions, parti
 	if (_.isUndefined(partitionIndex))
 		throw new Error("partitionIndex "+ partitionIndex)
 
+	if (numOfPartitions==1)
+		return {
+			'train': a.slice(0,Math.ceil(a.length / 2)),
+			'test': a.slice(Math.ceil(a.length / 2))
+			}
+
 	var testSetCount = dataset.length / numOfPartitions;
 
 	var result = {'train': [], 'test': []}

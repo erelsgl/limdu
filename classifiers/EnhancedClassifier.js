@@ -171,7 +171,7 @@ EnhancedClassifier.prototype = {
 		return sample;
 	},
 
-	sampleToFeaturesAsync: function(sample, featureExtractor, callback) {
+	sampleToFeaturesAsync: function(sample, featureExtractor, train, callback) {
 		// features = {}
 		// 	async.eachSeries(featureExtractor, function(FE, callback1){
   //               FE(sample, features, function(err, results){
@@ -182,7 +182,7 @@ EnhancedClassifier.prototype = {
   //               })
 	
 		features = {}
-		featureExtractor(sample, features, function(err, results){
+		featureExtractor(sample, features, train, function(err, results){
   			callback(null, features)
   		})
     },
@@ -337,7 +337,7 @@ EnhancedClassifier.prototype = {
 
 			if (!_.isUndefined(datum))
 			{
-				this.sampleToFeaturesAsync(datum.input, this.featureExtractors, (function(err, features){
+				this.sampleToFeaturesAsync(datum.input, this.featureExtractors, true, (function(err, features){
 			
 					// this.omitStopWords(features, this.stopwords)
 
@@ -461,7 +461,7 @@ EnhancedClassifier.prototype = {
         },
 	
 	classifyPartAsync: function(sample, explain, callback) {
-		this.sampleToFeaturesAsync(sample, this.featureExtractors, (function(err, results){
+		this.sampleToFeaturesAsync(sample, this.featureExtractors, false, (function(err, results){
 			this.editFeatureValues(features, /*remove_unknown_features=*/false);
 			var array = this.featuresToArray(features);
 			var classification = this.classifier.classify(array, explain);

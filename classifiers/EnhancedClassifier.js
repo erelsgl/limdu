@@ -512,8 +512,8 @@ EnhancedClassifier.prototype = {
 
 		var classes = []
 
-		console.log("To classify in async mode: ")
-		console.log(JSON.stringify(sample, null, 4))
+//		console.log("To classify in async mode: ")
+//		console.log(JSON.stringify(sample, null, 4))
 
 		if (_.isObject(sample)) 
 			sample.text = this.normalizedSample(sample.text)

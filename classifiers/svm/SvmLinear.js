@@ -98,7 +98,7 @@ SvmLinear.prototype = {
 			this.allLabels = _(dataset).map(function(datum){return datum.output});
 			this.allLabels = _.uniq(_.flatten(this.allLabels))
 
-			console.log(JSON.stringify(this.allLabels, null, 4))
+			console.log("DEBUG: labels "+this.allLabels)
 
 			 dataset = _.map(dataset, function(datum){ 
 				datum.output = this.allLabels.indexOf(datum.output)
@@ -167,7 +167,9 @@ SvmLinear.prototype = {
 		},
 
 		classify: function(features, explain, continuous_output) {
-
+			
+			console.log("DEBUG classify labels:"+this.allLabels)
+		
 			if (!this.mapLabelToMapFeatureToWeight)
 				this.setModel(this.modelFileString)
 

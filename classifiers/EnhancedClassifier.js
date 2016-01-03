@@ -326,6 +326,8 @@ EnhancedClassifier.prototype = {
 		var processed_dataset = []
 
 		async.forEachOfSeries(dataset, (function(datum, dind, callback2){ 
+
+			console.log("DEBUG: train instance "+datum.input.text+":"+datum.output)
 			
 			if (_.isObject(datum.input))
 				datum.input.text = this.normalizedSample(datum.input.text);	
@@ -333,11 +335,14 @@ EnhancedClassifier.prototype = {
 				datum.input = this.normalizedSample(datum.input);
 
 			if (typeof this.preProcessor === 'function')
+			{
 				datum = this.preProcessor(datum)
+				console.log("DEBUG: preProcessor is finished Undefined? "+_.isUndefined(datum))
+			}
 
 			if (!_.isUndefined(datum))
 			{
-				this.sampleToFeaturesAsync(datum.input, this.featureExtractors, true, (function(err, features){
+				this.sampleToFeaturesAsync(datum, this.featureExtractors, true, (function(err, features){
 			
 					// this.omitStopWords(features, this.stopwords)
 

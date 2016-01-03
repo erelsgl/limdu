@@ -327,7 +327,7 @@ EnhancedClassifier.prototype = {
 
 		async.forEachOfSeries(dataset, (function(datum, dind, callback2){ 
 
-			console.log("DEBUG: train instance "+datum.input.text+":"+datum.output)
+			console.log(process.pid + " DEBUG: train instance "+datum.input.text+":"+datum.output)
 			
 			if (_.isObject(datum.input))
 				datum.input.text = this.normalizedSample(datum.input.text);	
@@ -337,7 +337,7 @@ EnhancedClassifier.prototype = {
 			if (typeof this.preProcessor === 'function')
 			{
 				datum = this.preProcessor(datum)
-				console.log("DEBUG: preProcessor is finished Undefined? "+_.isUndefined(datum))
+				console.log(process.pid+" DEBUG: preProcessor is finished Undefined? "+_.isUndefined(datum))
 			}
 
 			if (!_.isUndefined(datum))
@@ -558,7 +558,7 @@ EnhancedClassifier.prototype = {
 			
 					async.eachSeries(parts, (function(part, callback1){
 						
-						console.log("PART:"+part)
+						console.log(process.pid+" DEBUG: PART:"+part)
 
 						if (part.length==0) return;
 
@@ -567,7 +567,7 @@ EnhancedClassifier.prototype = {
 						if (typeof this.preProcessor === 'function')
 							part_filtered = this.preProcessor(part)
 
-						console.log("PART PREPROCESS:"+part_filtered)
+						console.log(process.pid+" DEBUG: PART PREPROCESS:"+part_filtered)
 						
 						this.classifyPartAsync(part_filtered, explain, (function(error, classesWithExplanation){
 
@@ -575,12 +575,12 @@ EnhancedClassifier.prototype = {
 							var classes = classesWithExplanation.classes
 
 							console.log(classes)
-							console.log("PART PREPROCESS CLASSES:"+classes)
+							console.log(process.pid+" DEBUG: PART PREPROCESS CLASSES:"+classes)
 					
 							if (typeof this.postProcessor === 'function')
 								classes = this.postProcessor(part, classes)
 
-							console.log("PART POSTPROCESS CLASSES:"+classes)
+							console.log(process.pid+" DEBUG: PART POSTPROCESS CLASSES:"+classes)
 
 							accumulatedClasses.push(classes)
 							if (explain>0) 
@@ -590,9 +590,8 @@ EnhancedClassifier.prototype = {
 						}).bind(this))
 
 				    }).bind(this), function(err){
-				    	console.log("final classes")
-						console.log(JSON.stringify(accumulatedClasses, null, 4))
-	   					classes = _.flatten(accumulatedClasses)
+				    	classes = _.flatten(accumulatedClasses)
+				    	console.log(process.pid+" DEBUG: final classes: "+classes)   					
 	             	   	callback(null, null)
 	                })
         		} else {

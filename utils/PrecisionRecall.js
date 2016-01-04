@@ -196,7 +196,9 @@ PrecisionRecall.prototype = {
 
 			// temp_stats[param] = _.filter(temp_stats[param], function(elem){ return (!_.isNaN(elem) && !_.isNull(elem) && elem>-1)  })
 			// temp_stats[param] = _.reduce(temp_stats[param], function(memo, num){ if (!_.isNaN(num) && !_.isNull(num) && num>-1) {return (memo + num)} else return memo }) / temp_stats[param].length
-			temp_stats[param] = _.reduce(temp_stats[param], function(memo, num){ if (!_.isNaN(num) && !_.isNull(num)) {return (memo + num)} else return memo }) / temp_stats[param].length
+			temp_stats[param] = _.reduce(temp_stats[param], function(memo, num){ if (!_.isNaN(num)) {return (memo + num)} else return memo }, 0) / temp_stats[param].length
+			
+			console.log("DEBUGSTATS: "+temp_stats[param])
 		})
 
 		_.each(['TP', 'FP', 'FN'], function(param, key, list){ 

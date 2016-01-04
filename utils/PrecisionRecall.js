@@ -187,7 +187,13 @@ PrecisionRecall.prototype = {
 		var labelsstats = _.values(this.labels)
 
 		_.each(['Precision', 'Recall', 'F1'], function(param, key, list){ 
+
+			console.log("DEBUGSTATS: "+param)
+
 			temp_stats[param] = _.pluck(labelsstats, param)
+
+			console.log("DEBUGSTATS: "+temp_stats[param])
+
 			// temp_stats[param] = _.filter(temp_stats[param], function(elem){ return (!_.isNaN(elem) && !_.isNull(elem) && elem>-1)  })
 			temp_stats[param] = _.reduce(temp_stats[param], function(memo, num){ if (!_.isNaN(num) && !_.isNull(num) && num>-1) {return (memo + num)} else return memo }) / temp_stats[param].length
 		})

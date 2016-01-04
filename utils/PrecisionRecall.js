@@ -167,7 +167,7 @@ PrecisionRecall.prototype = {
 			this.labels[label]['Precision'] = this.labels[label]['TP'] / (this.labels[label]['TP'] + this.labels[label]['FP']);
 			this.labels[label]['F1'] = 2 / (1/this.labels[label]['Recall'] + 1/this.labels[label]['Precision'])
 
-			if (!this.labels[label]['F1']) this.labels[label]['F1'] = -1
+			// if (!this.labels[label]['F1']) this.labels[label]['F1'] = -1
 		}, this)
 
 		var arlabels = _.pairs(this.labels) 
@@ -195,7 +195,8 @@ PrecisionRecall.prototype = {
 			console.log("DEBUGSTATS: "+temp_stats[param])
 
 			// temp_stats[param] = _.filter(temp_stats[param], function(elem){ return (!_.isNaN(elem) && !_.isNull(elem) && elem>-1)  })
-			temp_stats[param] = _.reduce(temp_stats[param], function(memo, num){ if (!_.isNaN(num) && !_.isNull(num) && num>-1) {return (memo + num)} else return memo }) / temp_stats[param].length
+			// temp_stats[param] = _.reduce(temp_stats[param], function(memo, num){ if (!_.isNaN(num) && !_.isNull(num) && num>-1) {return (memo + num)} else return memo }) / temp_stats[param].length
+			temp_stats[param] = _.reduce(temp_stats[param], function(memo, num){ if (!_.isNaN(num) && !_.isNull(num)) {return (memo + num)} else return memo }) / temp_stats[param].length
 		})
 
 		_.each(['TP', 'FP', 'FN'], function(param, key, list){ 

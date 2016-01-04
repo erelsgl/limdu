@@ -172,6 +172,8 @@ EnhancedClassifier.prototype = {
 	},
 
 	sampleToFeaturesAsync: function(sample, featureExtractor, train, callback) {
+
+		console.log("sampleToFeaturesAsync:"+sample)
 		// features = {}
 		// 	async.eachSeries(featureExtractor, function(FE, callback1){
   //               FE(sample, features, function(err, results){
@@ -183,7 +185,8 @@ EnhancedClassifier.prototype = {
 	
 		features = {}
 		featureExtractor(sample, features, train, function(err, results){
-  			callback(null, features)
+			console.log(JSON.stringify(results, null, 4))
+  			callback(null, results)
   		})
     },
 
@@ -466,9 +469,15 @@ EnhancedClassifier.prototype = {
         },
 	
 	classifyPartAsync: function(sample, explain, callback) {
-		this.sampleToFeaturesAsync(sample, this.featureExtractors, false, (function(err, results){
+		this.sampleToFeaturesAsync(sample, this.featureExtractors, false, (function(err, features){
+
+			console.log(process.pid+" DEBUGCLASSIFY: "+ JSON.stringify(features)+ " features")
+
 			this.editFeatureValues(features, /*remove_unknown_features=*/false);
 			var array = this.featuresToArray(features);
+
+			console.log(process.pid+" DEBUGCLASSIFY: "+ array+ " features in array")
+			
 			var classification = this.classifier.classify(array, explain);
 			classification['features'] = features
 			callback(null, classification)

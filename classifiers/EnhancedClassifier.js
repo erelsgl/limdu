@@ -85,6 +85,8 @@ var EnhancedClassifier = function(opts) {
 	this.preProcessor = opts.preProcessor
 	this.postProcessor = opts.postProcessor
 	// this.TestSplitLabel = opts.TestSplitLabel
+
+	this.featureOptions = this.featureOptions
 }
 
 
@@ -184,7 +186,7 @@ EnhancedClassifier.prototype = {
   //               })
 	
 		features = {}
-		featureExtractor(sample, features, train, function(err, results){
+		featureExtractor(sample, features, train, this.featureOptions, function(err, results){
 			console.log(JSON.stringify(results, null, 4))
   			callback(null, results)
   		})

@@ -68,11 +68,7 @@ SvmLinear.prototype = {
 			_.each(dataset, function(datum, key, list){
 				if (_.isArray(datum.output))
 					if (datum.output.length > 1)
-					{
-						console.log("Multi-label is not allowed")
-						console.log(JSON.stringify(darum.output, null, 4))
-						process.exit(0)
-					}
+						throw new Error("Multilabeling is not allowed");
             }, this)
 
             // filter out all "out of domain" istances
@@ -169,6 +165,9 @@ SvmLinear.prototype = {
 		classify: function(features, explain, continuous_output) {
 
 			var timestamp = new Date().getTime()+"_"+process.pid
+
+			if (!this.modelFileString)
+				throw new Error("Svmlinear modelfilestring is undefined")
 
 			var trainset = []
 			trainset.push({

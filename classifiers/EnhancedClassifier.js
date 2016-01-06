@@ -175,7 +175,6 @@ EnhancedClassifier.prototype = {
 
 	sampleToFeaturesAsync: function(sample, featureExtractor, train, callback) {
 
-		console.log("sampleToFeaturesAsync:"+sample)
 		// features = {}
 		// 	async.eachSeries(featureExtractor, function(FE, callback1){
   //               FE(sample, features, function(err, results){

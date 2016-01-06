@@ -86,7 +86,7 @@ var EnhancedClassifier = function(opts) {
 	this.postProcessor = opts.postProcessor
 	// this.TestSplitLabel = opts.TestSplitLabel
 
-	this.featureOptions = this.featureOptions
+	this.featureOptions = opts.featureOptions
 }
 
 

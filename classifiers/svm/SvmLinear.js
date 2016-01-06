@@ -72,7 +72,9 @@ SvmLinear.prototype = {
             }, this)
 
             // filter out all "out of domain" istances
-			dataset = _.map(dataset, function(datum){
+			console.log(process.pid+" DEBUGTRAIN: trainsize before filtering "+dataset.length)
+			
+			/*dataset = _.map(dataset, function(datum){
 				if (_.isArray(datum.output))
 					if (datum.output.length == 0)
 						return undefined
@@ -81,9 +83,10 @@ SvmLinear.prototype = {
 					return undefined					
 
 				return datum
-            }, this)
+            }, this)*/
 
             dataset = _.compact(dataset)
+			console.log(process.pid+" DEBUGTRAIN: trainsize after filtering "+dataset.length)
 
             //  convert all array-like outputs to just values
 			dataset = _.map(dataset, function(datum){ 
@@ -91,19 +94,20 @@ SvmLinear.prototype = {
 					datum.output = datum.output[0]
 				return datum });            
 
-			console.log(process.pid+" DEBUGTRAIN: "+JSON.stringify(_.countBy(dataset, function(datum) { return datum.output }), null, 4))
+			console.log(process.pid+" DEBUGTRAIN: count output "+JSON.stringify(_.countBy(dataset, function(datum) { return datum.output }), null, 4))
 
 			this.allLabels = _(dataset).map(function(datum){return datum.output});
 			this.allLabels = _.uniq(_.flatten(this.allLabels))
 
-			console.log(process.pid+" DEBUGTRAIN: labels "+this.allLabels)
+			console.log(process.pid+" DEBUGTRAIN: all possible labels "+this.allLabels)
 
 			 dataset = _.map(dataset, function(datum){ 
-				datum.output = this.allLabels.indexOf(datum.output) + 1
+				datum.output = this.allLabels.indexOf(datum.output)
 				return datum }, this);
 
 			if (this.allLabels.length==1) // a single label
-				return;
+				throw new Error(process.pid+" DEBUGTRAIN: single label")
+				
 			//console.log(util.inspect(dataset,{depth:1}));
 			if (this.debug) console.log("trainBatch start");
 			var learnFile = svmcommon.writeDatasetToFile(
@@ -111,16 +115,14 @@ SvmLinear.prototype = {
 			var modelFile = learnFile.replace(/[.]learn/,".model");
 
 			var command = this.train_command+" "+this.learn_args+" "+learnFile + " "+modelFile;
-			console.log("running "+command);
+			console.log(process.pid+" DEBUGTRAIN: running "+command);
 
 			var result = child_process.execSync(command);
-			if (result.code>0) {
-				console.dir(result);
-				console.log(fs.readFileSync(learnFile, 'utf-8'));
+			if (result.code>0)
 				throw new Error("Failed to execute: "+command);
-			}
 
 			this.modelFileString = modelFile;
+			console.log(process.pid+"DEBUGTRAIN: set moedl file "+modelFile)
 
 			if (this.debug) console.log("trainBatch end");
 		},
@@ -183,7 +185,7 @@ SvmLinear.prototype = {
 			var output = child_process.execSync(command)	
 			console.log(process.pid+" DEBUGCLASSIFY: "+command)
   			
-			var result = parseInt(fs.readFileSync("/tmp/out_" + timestamp, "utf-8").split("\n")) - 1
+			var result = parseInt(fs.readFileSync("/tmp/out_" + timestamp, "utf-8").split("\n"))
 
 			if (result == -1)
 			{

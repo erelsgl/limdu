@@ -16,6 +16,9 @@ describe('partitions', function() {
 		var dataset = [1,3,5,7,9,11,13]
 		var data = mlutils.partitions.partitions_consistent_by_fold(dataset, 2, 1) 
 		_.isEqual(data, { train: [ 1, 3, 5, 13 ], test: [ 7, 9, 11 ] }).should.be.true
+		var data1 = mlutils.partitions.partitions_consistent_by_fold(dataset, 2, 1) 
+		_.isEqual(data1, { train: [ 1, 3, 5, 13 ], test: [ 7, 9, 11 ] }).should.be.true
+		
 	})
 
 

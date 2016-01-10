@@ -174,54 +174,54 @@ SvmLinear.prototype = {
 			return result
 		},
 */
-		// classify: function(features, explain, continuous_output) {
+		classifyP: function(features, explain, continuous_output) {
 
-		// 	var timestamp = new Date().getTime()+"_"+process.pid
+			var timestamp = new Date().getTime()+"_"+process.pid
 
-//			if (_.keys(features).length == 0)
-//				return {
-//					classes:this.allLabelsCount[0][0],
-//					classification:this.allLabelsCount[0][0]
-//					}
+			if (_.keys(features).length == 0)
+				return {
+					classes:this.allLabelsCount[0][0],
+					classification:this.allLabelsCount[0][0]
+					}
 
-//			if (!this.modelFileString)
-//				throw new Error("Svmlinear modelfilestring is undefined")
-		// 	if (!this.modelFileString)
-		// 		throw new Error("Svmlinear modelfilestring is undefined")
+			if (!this.modelFileString)
+				throw new Error("Svmlinear modelfilestring is undefined")
+			if (!this.modelFileString)
+				throw new Error("Svmlinear modelfilestring is undefined")
 
-		// 	var trainset = []
-		// 	trainset.push({
-		// 		'input': features,
-		// 		'output':999
-		// 	})
+			var trainset = []
+			trainset.push({
+				'input': features,
+				'output':999
+			})
 
-		// 	var testFile = svmcommon.writeDatasetToFile(
-  //                                       trainset, this.bias, /*binarize=*/false, "/tmp/test_"+timestamp, "SvmLinear", FIRST_FEATURE_NUMBER);
+			var testFile = svmcommon.writeDatasetToFile(
+                                        trainset, this.bias, /*binarize=*/false, "/tmp/test_"+timestamp, "SvmLinear", FIRST_FEATURE_NUMBER);
 
-		// 	var command = this.test_command+" "+testFile + " " + this.modelFileString + " /tmp/out_" + timestamp;
+			var command = this.test_command+" "+testFile + " " + this.modelFileString + " /tmp/out_" + timestamp;
  			
-		// 	var output = child_process.execSync(command)	
-		// 	console.log(process.pid+" DEBUGCLASSIFY: "+command)
+			var output = child_process.execSync(command)	
+			console.log(process.pid+" DEBUGCLASSIFY: "+command)
   			
-		// 	var result = parseInt(fs.readFileSync("/tmp/out_" + timestamp, "utf-8").split("\n"))
+			var result = parseInt(fs.readFileSync("/tmp/out_" + timestamp, "utf-8").split("\n"))
 
-		// 	if (result == -1)
-		// 	{
-		// 		console.log(process.pid+" DEBUGCLASSIFY: NO CLASS")	
-		// 		return	{
-		// 			classes: [],
-		//  			classification: []
-		//  		}
-		// 	}
+			if (result == -1)
+			{
+				console.log(process.pid+" DEBUGCLASSIFY: NO CLASS")	
+				return	{
+					classes: [],
+		 			classification: []
+		 		}
+			}
 			
-		// 	console.log(process.pid+" DEBUGCLASSIFY: " + this.allLabels)
-		// 	console.log(process.pid+" DEBUGCLASSIFY: " +result+ " label "+this.allLabels[result])
+			console.log(process.pid+" DEBUGCLASSIFY: " + this.allLabels)
+			console.log(process.pid+" DEBUGCLASSIFY: " +result+ " label "+this.allLabels[result])
 
-		// 	return	{
-		// 		classes: this.allLabels[result],
-		//  		classification: this.allLabels[result]
-		//  	}
-		// },
+			return	{
+				classes: this.allLabels[result],
+		 		classification: this.allLabels[result]
+		 	}
+		},
 
 		classify: function(features, explain, continuous_output) {
 			

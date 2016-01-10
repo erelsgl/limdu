@@ -217,10 +217,17 @@ SvmLinear.prototype = {
 			console.log(process.pid+" DEBUGCLASSIFY: " + this.allLabels)
 			console.log(process.pid+" DEBUGCLASSIFY: " +result+ " label "+this.allLabels[result])
 
-			return	{
-				classes: this.allLabels[result],
-		 		classification: this.allLabels[result]
-		 	}
+//			return	{
+//				classes: this.allLabels[result],
+//		 		classification: this.allLabels[result]
+//		 	}
+		 	return (explain>0?
+		 	 {
+		 	    classes: this.allLabels[result],
+		 	    classification: this.allLabels[result],
+		 	    explanation: [],
+		 	 }:
+		 	    this.allLabels[result]);
 		},
 
 		classify: function(features, explain, continuous_output) {

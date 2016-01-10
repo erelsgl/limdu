@@ -164,116 +164,116 @@ SvmLinear.prototype = {
 			return result
 		},
 
-		classify: function(features, explain, continuous_output) {
+		// classify: function(features, explain, continuous_output) {
 
-			var timestamp = new Date().getTime()+"_"+process.pid
+		// 	var timestamp = new Date().getTime()+"_"+process.pid
 
-			if (!this.modelFileString)
-				throw new Error("Svmlinear modelfilestring is undefined")
+		// 	if (!this.modelFileString)
+		// 		throw new Error("Svmlinear modelfilestring is undefined")
 
-			var trainset = []
-			trainset.push({
-				'input': features,
-				'output':999
-			})
+		// 	var trainset = []
+		// 	trainset.push({
+		// 		'input': features,
+		// 		'output':999
+		// 	})
 
-			var testFile = svmcommon.writeDatasetToFile(
-                                        trainset, this.bias, /*binarize=*/false, "/tmp/test_"+timestamp, "SvmLinear", FIRST_FEATURE_NUMBER);
+		// 	var testFile = svmcommon.writeDatasetToFile(
+  //                                       trainset, this.bias, /*binarize=*/false, "/tmp/test_"+timestamp, "SvmLinear", FIRST_FEATURE_NUMBER);
 
-			var command = this.test_command+" "+testFile + " " + this.modelFileString + " /tmp/out_" + timestamp;
+		// 	var command = this.test_command+" "+testFile + " " + this.modelFileString + " /tmp/out_" + timestamp;
  			
-			var output = child_process.execSync(command)	
-			console.log(process.pid+" DEBUGCLASSIFY: "+command)
+		// 	var output = child_process.execSync(command)	
+		// 	console.log(process.pid+" DEBUGCLASSIFY: "+command)
   			
-			var result = parseInt(fs.readFileSync("/tmp/out_" + timestamp, "utf-8").split("\n"))
+		// 	var result = parseInt(fs.readFileSync("/tmp/out_" + timestamp, "utf-8").split("\n"))
 
-			if (result == -1)
-			{
-				console.log(process.pid+" DEBUGCLASSIFY: NO CLASS")	
-				return	{
-					classes: [],
-		 			classification: []
-		 		}
+		// 	if (result == -1)
+		// 	{
+		// 		console.log(process.pid+" DEBUGCLASSIFY: NO CLASS")	
+		// 		return	{
+		// 			classes: [],
+		//  			classification: []
+		//  		}
+		// 	}
+			
+		// 	console.log(process.pid+" DEBUGCLASSIFY: " + this.allLabels)
+		// 	console.log(process.pid+" DEBUGCLASSIFY: " +result+ " label "+this.allLabels[result])
+
+		// 	return	{
+		// 		classes: this.allLabels[result],
+		//  		classification: this.allLabels[result]
+		//  	}
+		// },
+
+		classify: function(features, explain, continuous_output) {
+			
+			console.log("DEBUG classify labels:"+this.allLabels)
+		
+			if (!this.mapLabelToMapFeatureToWeight)
+				this.setModel(this.modelFileString)
+
+			if (this.allLabels.length==1) {  // a single label
+				var result = (
+						!continuous_output?   this.allLabels[0]:
+							!this.multiclass? 1.0:
+							                  [[this.allLabels[0], 1.0]]);
+				return (explain>0? 
+						{
+							classes: result,
+							explanation: ["Single label ("+result+") - no classification needed"],
+						}:
+						result);
+			}
+			var labels = [];
+			if (explain>0) var explanations = [];
+			for (var label in this.mapLabelToMapFeatureToWeight) {
+				var mapFeatureToWeight = this.mapLabelToMapFeatureToWeight[label];
+
+				var scoreWithExplain = svmcommon.classifyWithModelMap(
+					mapFeatureToWeight, this.bias, features, explain, /*continuous_output=*/true, this.featureLookupTable);
+				
+				var score = (explain>0? scoreWithExplain.classification: scoreWithExplain);
+				
+				var labelAndScore = [this.allLabels[parseInt(label)], score];
+				if (scoreWithExplain.explanation && explain>0) {
+					labelAndScore.push(this.multiclass? 
+						scoreWithExplain.explanation.join(" "):
+						scoreWithExplain.explanation)
+				}
+
+				labels.push(labelAndScore);
 			}
 			
-			console.log(process.pid+" DEBUGCLASSIFY: " + this.allLabels)
-			console.log(process.pid+" DEBUGCLASSIFY: " +result+ " label "+this.allLabels[result])
+			labels.sort(function(a,b) {return b[1]-a[1]}); // sort by decreasing score
 
-			return	{
-				classes: this.allLabels[result],
-		 		classification: this.allLabels[result]
-		 	}
+			if (explain>0) {
+				if (this.multiclass) {
+					var explanations = [];
+					labels.forEach(function(datum) {
+						explanations.push(datum[0]+": score="+JSON.stringify(datum[1])+" features="+datum[2]);
+						datum.pop();
+					});
+				} else {
+					var explanations = (labels[0][0]>0? labels[0][2]: labels[1][2])
+				}
+			}
+			
+			var result = 
+				(labels[0][1]>0? labels[0][0]: [])
+
+			// var result = (
+			// 	!continuous_output?   labels[0][0]:
+			// 		!this.multiclass? (labels[0][0]>0? labels[0][1]: labels[1][1]):
+			// 		                  labels);
+
+			return (explain>0? 
+				{
+					classes: result,
+					classification: result,
+					explanation: explanations,
+				}:
+				result);
 		},
-
-		// classify: function(features, explain, continuous_output) {
-			
-		// 	console.log("DEBUG classify labels:"+this.allLabels)
-		
-		// 	if (!this.mapLabelToMapFeatureToWeight)
-		// 		this.setModel(this.modelFileString)
-
-		// 	if (this.allLabels.length==1) {  // a single label
-		// 		var result = (
-		// 				!continuous_output?   this.allLabels[0]:
-		// 					!this.multiclass? 1.0:
-		// 					                  [[this.allLabels[0], 1.0]]);
-		// 		return (explain>0? 
-		// 				{
-		// 					classes: result,
-		// 					explanation: ["Single label ("+result+") - no classification needed"],
-		// 				}:
-		// 				result);
-		// 	}
-		// 	var labels = [];
-		// 	if (explain>0) var explanations = [];
-		// 	for (var label in this.mapLabelToMapFeatureToWeight) {
-		// 		var mapFeatureToWeight = this.mapLabelToMapFeatureToWeight[label];
-
-		// 		var scoreWithExplain = svmcommon.classifyWithModelMap(
-		// 			mapFeatureToWeight, this.bias, features, explain, /*continuous_output=*/true, this.featureLookupTable);
-				
-		// 		var score = (explain>0? scoreWithExplain.classification: scoreWithExplain);
-				
-		// 		var labelAndScore = [this.allLabels[parseInt(label)], score];
-		// 		if (scoreWithExplain.explanation && explain>0) {
-		// 			labelAndScore.push(this.multiclass? 
-		// 				scoreWithExplain.explanation.join(" "):
-		// 				scoreWithExplain.explanation)
-		// 		}
-
-		// 		labels.push(labelAndScore);
-		// 	}
-			
-		// 	labels.sort(function(a,b) {return b[1]-a[1]}); // sort by decreasing score
-
-		// 	if (explain>0) {
-		// 		if (this.multiclass) {
-		// 			var explanations = [];
-		// 			labels.forEach(function(datum) {
-		// 				explanations.push(datum[0]+": score="+JSON.stringify(datum[1])+" features="+datum[2]);
-		// 				datum.pop();
-		// 			});
-		// 		} else {
-		// 			var explanations = (labels[0][0]>0? labels[0][2]: labels[1][2])
-		// 		}
-		// 	}
-			
-		// 	var result = 
-		// 		(labels[0][1]>0? labels[0][0]: [])
-
-		// 	// var result = (
-		// 	// 	!continuous_output?   labels[0][0]:
-		// 	// 		!this.multiclass? (labels[0][0]>0? labels[0][1]: labels[1][1]):
-		// 	// 		                  labels);
-
-		// 	return (explain>0? 
-		// 		{
-		// 			classes: result,
-		// 			classification: result,
-		// 			explanation: explanations,
-		// 		}:
-		// 		result);
-		// },
 
 		/**
 		 * Link to a FeatureLookupTable from a higher level in the hierarchy (typically from an EnhancedClassifier), used ONLY for generating meaningful explanations. 

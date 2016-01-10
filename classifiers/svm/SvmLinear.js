@@ -154,16 +154,18 @@ SvmLinear.prototype = {
 		 * @return the binary classification - 0 or 1.
 		 */
 		
-		classifyBatch: function(trainset) {
+/*		classifyBatch: function(trainset) {
+
 
 			_.each(trainset, function(value, key, list){
 				trainset[key].output = 0
 			}, this)
 			
 			var testFile = svmcommon.writeDatasetToFile(
-                                        trainset, this.bias, /*binarize=*/false, "/tmp/test_"+this.timestamp, "SvmLinear", FIRST_FEATURE_NUMBER);
+  */
+//                          trainset, this.bias, /*binarize=*/false, "/tmp/test_"+this.timestamp, "SvmLinear", FIRST_FEATURE_NUMBER);
 
-			var command = this.test_command+" "+testFile + " " + this.modelFileString + " /tmp/out_" + this.timestamp;
+/*			var command = this.test_command+" "+testFile + " " + this.modelFileString + " /tmp/out_" + this.timestamp;
 			var output = child_process.execSync(command)	
 			console.log(command)
   			
@@ -171,7 +173,7 @@ SvmLinear.prototype = {
   			 			
 			return result
 		},
-
+*/
 		// classify: function(features, explain, continuous_output) {
 
 		// 	var timestamp = new Date().getTime()+"_"+process.pid

@@ -541,6 +541,7 @@ EnhancedClassifier.prototype = {
         		if(!this.inputSplitter) {
 
         			console.log(JSON.stringify("no split", null, 4))
+        			console.log(JSON.stringify(sample, null, 4))
 
         			if (typeof this.preProcessor === 'function')
 						sample = this.preProcessor(sample)

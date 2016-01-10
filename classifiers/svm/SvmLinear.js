@@ -94,10 +94,18 @@ SvmLinear.prototype = {
 					datum.output = datum.output[0]
 				return datum });            
 
-			console.log(process.pid+" DEBUGTRAIN: count output "+JSON.stringify(_.countBy(dataset, function(datum) { return datum.output }), null, 4))
+			//console.log(process.pid+" DEBUGTRAIN: count output "+JSON.stringify(_.countBy(dataset, function(datum) { return datum.output }), null, 4))
 
 			this.allLabels = _(dataset).map(function(datum){return datum.output});
-			this.allLabels = _.uniq(_.flatten(this.allLabels))
+			this.allLabels = _.flatten(this.allLabels)
+		
+			this.allLabelsCount = _.pairs(_.countBy(this.allLabels, function(num) { return num }))
+			this.allLabelsCount = _.sortBy(this.allLabelsCount, function(num){ return num[1] }).reverse()
+
+			console.log(process.pid+" DEBUGTRAIN: counts "+this.allLabelsCount)			
+			console.log(process.pid+" DEBUGTRAIN: majority class "+this.allLabelsCount[0][0])
+			
+			this.allLabels = _.uniq(this.allLabels)
 
 			console.log(process.pid+" DEBUGTRAIN: all possible labels "+this.allLabels)
 
@@ -167,6 +175,12 @@ SvmLinear.prototype = {
 		classify: function(features, explain, continuous_output) {
 
 			var timestamp = new Date().getTime()+"_"+process.pid
+
+			if (_.keys(features).length == 0)
+				return {
+					classes:this.allLabelsCount[0][0],
+					classification:this.allLabelsCount[0][0]
+					}
 
 			if (!this.modelFileString)
 				throw new Error("Svmlinear modelfilestring is undefined")

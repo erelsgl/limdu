@@ -50,18 +50,19 @@ var EnhancedClassifier = function(opts) {
 
 	this.inputSplitter = opts.inputSplitter;
 	this.setNormalizer(opts.normalizer);
-	this.setFeatureExtractor(opts.featureExtractor);
-	this.setFeatureExtractorForClassification(opts.featureExtractorForClassification);
+	// this.setFeatureExtractor(opts.featureExtractor);
+	this.featureExtractors = opts.featureExtractor;
+	// this.setFeatureExtractorForClassification(opts.featureExtractorForClassification);
 	// this.setFeatureLookupTable(opts.featureLookupTable);
 	this.setFeatureLookupTable(new ftrs.FeatureLookupTable());
 
 	this.setLabelLookupTable(opts.labelLookupTable);
 	this.setInstanceFilter(opts.instanceFilter);
 
-	this.setFeatureExpansion(opts.featureExpansion);
-	this.featureExpansionScale = opts.featureExpansionScale;
-	this.featureExpansionPhrase = opts.featureExpansionPhrase;
-	this.featureFine = opts.featureFine;
+	// this.setFeatureExpansion(opts.featureExpansion);
+	// this.featureExpansionScale = opts.featureExpansionScale;
+	// this.featureExpansionPhrase = opts.featureExpansionPhrase;
+	// this.featureFine = opts.featureFine;
 
 	this.multiplyFeaturesByIDF = opts.multiplyFeaturesByIDF;
 	this.minFeatureDocumentFrequency = opts.minFeatureDocumentFrequency || 0;
@@ -97,13 +98,14 @@ EnhancedClassifier.prototype = {
 	},
 
 	/** Set the main feature extractor, used for both training and classification. */
-	setFeatureExtractor: function (featureExtractor) {
-		this.featureExtractors = ftrs.normalize(featureExtractor);
-	},
+	// setFeatureExtractor: function (featureExtractor) {
+		// this.featureExtractors = ftrs.normalize(featureExtractor);
+		// this.featureExtractors = ftrs.normalize(featureExtractor);
+	// },
 
-	setFeatureExpansion: function (featureExpansion) {
-		this.featureExpansion = featureExpansion
-	},
+	// setFeatureExpansion: function (featureExpansion) {
+		// this.featureExpansion = featureExpansion
+	// },
 	
 	/** Set the main feature extractor, used for both training and classification. */
 	setNormalizer: function (normalizer) {
@@ -174,21 +176,22 @@ EnhancedClassifier.prototype = {
 	},
 
 	sampleToFeaturesAsync: function(sample, featureExtractor, train, callback) {
+		features = {}
+
+		async.eachSeries(featureExtractor, (function(FE, callback1){
+            FE(sample, features, train, this.featureOptions, function(err, results){
+                callback1()
+            })
+        }).bind(this), function(err){
+        	console.log("DEBUGFEATURES:"+JSON.stringify(features, null, 4))
+            callback(null, features)
+        })
 
 		// features = {}
-		// 	async.eachSeries(featureExtractor, function(FE, callback1){
-  //               FE(sample, features, function(err, results){
-  //                   callback1()
-  //               })
-  //           }, function(err){
-  //               callback(null, features)
-  //               })
-	
-		features = {}
-		featureExtractor(sample, features, train, this.featureOptions, function(err, results){
-			console.log(JSON.stringify(results, null, 4))
-  			callback(null, results)
-  		})
+		// featureExtractor(sample, features, train, this.featureOptions, function(err, results){
+			// console.log(JSON.stringify(results, null, 4))
+  			// callback(null, results)
+  		// })
     },
 
 	sampleToFeatures: function(sample, featureExtractor) {
@@ -527,8 +530,8 @@ EnhancedClassifier.prototype = {
 
 		var classes = []
 
-//		console.log("To classify in async mode: ")
-//		console.log(JSON.stringify(sample, null, 4))
+		// console.log("To classify in async mode: ")
+		// console.log(JSON.stringify(sample, null, 4))
 
 		if (_.isObject(sample)) 
 			sample.text = this.normalizedSample(sample.text)
@@ -573,12 +576,14 @@ EnhancedClassifier.prototype = {
 
 						if (part.length==0) return;
 
-						var part_filtered = part
+						var part_filtered = {}
+						part_filtered.text = part
+						part_filtered.context = sample.context
 
 						if (typeof this.preProcessor === 'function')
-							part_filtered = this.preProcessor(part)
+							part_filtered.text = this.preProcessor(part)
 
-						console.log(process.pid+" DEBUG: PART PREPROCESS:"+part_filtered)
+						console.log(process.pid+" DEBUG: PART PREPROCESS:"+part_filtered.text)
 						
 						this.classifyPartAsync(part_filtered, explain, (function(error, classesWithExplanation){
 

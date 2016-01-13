@@ -341,6 +341,8 @@ EnhancedClassifier.prototype = {
 			else	
 				datum.input = this.normalizedSample(datum.input);
 
+			datum.input.unproc = datum.input.text
+
 			if (typeof this.preProcessor === 'function')
 			{
 				datum = this.preProcessor(datum)
@@ -579,6 +581,7 @@ EnhancedClassifier.prototype = {
 						var part_filtered = {}
 						part_filtered.text = part
 						part_filtered.context = sample.context
+						part_filtered.unproc = part
 
 						if (typeof this.preProcessor === 'function')
 							part_filtered.text = this.preProcessor(part)

@@ -485,6 +485,9 @@ EnhancedClassifier.prototype = {
 			console.log(process.pid+" DEBUGCLASSIFY: "+ array+ " features in array")
 			
 			var classification = this.classifier.classify(array, explain);
+
+			console.log(JSON.stringify(classification, null, 4))
+
 			classification['features'] = features
 			callback(null, classification)
 		}).bind(this))
@@ -582,6 +585,7 @@ EnhancedClassifier.prototype = {
 						part_filtered.text = part
 						part_filtered.context = sample.context
 						part_filtered.unproc = part
+						part_filtered.splitted = parts.length > 1
 
 						if (typeof this.preProcessor === 'function')
 							part_filtered.text = this.preProcessor(part)

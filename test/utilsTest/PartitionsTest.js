@@ -13,12 +13,26 @@ describe('partitions', function() {
 
 	it('partitions_consistent_by_fold', function() {
 
-		var dataset = [1,3,5,7,9,11,13]
-		var data = mlutils.partitions.partitions_consistent_by_fold(dataset, 2, 1) 
-		_.isEqual(data, { train: [ 1, 3, 5, 13 ], test: [ 7, 9, 11 ] }).should.be.true
-		var data1 = mlutils.partitions.partitions_consistent_by_fold(dataset, 2, 1) 
-		_.isEqual(data1, { train: [ 1, 3, 5, 13 ], test: [ 7, 9, 11 ] }).should.be.true
+		var dataset = [1,3,5,7,9,11,13,15]
 		
+		var data = mlutils.partitions.partitions_consistent_by_fold(dataset, 2, 1) 
+		_.isEqual(data, { train: [ 1, 3, 5, 7 ], test: [ 9, 11, 13,15 ] }).should.be.true
+		
+		var data = mlutils.partitions.partitions_consistent_by_fold(dataset, 4, 0)
+        _.isEqual(data, { train: [ 5, 7, 9, 11, 13, 15 ], test: [ 1, 3 ] }).should.be.true
+		
+		var data = mlutils.partitions.partitions_consistent_by_fold(dataset, 4, 1)
+        _.isEqual(data, { train: [ 1, 3, 9, 11, 13, 15 ], test: [ 5, 7 ] }).should.be.true
+		
+		var data = mlutils.partitions.partitions_consistent_by_fold(dataset, 4, 3)
+        _.isEqual(data, { train: [ 1, 3, 5, 7, 9, 11 ], test: [ 13, 15 ] }).should.be.true
+
+        // var data = mlutils.partitions.partitions_consistent_by_fold([1,2,3,4,5], 2, 0)
+        // _.isEqual(data, { train: [ 1,2,3 ], test: [ 4, 5 ] }).should.be.true
+
+		// var data = mlutils.partitions.partitions_consistent_by_fold([1,2,3,4,5], 2, 1)
+        // _.isEqual(data, { train: [ 4,5 ], test: [ 1,2,3 ] }).should.be.true
+
 	})
 
 

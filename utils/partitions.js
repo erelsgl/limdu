@@ -34,7 +34,7 @@ exports.partition = function(dataset, testSetStart, testSetCount) {
  * @note code adapted from Heather Arthur:  https://github.com/harthur/classifier/blob/master/test/cross-validation/cross-validate.js
  */
 exports.partitions = function(dataset, numOfPartitions, callback) {
-	var shuffledDataset = _.shuffle(dataset);
+	// var shuffledDataset = _.shuffle(dataset);
 	var testSetCount = dataset.length / numOfPartitions;
 	
 	for (var iPartition=0; iPartition<numOfPartitions; ++iPartition) {
@@ -51,6 +51,9 @@ exports.partitions = function(dataset, numOfPartitions, callback) {
 */
 
 exports.partitions_consistent_by_fold = function(dataset, numOfPartitions, partitionIndex) {
+
+	if (partitionIndex >= numOfPartitions)
+		throw new Error("The fold is out of range")
 
 	if (!_.isArray(dataset))
 		throw new Error("dataset is not an array")

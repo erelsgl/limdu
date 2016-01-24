@@ -8,6 +8,7 @@ module.exports = {
 	CrossLanguageModel:     require('./CrossLangaugeModelClassifier'),
 	ThresholdClassifier:    require('./ThresholdClassifier'),
 	Adaboost:  				require('./Adaboost'),
+	Boosting:  				require('./Boost'),
 	PartialClassification:  require('./PartialClassification'),
 }
 

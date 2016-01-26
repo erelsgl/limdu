@@ -176,10 +176,11 @@ EnhancedClassifier.prototype = {
 	},
 
 	sampleToFeaturesAsync: function(sample, featureExtractor, train, callback) {
-		features = {}
+		var features = {}
 
 		async.eachSeries(featureExtractor, (function(FE, callback1){
             FE(sample, features, train, this.featureOptions, function(err, results){
+                features = results
                 callback1()
             })
         }).bind(this), function(err){

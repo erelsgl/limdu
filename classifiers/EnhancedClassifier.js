@@ -476,6 +476,7 @@ EnhancedClassifier.prototype = {
         },
 	
 	classifyPartAsync: function(sample, explain, callback) {
+		
 		this.sampleToFeaturesAsync(sample, this.featureExtractors, false, (function(err, features){
 
 			console.log(process.pid+" DEBUGCLASSIFY: "+ JSON.stringify(features)+ " features")
@@ -535,10 +536,7 @@ EnhancedClassifier.prototype = {
 	classifyAsync: function(sample, explain, callback_global) {
 
 		var classes = []
-
-		// console.log("To classify in async mode: ")
-		// console.log(JSON.stringify(sample, null, 4))
-
+		
 		if (_.isObject(sample)) 
 			sample.text = this.normalizedSample(sample.text)
 		else
@@ -585,6 +583,7 @@ EnhancedClassifier.prototype = {
 						var part_filtered = {}
 						part_filtered.text = part
 						part_filtered.context = sample.context
+						part_filtered.sentences = sample.sentences
 						part_filtered.unproc = part
 						part_filtered.splitted = parts.length > 1
 

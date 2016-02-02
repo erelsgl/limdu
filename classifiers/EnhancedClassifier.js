@@ -180,7 +180,7 @@ EnhancedClassifier.prototype = {
 
 		async.eachSeries(featureExtractor, (function(FE, callback1){
             FE(sample, features, train, this.featureOptions, function(err, results){
-                features = results
+                features = JSON.parse(JSON.stringify(results))
                 callback1()
             })
         }).bind(this), function(err){

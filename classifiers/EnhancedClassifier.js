@@ -195,19 +195,27 @@ EnhancedClassifier.prototype = {
   		// })
     },
 
-	sampleToFeatures: function(sample, featureExtractor) {
-		var features = sample;
-		if (featureExtractor) {
-			try {
-				features = {};
-				featureExtractor(sample, features);
-			} catch (err) {
-				console.log(err)
-				throw new Error("Cannot extract features from '"+sample+"': "+JSON.stringify(err));
-			}
-		}
+	sampleToFeatures: function(sample, featureExtractor, train) {
+		var features = {}
 
-		return features;
+		_.each(featureExtractor, function(FE, key, list){
+			var results = FE(sample, features, train, this.featureOptions)
+			features = JSON.parse(JSON.stringify(results))
+		}, this)
+
+		return features
+		
+		// if (featureExtractor) {
+		// 	try {
+		// 		features = {};
+		// 		featureExtractor(sample, features);
+		// 	} catch (err) {
+		// 		console.log(err)
+		// 		throw new Error("Cannot extract features from '"+sample+"': "+JSON.stringify(err));
+		// 	}
+		// }
+
+		// return features;
 	},
 
 	instanceFilterRun: function(data) {
@@ -435,7 +443,7 @@ EnhancedClassifier.prototype = {
 					// return null
 				// }
 
-				var features = this.sampleToFeatures(datum.input, this.featureExtractors);
+				var features = this.sampleToFeatures(datum.input, this.featureExtractors, true);
 
 				// this.omitStopWords(features, this.stopwords)
 				
@@ -499,7 +507,7 @@ EnhancedClassifier.prototype = {
 
 		// var samplecorrected = this.correctFeatureSpelling(sample);
 
-		var features = this.sampleToFeatures(sample, this.featureExtractors);
+		var features = this.sampleToFeatures(sample, this.featureExtractors, false);
 
 		// this.omitStopWords(features, this.stopwords)
 
@@ -508,7 +516,9 @@ EnhancedClassifier.prototype = {
 		var array = this.featuresToArray(features);
 
 		var classification = this.classifier.classify(array, explain, continuous_output);
-		
+	
+		console.log("classification="+JSON.stringify(classification))
+			
 		// if (this.spellChecker && classification.explanation) {
 			// if (Array.isArray(classification.explanation))
 				// classification.explanation.unshift({SpellCorrectedFeatures: JSON.stringify(features)});

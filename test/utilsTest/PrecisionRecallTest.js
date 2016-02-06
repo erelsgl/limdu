@@ -117,6 +117,33 @@ describe('PrecisionRecall object', function() {
 		// pr.macroF1.should.be.closeTo((0.8+0.4+1/3)/3, 0.0001)
 	})
 
+	it('intent', function() {
+		// Add test for F1, Precision, Recall 
+
+		var pr = new mlutils.PrecisionRecall();
+		pr.addIntentHash(["{\"Offer\":\"Salary\"}"], ["{\"Offer\":\"Pension\"}","{\"Offer\":\"Car\"}"], 1);
+		pr.addIntentHash(["{\"Offer\":\"Salary\"}"], ["{\"Accept\":\"Pension\"}"], 1);
+		pr.addIntentHash(["{\"Reject\":\"Salary\"}"], ["{\"Accept\":\"Pension\"}"], 1);
+		
+		pr.addCasesHash(["{\"Offer\":\"Salary\"}"], ["{\"Offer\":\"Pension\"}","{\"Offer\":\"Car\"}"], 1);
+		pr.addCasesHash(["{\"Offer\":\"Salary\"}"], ["{\"Accept\":\"Pension\"}"], 1);
+		pr.addCasesHash(["{\"Reject\":\"Salary\"}"], ["{\"Accept\":\"Pension\"}"], 1);
+
+		pr.calculateStats()
+
+		console.log(JSON.stringify(pr, null, 4))
+
+		pr["Offer_FN"].should.equal(1)
+		pr["Offer_TP"].should.equal(1)
+		pr["Offer_FP"].should.equal(0)
+
+		pr["Accept_FP"].should.equal(2)
+		pr["Accept_TP"].should.equal(0)
+		pr["Accept_FN"].should.equal(0)
+		
+		pr["Reject_FN"].should.equal(1)
+	})
+
 
 
 	// it.skip('uniqueaggregate', function() {

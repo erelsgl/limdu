@@ -10,6 +10,7 @@ var _ = require('underscore')._;
  */
 var PrecisionRecall = function() {
 	this.labels = {}
+	this.intents = {}
 	this.confusion = {} // only in single label case
 	
 	this.count = 0;
@@ -82,6 +83,41 @@ PrecisionRecall.prototype = {
 	 * @return an array of explanations "FALSE POSITIVE", "FALSE NEGATIVE", and maybe also "TRUE POSITIVE"
      * @author Vasily Konovalov
 	 */
+
+	addIntentHash: function (expectedClasses, actualClasses, logTruePositives ) {
+		actualClasses = hash.normalized(actualClasses);
+		expectedClasses = hash.normalized(expectedClasses);
+
+		var actualIntents = _.map(_.keys(actualClasses), function(klas){ return _.keys(JSON.parse(klas))[0] });
+		var expectedIntents = _.map(_.keys(expectedClasses), function(klas){ return _.keys(JSON.parse(klas))[0] });
+
+		actualIntents = hash.normalized(actualIntents);
+		expectedIntents = hash.normalized(expectedIntents);
+
+		for (var actualIntent in actualIntents) {
+
+			if (!(actualIntent in this.intents)) {
+				this.intents[actualIntent]={}
+				this.intents[actualIntent]['TP']=0; this.intents[actualIntent]['FP']=0; this.intents[actualIntent]['FN']=0
+				}
+
+			if (actualIntent in expectedIntents)
+				this.intents[actualIntent]['TP'] += 1 
+			else
+				this.intents[actualIntent]['FP'] += 1
+		}
+		
+		for (var expectedIntent in expectedIntents) {
+
+			if (!(expectedIntent in this.intents)) {
+				this.intents[expectedIntent]={}
+				this.intents[expectedIntent]['TP']=0; this.intents[expectedIntent]['FP']=0; this.intents[expectedIntent]['FN']=0
+				}
+
+			if (!(expectedIntent in actualIntents))
+				this.intents[expectedIntent]['FN'] += 1 
+		}
+	},
 
 	addCasesHash: function (expectedClasses, actualClasses, logTruePositives ) {
 		var explanations = {};
@@ -170,6 +206,30 @@ PrecisionRecall.prototype = {
 			// if (!this.labels[label]['F1']) this.labels[label]['F1'] = -1
 		}, this)
 
+		// var reduced = {}
+
+		// // reduce the labels into intents 
+		// _.each(Object.keys(this.labels), function(label, key, list){ 
+		// 	if (JSON.parse(label))
+		// 	{
+		// 		var intent = _.keys(JSON.parse(label))[0]
+		// 		if (!(intent in this.reduced))
+		// 			this.reduced[intent] = {'TP':0, 'FP':0, 'FN':0}
+
+		// 		this.reduced[intent]['TP'] += this.labels[label]['TP']
+		// 		this.reduced[intent]['FP'] += this.labels[label]['FP']
+		// 		this.reduced[intent]['FN'] += this.labels[label]['FN']
+
+		// 	}
+		// }, this)
+
+		// // calculate Precision Recall F1
+		// _.each(this.reduced, function(value, key, list){
+		// 	this.reduced[key]['Recall'] = this.reduced[key]['TP'] / (this.reduced[key]['TP'] + this.reduced[key]['FN']);
+		// 	this.reduced[key]['Precision'] = this.reduced[key]['TP'] / (this.reduced[key]['TP'] + this.reduced[key]['FP']);
+		// 	this.reduced[key]['F1'] = 2 / (1/this.reduced[key]['Recall'] + 1/this.reduced[key]['Precision'])
+		// }, this)
+
 		var arlabels = _.pairs(this.labels) 
 		arlabels = _.sortBy(arlabels, function(num){ return arlabels[0] })
 		this.labels = _.object(arlabels)
@@ -199,6 +259,15 @@ PrecisionRecall.prototype = {
 			stats[param] = _.pluck(labelsstats, param)
 			stats[param] = _.reduce(stats[param], function(memo, num){ return memo + num })
 		})
+
+		_.each(this.intents, function(value, key, list){
+			this[key+"_Recall"] = this.intents[key]['TP']/(this.intents[key]['TP']+this.intents[key]['FN'])
+			this[key+"_Precision"] = this.intents[key]['TP']/(this.intents[key]['TP']+this.intents[key]['FP'])
+			this[key+"_F1"] = 2 / (1/this[key+"_Recall"] + 1/this[key+"_Precision"])
+			this[key+"_TP"] = this.intents[key]['TP']
+			this[key+"_FP"] = this.intents[key]['FP']
+			this[key+"_FN"] = this.intents[key]['FN']
+		}, this)
 
 		this.endTime = new Date();
 		this.timeMillis = this.endTime-this.startTime;

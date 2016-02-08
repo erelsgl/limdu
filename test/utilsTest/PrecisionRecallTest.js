@@ -124,14 +124,18 @@ describe('PrecisionRecall object', function() {
 		pr.addIntentHash(["{\"Offer\":\"Salary\"}"], ["{\"Offer\":\"Pension\"}","{\"Offer\":\"Car\"}"], 1);
 		pr.addIntentHash(["{\"Offer\":\"Salary\"}"], ["{\"Accept\":\"Pension\"}"], 1);
 		pr.addIntentHash(["{\"Reject\":\"Salary\"}"], ["{\"Accept\":\"Pension\"}"], 1);
+		pr.addIntentHash(["{\"Top\":\"Salary\"}"], ["{\"Bottom\":\"Pension\"}"], 1);
 		
 		pr.addCasesHash(["{\"Offer\":\"Salary\"}"], ["{\"Offer\":\"Pension\"}","{\"Offer\":\"Car\"}"], 1);
 		pr.addCasesHash(["{\"Offer\":\"Salary\"}"], ["{\"Accept\":\"Pension\"}"], 1);
 		pr.addCasesHash(["{\"Reject\":\"Salary\"}"], ["{\"Accept\":\"Pension\"}"], 1);
 
-		pr.calculateStats()
+		pr.calculateStats();
 
-		console.log(JSON.stringify(pr, null, 4))
+		('Top_Precision' in pr).should.equal(false);
+		('Top_F1' in pr).should.equal(false);
+		('Bottom_Recall' in pr).should.equal(false);
+		('Bottom_F1' in pr).should.equal(false);
 
 		pr["Offer_FN"].should.equal(1)
 		pr["Offer_TP"].should.equal(1)
@@ -143,7 +147,6 @@ describe('PrecisionRecall object', function() {
 		
 		pr["Reject_FN"].should.equal(1)
 	})
-
 
 
 	// it.skip('uniqueaggregate', function() {

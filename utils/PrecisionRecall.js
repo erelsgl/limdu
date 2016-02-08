@@ -262,8 +262,14 @@ PrecisionRecall.prototype = {
 
 		_.each(this.intents, function(value, key, list){
 			this[key+"_Recall"] = this.intents[key]['TP']/(this.intents[key]['TP']+this.intents[key]['FN'])
+			if (_.isNull(this[key+"_Recall"]) || _.isUndefined(this[key+"_Recall"]) || _.isNaN(this[key+"_Recall"])) delete this[key+"_Recall"]
+
 			this[key+"_Precision"] = this.intents[key]['TP']/(this.intents[key]['TP']+this.intents[key]['FP'])
+			if (_.isNull(this[key+"_Precision"]) || _.isUndefined(this[key+"_Precision"]) || _.isNaN(this[key+"_Precision"])) delete this[key+"_Precision"]
+
 			this[key+"_F1"] = 2 / (1/this[key+"_Recall"] + 1/this[key+"_Precision"])
+			if (_.isNull(this[key+"_F1"]) || _.isUndefined(this[key+"_F1"]) || _.isNaN(this[key+"_F1"])) delete this[key+"_F1"]
+
 			this[key+"_TP"] = this.intents[key]['TP']
 			this[key+"_FP"] = this.intents[key]['FP']
 			this[key+"_FN"] = this.intents[key]['FN']

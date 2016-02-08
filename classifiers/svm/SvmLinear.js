@@ -270,7 +270,7 @@ SvmLinear.prototype = {
 			}
 			
 			labels.sort(function(a,b) {return b[1]-a[1]}); // sort by decreasing score
-
+			
 			if (explain>0) {
 				if (this.multiclass) {
 					var explanations = [];
@@ -282,15 +282,20 @@ SvmLinear.prototype = {
 					var explanations = (labels[0][0]>0? labels[0][2]: labels[1][2])
 				}
 			}
-			
+
 			var result = 
-				(labels[0][1]>0? labels[0][0]: [])
+				(labels[0][1]>0? labels[0][0]: "")
 
 			// var result = (
 			// 	!continuous_output?   labels[0][0]:
 			// 		!this.multiclass? (labels[0][0]>0? labels[0][1]: labels[1][1]):
 			// 		                  labels);
-
+			
+			if (_.isUndefined(result) || _.isNull(result))
+				result = ""
+		
+			console.log("Linear:"+JSON.stringify(result))
+			
 			return (explain>0? 
 				{
 					classes: result,

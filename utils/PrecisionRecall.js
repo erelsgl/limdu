@@ -261,18 +261,23 @@ PrecisionRecall.prototype = {
 		})
 
 		_.each(this.intents, function(value, key, list){
-			this[key+"_Recall"] = this.intents[key]['TP']/(this.intents[key]['TP']+this.intents[key]['FN'])
-			if (_.isNull(this[key+"_Recall"]) || _.isUndefined(this[key+"_Recall"]) || _.isNaN(this[key+"_Recall"])) delete this[key+"_Recall"]
+			this.intents[key]["Recall"] = this.intents[key]['TP']/(this.intents[key]['TP']+this.intents[key]['FN'])
+			if (_.isNull(this.intents[key]["Recall"]) || _.isUndefined(this.intents[key]["Recall"]) || _.isNaN(this.intents[key]["Recall"])) delete this.intents[key]["Recall"]
 
-			this[key+"_Precision"] = this.intents[key]['TP']/(this.intents[key]['TP']+this.intents[key]['FP'])
-			if (_.isNull(this[key+"_Precision"]) || _.isUndefined(this[key+"_Precision"]) || _.isNaN(this[key+"_Precision"])) delete this[key+"_Precision"]
+			this.intents[key]["Precision"] = this.intents[key]['TP']/(this.intents[key]['TP']+this.intents[key]['FP'])
+			if (_.isNull(this.intents[key]["Precision"]) || _.isUndefined(this.intents[key]["Precision"]) || _.isNaN(this.intents[key]["Precision"])) delete this.intents[key]["Precision"]
 
-			this[key+"_F1"] = 2 / (1/this[key+"_Recall"] + 1/this[key+"_Precision"])
-			if (_.isNull(this[key+"_F1"]) || _.isUndefined(this[key+"_F1"]) || _.isNaN(this[key+"_F1"])) delete this[key+"_F1"]
+			this.intents[key]["F1"] = 2 / (1/this.intents[key]["Recall"] + 1/this.intents[key]["Precision"])
+			if (_.isNull(this.intents[key]["F1"]) || _.isUndefined(this.intents[key]["F1"]) || _.isNaN(this.intents[key]["F1"])) delete this.intents[key]["F1"]
 
 			this[key+"_TP"] = this.intents[key]['TP']
 			this[key+"_FP"] = this.intents[key]['FP']
 			this[key+"_FN"] = this.intents[key]['FN']
+
+			if ("Recall" in this.intents[key]) this[key+"_Recall"] = this.intents[key]['Recall']
+			if ("Precision" in this.intents[key]) this[key+"_Precision"] = this.intents[key]['Precision']
+			if ("F1" in this.intents[key]) this[key+"_F1"] = this.intents[key]['F1']
+
 		}, this)
 
 		this.endTime = new Date();

@@ -352,6 +352,7 @@ EnhancedClassifier.prototype = {
 
 			datum.input.unproc = datum.input.text
 
+			// just in order to eliminate multiclass in output and multisentence in sentences 
 			if (typeof this.preProcessor === 'function')
 			{
 				datum = this.preProcessor(datum)
@@ -543,7 +544,81 @@ EnhancedClassifier.prototype = {
 	// 	return dataset
 	// },
 	
+
 	classifyAsync: function(sample, explain, callback_global) {
+
+		var classes = []
+		
+		// if (_.isObject(sample)) 
+			// sample.text = this.normalizedSample(sample.text)
+		// else
+		// sample = this.normalizedSample(sample)
+	         
+		var accumulatedClasses = [];
+		var explanations = [];
+			
+		async.eachSeries(sample['sentences'], (function(sentence, callback1){
+				
+			console.log(process.pid+" DEBUG: PART:"+sentence)
+
+			// if sentences is empty
+			if (sentence.tokens.length==0) return;
+
+			var sample_parted = JSON.parse(JSON.stringify(sample))
+						
+			sample_parted['sentences'] = sentence
+
+			// we clean attr and values in every fe...
+			// if (typeof this.preProcessor === 'function')
+			// part_filtered.text = this.preProcessor(part)
+	
+			console.log(process.pid+" DEBUG: PART PREPROCESS:"+sample_parted.text)
+						
+			this.classifyPartAsync(JSON.parse(JSON.stringify(sample_parted)), explain, (function(error, classesWithExplanation){
+
+				// var classes = (explain>0? classesWithExplanation.classes: classesWithExplanation);
+				var classes = classesWithExplanation.classes
+
+				console.log(classes)
+				console.log(process.pid+" DEBUG: PART PREPROCESS CLASSES:"+classes)
+					
+				if (typeof this.postProcessor === 'function')
+					classes = this.postProcessor(JSON.parse(JSON.stringify(sample_parted)), classes)
+				
+				console.log(process.pid+" DEBUG: PART POSTPROCESS CLASSES:"+classes)
+
+				accumulatedClasses.push(classes)
+				if (explain>0) 
+					explanations.push(classesWithExplanation.explanation);
+
+				callback1()
+			}).bind(this))
+		}).bind(this), function(err){
+
+			classes = _.flatten(accumulatedClasses)
+			console.log(process.pid+" DEBUG: final classes: "+classes)
+			console.log(process.pid+" DEBUG: text: "+sample.text)
+
+			if (this.labelLookupTable) {
+				if (Array.isArray(classes)) {
+					classes = classes.map(function(label) {
+						if (_.isArray(label))
+							label[0] = this.labelLookupTable.numberToFeature(label[0]);
+						else
+							label = this.labelLookupTable.numberToFeature(label);
+						return label;
+					}, this);
+				} else {
+					classes = this.labelLookupTable.numberToFeature(classes);
+				}
+			}
+			
+    		callback_global(null, classes)
+		})
+	},
+
+
+/*classifyAsync: function(sample, explain, callback_global) {
 
 		var classes = []
 		
@@ -650,7 +725,7 @@ EnhancedClassifier.prototype = {
     		callback_global(null, classes)
 		})
 	},
-
+*/
 	/**
 	 * Use the model trained so far to classify a new sample.
 	 * @param sample a document.

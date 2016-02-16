@@ -120,6 +120,7 @@ describe('PrecisionRecall object', function() {
 	it('intent', function() {
 		// Add test for F1, Precision, Recall 
 
+		// expected actual
 		var pr = new mlutils.PrecisionRecall();
 		pr.addIntentHash(["{\"Offer\":\"Salary\"}"], ["{\"Offer\":\"Pension\"}","{\"Offer\":\"Car\"}"], 1);
 		pr.addIntentHash(["{\"Offer\":\"Salary\"}"], ["{\"Accept\":\"Pension\"}"], 1);
@@ -131,6 +132,11 @@ describe('PrecisionRecall object', function() {
 		pr.addCasesHash(["{\"Reject\":\"Salary\"}"], ["{\"Accept\":\"Pension\"}"], 1);
 
 		pr.calculateStats();
+
+		pr['confusion_intents']['Offer']['Offer'].should.equal(1);
+		pr['confusion_intents']['Offer']['Accept'].should.equal(1);
+		pr['confusion_intents']['Reject']['Accept'].should.equal(1);
+		pr['confusion_intents']['Top']['Bottom'].should.equal(1);
 
 		('Top_Precision' in pr).should.equal(false);
 		('Top_F1' in pr).should.equal(false);

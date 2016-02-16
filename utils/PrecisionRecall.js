@@ -12,6 +12,8 @@ var PrecisionRecall = function() {
 	this.labels = {}
 	this.intents = {}
 	this.confusion = {} // only in single label case
+
+	this.confusion_intents = {} // only in single label case
 	
 	this.count = 0;
 	this.TRUE = 0;
@@ -88,8 +90,22 @@ PrecisionRecall.prototype = {
 		actualClasses = hash.normalized(actualClasses);
 		expectedClasses = hash.normalized(expectedClasses);
 
-		var actualIntents = _.map(_.keys(actualClasses), function(klas){ return _.keys(JSON.parse(klas))[0] });
-		var expectedIntents = _.map(_.keys(expectedClasses), function(klas){ return _.keys(JSON.parse(klas))[0] });
+		var actualIntents = _.unique(_.map(_.keys(actualClasses), function(klas){ return _.keys(JSON.parse(klas))[0] }))
+		var expectedIntents = _.unique(_.map(_.keys(expectedClasses), function(klas){ return _.keys(JSON.parse(klas))[0] }))
+
+		if (expectedIntents.length == 1)
+		{
+			var expected = expectedIntents[0]
+			if (!(expected in this.confusion_intents))
+					this.confusion_intents[expected] = {}
+
+			_.each(actualIntents, function(actualClass, key, list){
+				if (!(actualClass in this.confusion_intents[expected]))
+					this.confusion_intents[expected][actualClass] = 0
+
+				this.confusion_intents[expected][actualClass] +=1
+			}, this)
+		}
 
 		actualIntents = hash.normalized(actualIntents);
 		expectedIntents = hash.normalized(expectedIntents);

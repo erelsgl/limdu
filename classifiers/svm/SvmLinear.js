@@ -30,14 +30,20 @@ function SvmLinear(opts) {
   	this.train_command = opts.train_command //|| 'liblinear_train'
   	this.test_command = opts.test_command //|| 'liblinear_test'
   	this.timestamp = ""
+
+	if (!SvmLinear.isInstalled()) {
+                var msg = "Cannot find the executable 'liblinear_train'. Please download it from the LibLinear website, and put a link to it in your path.";
+                console.error(msg)
+                throw new Error(msg);
+        }
 }
 
 SvmLinear.isInstalled = function() {
     try {
-        var result = execSync("liblinear_train");
+        var result = execSync(this.train_command);
         return true;
     } catch (err) {
-        return false;
+        return err["stderr"].length == 0
     }
 };
 

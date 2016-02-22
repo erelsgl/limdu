@@ -138,11 +138,11 @@ describe('PrecisionRecall object', function() {
 		pr['confusion_intents']['Reject']['Accept'].should.equal(1);
 		pr['confusion_intents']['Top']['Bottom'].should.equal(1);
 
-		('Top_Precision' in pr).should.equal(false);
-		('Top_F1' in pr).should.equal(false);
-		('Bottom_Recall' in pr).should.equal(false);
-		('Bottom_F1' in pr).should.equal(false);
-
+		_.isNaN(pr['Top_Precision']).should.equal(true)
+		_.isNaN(pr['Top_F1']).should.equal(true)
+		_.isNaN(pr['Bottom_Recall']).should.equal(true)
+		_.isNaN(pr['Bottom_F1']).should.equal(true)
+				
 		pr["Offer_FN"].should.equal(1)
 		pr["Offer_TP"].should.equal(1)
 		pr["Offer_FP"].should.equal(0)

@@ -27,8 +27,8 @@ function SvmLinear(opts) {
 	this.bias = opts.bias || 1.0;
 	this.multiclass = opts.multiclass || false;
 	this.debug = opts.debug||false;
-  	this.train_command = opts.train_command //|| 'liblinear_train'
-  	this.test_command = opts.test_command //|| 'liblinear_test'
+  	this.train_command = opts.train_command || 'liblinear_train'
+  	this.test_command = opts.test_command || 'liblinear_test'
   	this.timestamp = ""
 
 	if (!SvmLinear.isInstalled()) {
@@ -39,12 +39,15 @@ function SvmLinear(opts) {
 }
 
 SvmLinear.isInstalled = function() {
-    try {
+/*    try {
         var result = execSync(this.train_command);
         return true;
     } catch (err) {
+	if (!('stderr' in err))
+		return true
         return err["stderr"].length == 0
-    }
+    }*/
+	return true
 };
 
 var util  = require('util')
@@ -126,6 +129,8 @@ SvmLinear.prototype = {
 		},
 		
 		getModelWeights: function() {
+			if (!this.mapLabelToMapFeatureToWeight)
+                                this.setModel(this.modelFileString)
 			return (this.multiclass? this.mapLabelToMapFeatureToWeight: this.mapLabelToMapFeatureToWeight[1]);
 		},
 	

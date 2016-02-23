@@ -122,10 +122,10 @@ describe('PrecisionRecall object', function() {
 
 		// expected actual
 		var pr = new mlutils.PrecisionRecall();
-		pr.addIntentHash(["{\"Offer\":\"Salary\"}"], ["{\"Offer\":\"Pension\"}","{\"Offer\":\"Car\"}"], 1);
-		pr.addIntentHash(["{\"Offer\":\"Salary\"}"], ["{\"Accept\":\"Pension\"}"], 1);
-		pr.addIntentHash(["{\"Reject\":\"Salary\"}"], ["{\"Accept\":\"Pension\"}"], 1);
+		pr.addIntentHash(["{\"Bottom\":\"Salary\"}"], ["{\"Bottom\":\"Pension\"}"], 1);
 		pr.addIntentHash(["{\"Top\":\"Salary\"}"], ["{\"Bottom\":\"Pension\"}"], 1);
+		pr.addIntentHash(["{\"Up\":\"Salary\"}"], ["{\"Top\":\"Pension\"}"], 1);
+		pr.addIntentHash(["{\"Up\":\"Salary\"}"], ["{\"Up\":\"Pension\"}"], 1);
 		
 		pr.addCasesHash(["{\"Offer\":\"Salary\"}"], ["{\"Offer\":\"Pension\"}","{\"Offer\":\"Car\"}"], 1);
 		pr.addCasesHash(["{\"Offer\":\"Salary\"}"], ["{\"Accept\":\"Pension\"}"], 1);
@@ -133,25 +133,16 @@ describe('PrecisionRecall object', function() {
 
 		pr.calculateStats();
 
-		pr['confusion_intents']['Offer']['Offer'].should.equal(1);
-		pr['confusion_intents']['Offer']['Accept'].should.equal(1);
-		pr['confusion_intents']['Reject']['Accept'].should.equal(1);
-		pr['confusion_intents']['Top']['Bottom'].should.equal(1);
+		pr["Top_Precision"].should.equal(0)
+		pr["Top_Recall"].should.equal(0)
+		pr["Top_F1"].should.equal(2/(1/0+1/0))
 
-		_.isNaN(pr['Top_Precision']).should.equal(true)
-		_.isNaN(pr['Top_F1']).should.equal(true)
-		_.isNaN(pr['Bottom_Recall']).should.equal(true)
-		_.isNaN(pr['Bottom_F1']).should.equal(true)
-				
-		pr["Offer_FN"].should.equal(1)
-		pr["Offer_TP"].should.equal(1)
-		pr["Offer_FP"].should.equal(0)
+		pr["Bottom_Precision"].should.equal(1/(1+1))
+		pr["Bottom_Recall"].should.equal(1/(0+1))
+		pr["Bottom_F1"].should.equal(2/(1/pr["Bottom_Precision"] +1/pr["Bottom_Recall"]))
 
-		pr["Accept_FP"].should.equal(2)
-		pr["Accept_TP"].should.equal(0)
-		pr["Accept_FN"].should.equal(0)
+		pr["macroF1intents"].should.equal((pr["Bottom_F1"] + pr["Top_F1"] + pr["Up_F1"])/3)
 		
-		pr["Reject_FN"].should.equal(1)
 	})
 
 
@@ -270,4 +261,5 @@ describe('PrecisionRecall object', function() {
 	// 	_.isEqual(pr.retrieveStats()['interdep'], gold).should.be.true
 	// })
 })
+
 

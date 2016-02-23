@@ -286,13 +286,16 @@ PrecisionRecall.prototype = {
 			this.intents[key]["F1"] = 2 / (1/this.intents[key]["Recall"] + 1/this.intents[key]["Precision"])
 			// if (_.isNull(this.intents[key]["F1"]) || _.isUndefined(this.intents[key]["F1"]) || _.isNaN(this.intents[key]["F1"])) delete this.intents[key]["F1"]
 
-			this[key+"_TP"] = this.intents[key]['TP']
+			this[key+"_TP"] = this.intents[key]['TP'] 
 			this[key+"_FP"] = this.intents[key]['FP']
 			this[key+"_FN"] = this.intents[key]['FN']
 
-			if ("Recall" in this.intents[key]) this[key+"_Recall"] = this.intents[key]['Recall']
+			/*if ("Recall" in this.intents[key]) this[key+"_Recall"] = this.intents[key]['Recall']
 			if ("Precision" in this.intents[key]) this[key+"_Precision"] = this.intents[key]['Precision']
-			if ("F1" in this.intents[key]) this[key+"_F1"] = this.intents[key]['F1']
+			if ("F1" in this.intents[key]) this[key+"_F1"] = this.intents[key]['F1']*/
+			this[key+"_Recall"] = this.intents[key]['Recall']
+			this[key+"_Precision"] = this.intents[key]['Precision']
+			this[key+"_F1"] = this.intents[key]['F1']
 		}, this)
 
 		this.macroF1intents = _.reduce(_.values(this.intents), function(memo, num){ return memo + num['F1']; }, 0)/_.values(this.intents).length

@@ -9,7 +9,7 @@
 
 
 var _ = require('underscore')._;
-var FeaturesUnit = new require('../features');
+var FeaturesUnit = require('../features');
 
 /**
  * convert a single dataset to Weka ARFF string.

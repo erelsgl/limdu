@@ -130,7 +130,7 @@ SvmLinear.prototype = {
 				throw new Error("Failed to execute: "+command);
 
 			this.modelFileString = modelFile;
-			console.log(process.pid+"DEBUGTRAIN: set moedl file "+modelFile)
+			console.log(process.pid+"DEBUGTRAIN: set model file "+modelFile)
 
 			if (this.debug) console.log("trainBatch end");
 		},
@@ -140,7 +140,12 @@ SvmLinear.prototype = {
 			this.modelString = fs.readFileSync(modelFileString, "utf-8")
 			this.mapLabelToMapFeatureToWeight = modelStringToModelMap(this.modelString);
 			// this.allLabels = Object.keys(this.mapLabelToMapFeatureToWeight);
-			if (this.debug) console.dir(this.mapLabelToMapFeatureToWeight);
+			console.log("DEBUGTRAIN")
+			console.log(JSON.stringify(this.mapLabelToMapFeatureToWeight, null, 4))
+			console.log(JSON.stringify(this.featureLookupTable, null, 4))
+			var fSt = []
+
+			
 		},
 		
 		getModelWeights: function() {

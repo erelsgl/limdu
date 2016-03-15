@@ -145,7 +145,16 @@ SvmLinear.prototype = {
 			console.log(JSON.stringify(this.featureLookupTable, null, 4))
 			var fSt = []
 
-			
+			_.each(this.mapLabelToMapFeatureToWeight, function(fetset, clas, list){
+				var featlist = []
+				_.each(fetset, function(score, feature, list){
+					featlist.push(this.featureLookupTable["featureIndexToFeatureName"][features.parseInt()], score)
+				}, this)
+				featlist = _.sortBy(featlist, function(num){ return num });
+				fSt.push(featlist)
+			}, this)
+
+			console.log(JSON.stringify(fSt, null, 4))
 		},
 		
 		getModelWeights: function() {

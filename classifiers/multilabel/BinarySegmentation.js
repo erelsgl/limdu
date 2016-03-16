@@ -163,7 +163,7 @@ BinarySegmentation.prototype = {
 		//	}
 		//}
 
-		var cheapest_paths = require("../../node_modules/graph-paths/graph-paths").cheapest_paths;
+		var cheapest_paths = require("graph-paths").cheapest_paths;
 
                 var mini = Infinity
                 _(words.length).times(function(nn){

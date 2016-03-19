@@ -68,7 +68,7 @@ var EnhancedClassifier = function(opts) {
 	this.minFeatureDocumentFrequency = opts.minFeatureDocumentFrequency || 0;
 	if (opts.multiplyFeaturesByIDF||opts.minFeatureDocumentFrequency) 
 		{
-    	this.tfidf = new opts.TfIdfImpl
+    		this.tfidf = new opts.TfIdfImpl
 		this.featureDocumentFrequency = {};
 		}
 	this.bias = opts.bias;
@@ -288,11 +288,12 @@ EnhancedClassifier.prototype = {
 	editFeatureValues: function(features, remove_unknown_features) {
 		
 		if (this.multiplyFeaturesByIDF) { 
+			console.log("DEBUGTRAIN: editFeatureValues")
 			for (var feature in features) { 
 
 				// Skip word2vec features
-				if (typeof feature.match(/w2v/g) == "undefined" || feature.match(/w2v/g) == null)
-					continue
+//				if (typeof feature.match(/w2v/g) == "undefined" || feature.match(/w2v/g) == null)
+//					continue
 
 				var IDF = this.tfidf.idf(feature)
 
@@ -307,6 +308,8 @@ EnhancedClassifier.prototype = {
 
 			if (this.bias && !features.bias)
 			features.bias = this.bias;
+		
+//		return features
 
 		}
 		// if (remove_unknown_features && this.minFeatureDocumentFrequency>0)
@@ -353,6 +356,8 @@ EnhancedClassifier.prototype = {
 
 			datum.input.unproc = datum.input.text
 
+			var orig = JSON.parse(JSON.stringify(datum))
+		
 			// just in order to eliminate multiclass in output and multisentence in sentences 
 			if (typeof this.preProcessor === 'function')
 			{
@@ -363,10 +368,13 @@ EnhancedClassifier.prototype = {
 			if (!_.isUndefined(datum))
 			{
 				this.sampleToFeaturesAsync(datum, this.featureExtractors, true, (function(err, features){
-			
+		
+					console.log("DEBUGASYNC:" + orig.input.unproc)
+					console.log("DEBUGASYNC:" + orig.output)
+	
 					// this.omitStopWords(features, this.stopwords)
 
-					if (this.tfidf)
+					if (this.multiplyFeaturesByIDF)
 						this.tfidf.addDocument(features)
 					
 					if (featureLookupTable)
@@ -387,6 +395,9 @@ EnhancedClassifier.prototype = {
 
 			processed_dataset.forEach(function(datum) {
 				this.editFeatureValues(datum.input, /*remove_unknown_features=*/false);
+				
+				console.log(JSON.stringify(datum.input, null, 4))
+		
 				if (featureLookupTable)
 					datum.input = featureLookupTable.hashToArray(datum.input);
 			}, this)

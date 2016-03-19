@@ -148,10 +148,10 @@ SvmLinear.prototype = {
 			_.each(this.mapLabelToMapFeatureToWeight, function(fetset, clas, list){
 				var featlist = []
 				_.each(fetset, function(score, feature, list){
-					featlist.push(this.featureLookupTable["featureIndexToFeatureName"][features.parseInt()], score)
+					featlist.push([ this.featureLookupTable["featureIndexToFeatureName"][parseInt(feature)], score ])
 				}, this)
-				featlist = _.sortBy(featlist, function(num){ return num });
-				fSt.push(featlist)
+				featlist = _.sortBy(featlist, function(num){ return num[1] });
+				fSt.push(featlist.reverse())
 			}, this)
 
 			console.log(JSON.stringify(fSt, null, 4))

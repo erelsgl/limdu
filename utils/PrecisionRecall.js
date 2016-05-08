@@ -283,7 +283,9 @@ PrecisionRecall.prototype = {
 			this.intents[key]["Precision"] = this.intents[key]['TP']/(this.intents[key]['TP']+this.intents[key]['FP'])
 			// if (_.isNull(this.intents[key]["Precision"]) || _.isUndefined(this.intents[key]["Precision"]) || _.isNaN(this.intents[key]["Precision"])) delete this.intents[key]["Precision"]
 
-			this.intents[key]["F1"] = 2 / (1/this.intents[key]["Recall"] + 1/this.intents[key]["Precision"])
+			this.intents[key]["F1"] = 2*this.intents[key]['TP'] / (2*this.intents[key]['TP']+this.intents[key]['FP']+this.intents[key]['FN'])
+			// this.intents[key]["F1"] = 2 / (1/this.intents[key]["Recall"] + 1/this.intents[key]["Precision"])
+
 			// if (_.isNull(this.intents[key]["F1"]) || _.isUndefined(this.intents[key]["F1"]) || _.isNaN(this.intents[key]["F1"])) delete this.intents[key]["F1"]
 
 			this[key+"_TP"] = this.intents[key]['TP'] 

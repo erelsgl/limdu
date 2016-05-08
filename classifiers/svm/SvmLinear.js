@@ -113,8 +113,8 @@ SvmLinear.prototype = {
 				datum.output = this.allLabels.indexOf(datum.output)
 				return datum }, this);
 
-			if (this.allLabels.length==1) // a single label
-				throw new Error(process.pid+" DEBUGTRAIN: single label")
+//			if (this.allLabels.length==1) // a single label
+//				throw new Error(process.pid+" DEBUGTRAIN: single label")
 				
 			//console.log(util.inspect(dataset,{depth:1}));
 			if (this.debug) console.log("trainBatch start");

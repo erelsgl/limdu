@@ -300,7 +300,7 @@ PrecisionRecall.prototype = {
 			this[key+"_F1"] = this.intents[key]['F1']
 		}, this)
 
-		this.macroF1intents = _.reduce(_.values(this.intents), function(memo, num){ return memo + num['F1']; }, 0)/_.values(this.intents).length
+		this["macro-F1-intents"] = _.reduce(_.values(this.intents), function(memo, num){ return memo + num['F1']; }, 0)/_.values(this.intents).length
 
 		this.endTime = new Date();
 		this.timeMillis = this.endTime-this.startTime;
@@ -309,12 +309,12 @@ PrecisionRecall.prototype = {
 		this.FP = stats.FP
 		this.FN = stats.FN
 		this.Accuracy = (this.TRUE) / (this.count);
-		this.macroPrecision = temp_stats['Precision']
-		this.macroRecall = temp_stats['Recall']
-		this.macroF1 = temp_stats['F1']
-		this.microPrecision = stats.TP / (stats.TP+stats.FP);
-		this.microRecall = stats.TP / (stats.TP+stats.FN);
-		this.microF1 = 2 / (1/this.microRecall + 1/this.microPrecision);
+		this["macro-Precision"] = temp_stats['Precision']
+		this["macro-Recall"] = temp_stats['Recall']
+		this["macro-F1"] = temp_stats['F1']
+		this["micro-Precision"] = stats.TP / (stats.TP+stats.FP);
+		this["micro-Recall"] = stats.TP / (stats.TP+stats.FN);
+		this["micro-F1"] = 2 / (1/this["micro-Recall"] + 1/this["micro-Precision"]);
 		this.HammingLoss = (stats.FN+stats.FP) / (stats.FN+stats.TP); // "the percentage of the wrong labels to the total number of labels"
 		this.HammingGain = 1-this.HammingLoss;
 		

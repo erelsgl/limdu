@@ -297,6 +297,8 @@ SvmLinear.prototype = {
 				}
 			}
 
+			console.log("DEBUGTEST: labels: "+JSON.stringify(labels))
+			
 			var result = 
 				(labels[0][1]>0? labels[0][0]: "")
 
@@ -308,7 +310,7 @@ SvmLinear.prototype = {
 			if (_.isUndefined(result) || _.isNull(result))
 				result = ""
 		
-			console.log("Linear:"+JSON.stringify(result))
+			console.log("DEBUGTEST: result: "+JSON.stringify(result))
 			
 			return (explain>0? 
 				{

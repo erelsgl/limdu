@@ -393,6 +393,8 @@ EnhancedClassifier.prototype = {
 
 //			processed_dataset = _.compact(processed_dataset)
 
+			console.log("DEBUG: ENHANCED: "+JSON.stringify(processed_dataset, null, 4))
+
 			processed_dataset.forEach(function(datum) {
 				this.editFeatureValues(datum.input, /*remove_unknown_features=*/false);
 				

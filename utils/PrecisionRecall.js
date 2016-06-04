@@ -87,13 +87,21 @@ PrecisionRecall.prototype = {
 	 */
 
 	addIntentHash: function (expectedClasses, actualClasses, logTruePositives ) {
-		actualClasses = hash.normalized(actualClasses);
-		expectedClasses = hash.normalized(expectedClasses);
+		actualClasses = _.compact(actualClasses);
+		expectedClasses = _.compact(expectedClasses);
+	//	actualClasses = hash.normalized(actualClasses);
+	//	expectedClasses = hash.normalized(expectedClasses);
 
-		var actualIntents = _.unique(_.map(_.keys(actualClasses), function(klas){ return _.keys(JSON.parse(klas))[0] }))
-		var expectedIntents = _.unique(_.map(_.keys(expectedClasses), function(klas){ return _.keys(JSON.parse(klas))[0] }))
+	//	var actualIntents = _.unique(_.map(_.keys(actualClasses), function(klas){ return _.keys(JSON.parse(klas))[0] }))
+	//	var expectedIntents = _.unique(_.map(_.keys(expectedClasses), function(klas){ return _.keys(JSON.parse(klas))[0] }))
+	
+        var actualIntents = _.unique(actualClasses)
+        var expectedIntents = _.unique(expectedClasses)
 
-		if (expectedIntents.length == 1)
+	console.log("DEBUGEVAL: addIntentHash: actualIntents: "+JSON.stringify(actualIntents))
+	console.log("DEBUGEVAL: addIntentHash: expectedIntents: "+JSON.stringify(expectedIntents))
+       
+     	if (expectedIntents.length == 1)
 		{
 			var expected = expectedIntents[0]
 			if (!(expected in this.confusion_intents))
@@ -133,9 +141,16 @@ PrecisionRecall.prototype = {
 			if (!(expectedIntent in actualIntents))
 				this.intents[expectedIntent]['FN'] += 1 
 		}
+	
+		console.log("DEBUGEVAL: addIntentHash: intents: "+JSON.stringify(this.intents))
 	},
 
 	addCasesHash: function (expectedClasses, actualClasses, logTruePositives ) {
+		
+		actualClasses = _.compact(actualClasses);
+                expectedClasses = _.compact(expectedClasses);
+
+
 		var explanations = {};
 		explanations['TP'] = []; explanations['FP'] = []; explanations['FN'] = [];
 
@@ -153,6 +168,9 @@ PrecisionRecall.prototype = {
 
 		actualClasses = hash.normalized(actualClasses);
 		expectedClasses = hash.normalized(expectedClasses);
+		
+		console.log("DEBUGEVAL: addCasesHash: actualClasses: "+JSON.stringify(actualClasses))
+		console.log("DEBUGEVAL: addCasesHash: expectedClasses: "+JSON.stringify(expectedClasses))
 
 		var allTrue = true;
 		for (var actualClass in actualClasses) {
@@ -207,6 +225,8 @@ PrecisionRecall.prototype = {
 
 		if (explanations['FN'].length == 0)
 			delete explanations['FN']
+
+                console.log("DEBUGEVAL: addCasesHash: explanations: "+JSON.stringify(explanations))
 
 		return explanations;
 	},
@@ -301,6 +321,13 @@ PrecisionRecall.prototype = {
 		}, this)
 
 		this["macro-F1-intents"] = _.reduce(_.values(this.intents), function(memo, num){ return memo + num['F1']; }, 0)/_.values(this.intents).length
+
+		var sumTPs = _.reduce(_.values(this.intents), function(memo, num){ return memo + num['TP']; }, 0)
+		var sumFPs = _.reduce(_.values(this.intents), function(memo, num){ return memo + num['FP']; }, 0)
+		var sumFNs = _.reduce(_.values(this.intents), function(memo, num){ return memo + num['FN']; }, 0)
+		this["micro-Precision-intents"] = sumTPs/(sumTPs + sumFPs)
+		this["micro-Recall-intents"] = sumTPs/(sumTPs + sumFNs)
+		this["micro-F1-intents"] = 2 / (1/this["micro-Recall-intents"] + 1/this["micro-Precision-intents"])
 
 		this.endTime = new Date();
 		this.timeMillis = this.endTime-this.startTime;

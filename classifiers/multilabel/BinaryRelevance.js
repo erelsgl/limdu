@@ -55,6 +55,8 @@ BinaryRelevance.prototype = {
 		// this variable will hold a dataset for each binary classifier:
 		var mapClassnameToDataset = {}; 
 
+		console.log("DEBUG: BR: trainBatch: dataset.length="+dataset.length)
+
 		// create positive samples for each class:
 
 		 _.each(dataset, function(value, d, list){
@@ -94,7 +96,7 @@ BinaryRelevance.prototype = {
 
 		// train all classifiers:
 		for (var label in mapClassnameToDataset) {
-			if (this.debug) console.dir("TRAIN class="+label);
+			console.log("DEBUG: BR: trainBatch: class:"+label);
 			this.mapClassnameToClassifier[label]
 					.trainBatch(mapClassnameToDataset[label]);
 		}
@@ -133,7 +135,7 @@ BinaryRelevance.prototype = {
 			if (this.debug) console.log(JSON.stringify(scoreWithExplain, null, 4))
 
 			var score = scoreWithExplain.explanation?  scoreWithExplain.classification: scoreWithExplain;
-			console.log("DEBUG: BR: score="+score)
+			console.log("DEBUG: BR: label="+label+" score="+score)
 
 			explanations_string = scoreWithExplain.explanation
 

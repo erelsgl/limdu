@@ -347,7 +347,7 @@ EnhancedClassifier.prototype = {
 
 		async.forEachOfSeries(dataset, (function(datum, dind, callback2){ 
 
-			console.log(process.pid + " DEBUG: train instance "+datum.input.text+":"+datum.output)
+			console.log("DEBUG: TRAINBATCH: train instance "+datum.input.text+":"+datum.output)
 			
 			if (_.isObject(datum.input))
 				datum.input.text = this.normalizedSample(datum.input.text);	
@@ -362,15 +362,15 @@ EnhancedClassifier.prototype = {
 			if (typeof this.preProcessor === 'function')
 			{
 				datum = this.preProcessor(datum)
-				console.log(process.pid+" DEBUG: preProcessor is finished Undefined? "+_.isUndefined(datum))
+				console.log("DEBUG: TRAINBATCH: preProcessor is finished Undefined? "+_.isUndefined(datum))
 			}
 
 			if (!_.isUndefined(datum))
 			{
 				this.sampleToFeaturesAsync(datum, this.featureExtractors, true, (function(err, features){
 		
-					console.log("DEBUGASYNC:" + orig.input.unproc)
-					console.log("DEBUGASYNC:" + orig.output)
+					console.log("DEBUG: TRAINBATCH: input: " + orig.input.unproc)
+					console.log("DEBUGASYNC: TRAINBATCH: output: " + orig.output)
 	
 					// this.omitStopWords(features, this.stopwords)
 
@@ -392,8 +392,7 @@ EnhancedClassifier.prototype = {
 		}).bind(this), (function(err){
 
 //			processed_dataset = _.compact(processed_dataset)
-
-			console.log("DEBUG: ENHANCED: "+JSON.stringify(processed_dataset, null, 4))
+			// console.log("DEBUG: TRAINBATCH: "+JSON.stringify(processed_dataset, null, 4))
 
 			processed_dataset.forEach(function(datum) {
 				this.editFeatureValues(datum.input, /*remove_unknown_features=*/false);
@@ -570,10 +569,12 @@ EnhancedClassifier.prototype = {
 	         
 		var accumulatedClasses = [];
 		var explanations = [];
+
+		console.log("DEBUG: ENHANCE: classifyAsync:"+JSON.stringify(sample))
 			
 		async.eachSeries(sample['sentences'], (function(sentence, callback1){
 				
-			console.log(process.pid+" DEBUG: PART:"+sentence)
+			console.log("DEBUG: ENHANCE: PART: "+JSON.stringify(sentence))
 
 			// if sentences is empty
 			if (sentence.tokens.length==0) return;
@@ -585,21 +586,21 @@ EnhancedClassifier.prototype = {
 			// we clean attr and values in every fe...
 			// if (typeof this.preProcessor === 'function')
 			// part_filtered.text = this.preProcessor(part)
-	
-			console.log(process.pid+" DEBUG: PART PREPROCESS:"+sample_parted.text)
-						
+							
 			this.classifyPartAsync(JSON.parse(JSON.stringify(sample_parted)), explain, (function(error, classesWithExplanation){
 
 				// var classes = (explain>0? classesWithExplanation.classes: classesWithExplanation);
 				var classes = classesWithExplanation.classes
 
-				console.log(classes)
-				console.log(process.pid+" DEBUG: PART PREPROCESS CLASSES:"+classes)
+				console.log("DEBUG: ENHANCE: classify: classified:"+classes)
 					
 				if (typeof this.postProcessor === 'function')
+				{
+					console.log("DEBUG: ENHANCE: classify: postProcessor")
 					classes = this.postProcessor(JSON.parse(JSON.stringify(sample_parted)), classes)
+				}
 				
-				console.log(process.pid+" DEBUG: PART POSTPROCESS CLASSES:"+classes)
+				console.log("DEBUG: ENHANCE: classify: PART POSTPROCESS CLASSES:"+classes)
 
 				accumulatedClasses.push(classes)
 				if (explain>0) 
@@ -610,8 +611,8 @@ EnhancedClassifier.prototype = {
 		}).bind(this), function(err){
 
 			classes = _.flatten(accumulatedClasses)
-			console.log(process.pid+" DEBUG: final classes: "+classes)
-			console.log(process.pid+" DEBUG: text: "+sample.text)
+			console.log("DEBUG: ENHANCE: classify: final classes: "+classes)
+			console.log("DEBUG: ENHANCE: classify: text: "+sample.text)
 
 			if (this.labelLookupTable) {
 				if (Array.isArray(classes)) {
@@ -626,7 +627,8 @@ EnhancedClassifier.prototype = {
 					classes = this.labelLookupTable.numberToFeature(classes);
 				}
 			}
-			
+			console.log("DEBUG: ENHANCE: classify: final classes: "+classes)
+
     		callback_global(null, classes)
 		})
 	},

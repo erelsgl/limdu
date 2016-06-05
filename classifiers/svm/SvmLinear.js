@@ -72,7 +72,7 @@ SvmLinear.prototype = {
             }, this)
 
             // filter out all "out of domain" istances
-			console.log(process.pid+" DEBUGTRAIN: trainsize before filtering "+dataset.length)
+			console.log(process.pid+" DEBUGTRAIN: trainsize before compacting "+dataset.length)
 			
 			/*dataset = _.map(dataset, function(datum){
 				if (_.isArray(datum.output))
@@ -86,7 +86,7 @@ SvmLinear.prototype = {
             }, this)*/
 
             dataset = _.compact(dataset)
-			console.log(process.pid+" DEBUGTRAIN: trainsize after filtering "+dataset.length)
+			console.log(process.pid+" DEBUGTRAIN: trainsize after compacting "+dataset.length)
 
             //  convert all array-like outputs to just values
 			dataset = _.map(dataset, function(datum){ 
@@ -102,12 +102,12 @@ SvmLinear.prototype = {
 			this.allLabelsCount = _.pairs(_.countBy(this.allLabels, function(num) { return num }))
 			this.allLabelsCount = _.sortBy(this.allLabelsCount, function(num){ return num[1] }).reverse()
 
-			console.log(process.pid+" DEBUGTRAIN: counts "+this.allLabelsCount)			
-			console.log(process.pid+" DEBUGTRAIN: majority class "+this.allLabelsCount[0][0])
+			console.log("DEBUGTRAIN: label counts: "+JSON.stringify(this.allLabelsCount))		
+			console.log("DEBUGTRAIN: majority class: "+this.allLabelsCount[0][0])
 			
 			this.allLabels = _.uniq(this.allLabels)
 
-			console.log(process.pid+" DEBUGTRAIN: all possible labels "+this.allLabels)
+			console.log("DEBUGTRAIN: all possible labels "+this.allLabels)
 
 			 dataset = _.map(dataset, function(datum){ 
 				datum.output = this.allLabels.indexOf(datum.output)
@@ -132,6 +132,8 @@ SvmLinear.prototype = {
 			this.modelFileString = modelFile;
 			console.log(process.pid+"DEBUGTRAIN: set model file "+modelFile)
 
+			this.setModel(this.modelFileString)
+
 			if (this.debug) console.log("trainBatch end");
 		},
 		
@@ -140,9 +142,9 @@ SvmLinear.prototype = {
 			this.modelString = fs.readFileSync(modelFileString, "utf-8")
 			this.mapLabelToMapFeatureToWeight = modelStringToModelMap(this.modelString);
 			// this.allLabels = Object.keys(this.mapLabelToMapFeatureToWeight);
-			console.log("DEBUGTRAIN")
-			console.log(JSON.stringify(this.mapLabelToMapFeatureToWeight, null, 4))
-			console.log(JSON.stringify(this.featureLookupTable, null, 4))
+			// console.log("DEBUGTRAIN")
+			// console.log(JSON.stringify(this.mapLabelToMapFeatureToWeight, null, 4))
+			// console.log(JSON.stringify(this.featureLookupTable, null, 4))
 			var fSt = []
 
 			_.each(this.mapLabelToMapFeatureToWeight, function(fetset, clas, list){
@@ -154,7 +156,7 @@ SvmLinear.prototype = {
 				fSt.push(featlist.reverse())
 			}, this)
 
-			console.log(JSON.stringify(fSt, null, 4))
+			// console.log(JSON.stringify(fSt, null, 4))
 		},
 		
 		getModelWeights: function() {
@@ -246,10 +248,10 @@ SvmLinear.prototype = {
 
 		classify: function(features, explain, continuous_output) {
 			
-			console.log("DEBUG classify labels:"+this.allLabels)
+			console.log("DEBUG: SVMLINEAR: classify: labels:"+this.allLabels)
 		
-			if (!this.mapLabelToMapFeatureToWeight)
-				this.setModel(this.modelFileString)
+			// if (!this.mapLabelToMapFeatureToWeight)
+				// this.setModel(this.modelFileString)
 
 			if (this.allLabels.length==1) {  // a single label
 				var result = (
@@ -297,7 +299,8 @@ SvmLinear.prototype = {
 				}
 			}
 
-			console.log("DEBUGTEST: labels: "+JSON.stringify(labels))
+			console.log("DEBUG: SVMLINEAR: classify: labels: "+JSON.stringify(labels))
+			console.log("DEBUG: SVMLINEAR: classify: explanations: "+JSON.stringify(explanations))
 			
 			var result = 
 				(labels[0][1]>0? labels[0][0]: "")
@@ -310,7 +313,7 @@ SvmLinear.prototype = {
 			if (_.isUndefined(result) || _.isNull(result))
 				result = ""
 		
-			console.log("DEBUGTEST: result: "+JSON.stringify(result))
+			console.log("DEBUG: SVMLINEAR: classify: result: "+JSON.stringify(result))
 			
 			return (explain>0? 
 				{

@@ -9,6 +9,12 @@ var hash = require('../utils/hash');
 var util = require('../utils/list');
 var multilabelutils = require('./multilabel/multilabelutils');
 
+var log_file = "/tmp/logs/" + process.pid
+console.vlog = function(data) {
+    fs.appendFileSync(log_file, data + '\n', 'utf8')
+};
+
+
 /**
  * EnhancedClassifier - wraps any classifier with feature-extractors and feature-lookup-tables.
  * 
@@ -186,6 +192,7 @@ EnhancedClassifier.prototype = {
             })
         }).bind(this), function(err){
         	console.log("DEBUGFEATURES:"+JSON.stringify(features, null, 4))
+        	console.vlog("DEBUGFEATURES:"+JSON.stringify(features, null, 4))
             callback(null, features)
         })
 
@@ -347,7 +354,7 @@ EnhancedClassifier.prototype = {
 
 		async.forEachOfSeries(dataset, (function(datum, dind, callback2){ 
 
-			console.log("DEBUG: TRAINBATCH: train instance "+datum.input.text+":"+datum.output)
+			console.vlog("DEBUG: TRAINBATCH: INPUT: "+datum.input.text+" OUTPUT:"+datum.output)
 			
 			if (_.isObject(datum.input))
 				datum.input.text = this.normalizedSample(datum.input.text);	
@@ -369,8 +376,8 @@ EnhancedClassifier.prototype = {
 			{
 				this.sampleToFeaturesAsync(datum, this.featureExtractors, true, (function(err, features){
 		
-					console.log("DEBUG: TRAINBATCH: input: " + orig.input.unproc)
-					console.log("DEBUGASYNC: TRAINBATCH: output: " + orig.output)
+					console.vlog("DEBUG: TRAINBATCH: input: " + orig.input.unproc)
+					console.vlog("DEBUG: TRAINBATCH: output: " + orig.output)
 	
 					// this.omitStopWords(features, this.stopwords)
 
@@ -570,11 +577,11 @@ EnhancedClassifier.prototype = {
 		var accumulatedClasses = [];
 		var explanations = [];
 
-		console.log("DEBUG: ENHANCE: classifyAsync:"+JSON.stringify(sample))
+		console.vlog("DEBUG: ENHANCE: classifyAsync:"+JSON.stringify(sample, null, 4))
 			
 		async.eachSeries(sample['sentences'], (function(sentence, callback1){
 				
-			console.log("DEBUG: ENHANCE: PART: "+JSON.stringify(sentence))
+			console.log("DEBUG: ENHANCE: PART: "+JSON.stringify(sentence, null, 4))
 
 			// if sentences is empty
 			if (sentence.tokens.length==0) return;
@@ -592,11 +599,11 @@ EnhancedClassifier.prototype = {
 				// var classes = (explain>0? classesWithExplanation.classes: classesWithExplanation);
 				var classes = classesWithExplanation.classes
 
-				console.log("DEBUG: ENHANCE: classify: classified:"+classes)
+				console.vlog("DEBUG: ENHANCE: classify: classified:"+JSON.stringify(classes, null, 4))
 					
 				if (typeof this.postProcessor === 'function')
 				{
-					console.log("DEBUG: ENHANCE: classify: postProcessor")
+					console.vlog("DEBUG: ENHANCE: classify: postProcessor")
 					classes = this.postProcessor(JSON.parse(JSON.stringify(sample_parted)), classes)
 				}
 				
@@ -611,8 +618,8 @@ EnhancedClassifier.prototype = {
 		}).bind(this), function(err){
 
 			classes = _.flatten(accumulatedClasses)
-			console.log("DEBUG: ENHANCE: classify: final classes: "+classes)
-			console.log("DEBUG: ENHANCE: classify: text: "+sample.text)
+			console.vlog("DEBUG: ENHANCE: classify: final classes: "+JSON.stringify(classes, null, 4))
+//			console.log("DEBUG: ENHANCE: classify: text: "+sample.text)
 
 			if (this.labelLookupTable) {
 				if (Array.isArray(classes)) {

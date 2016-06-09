@@ -8,6 +8,8 @@ var _ = require('underscore')._;
 var hash = require('../utils/hash');
 var util = require('../utils/list');
 var multilabelutils = require('./multilabel/multilabelutils');
+var fs = require('fs');
+
 
 var log_file = "/tmp/logs/" + process.pid
 console.vlog = function(data) {
@@ -374,12 +376,30 @@ EnhancedClassifier.prototype = {
 
 			if (!_.isUndefined(datum))
 			{
-				this.sampleToFeaturesAsync(datum, this.featureExtractors, true, (function(err, features){
+				if (!('features' in datum['input']))
+				{
+					this.sampleToFeaturesAsync(datum, this.featureExtractors, true, (function(err, features){
 		
-					console.vlog("DEBUG: TRAINBATCH: input: " + orig.input.unproc)
-					console.vlog("DEBUG: TRAINBATCH: output: " + orig.output)
+						console.vlog("DEBUG: TRAINBATCH: input: " + orig.input.unproc)
+						console.vlog("DEBUG: TRAINBATCH: output: " + orig.output)
 	
 					// this.omitStopWords(features, this.stopwords)
+
+						if (this.multiplyFeaturesByIDF)
+							this.tfidf.addDocument(features)
+					
+						if (featureLookupTable)
+							featureLookupTable.addFeatures(features)
+
+						datum.input = features
+						processed_dataset.push(datum)
+
+						callback2()
+					}).bind(this))
+				}
+				else
+				{
+					console.vlog("DEBUG: TRAINBATCH: features were found in the sample")
 
 					if (this.multiplyFeaturesByIDF)
 						this.tfidf.addDocument(features)
@@ -391,7 +411,7 @@ EnhancedClassifier.prototype = {
 					processed_dataset.push(datum)
 
 					callback2()
-				}).bind(this))
+				}
 			}
 			else
 			callback2()

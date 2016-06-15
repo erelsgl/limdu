@@ -2,6 +2,12 @@ var hash = require("../../utils/hash");
 var sprintf = require("sprintf").sprintf;
 var _ = require("underscore")._;
 var multilabelutils = require('./multilabelutils');
+
+var log_file = "/tmp/logs/" + process.pid
+console.vlog = function(data) {
+    fs.appendFileSync(log_file, data + '\n', 'utf8')
+};
+
 // var fs = require('fs');
 
 /**
@@ -56,6 +62,7 @@ BinaryRelevance.prototype = {
 		var mapClassnameToDataset = {}; 
 
 		console.log("DEBUG: BR: trainBatch: dataset.length="+dataset.length)
+		console.vlog("DEBUG: BR: trainBatch: dataset.length="+dataset.length)
 
 		// create positive samples for each class:
 
@@ -97,6 +104,7 @@ BinaryRelevance.prototype = {
 		// train all classifiers:
 		for (var label in mapClassnameToDataset) {
 			console.log("DEBUG: BR: trainBatch: class:"+label);
+			console.vlog("DEBUG: BR: trainBatch: class:"+label);
 			this.mapClassnameToClassifier[label]
 					.trainBatch(mapClassnameToDataset[label]);
 		}
@@ -128,6 +136,7 @@ BinaryRelevance.prototype = {
 			var classifier = this.mapClassnameToClassifier[label];
 
 			console.log("DEBUG: BR: Ready to classify for class="+label)
+			console.vlog("DEBUG: BR: Ready to classify for class="+label)
 			
 			// fs.writeFileSync('/tmp/labels/'+label, JSON.stringify(classifier.getFeatures(), null, 4), 'utf8');
 
@@ -135,7 +144,9 @@ BinaryRelevance.prototype = {
 			if (this.debug) console.log(JSON.stringify(scoreWithExplain, null, 4))
 
 			var score = scoreWithExplain.explanation?  scoreWithExplain.classification: scoreWithExplain;
+
 			console.log("DEBUG: BR: label="+label+" score="+score)
+			console.vlog("DEBUG: BR: label="+label+" score="+score)
 
 			explanations_string = scoreWithExplain.explanation
 
@@ -156,6 +167,8 @@ BinaryRelevance.prototype = {
 		if (this.debug) console.dir(scores)
 
 		console.log("DEBUG: BR: RESULTS: "+JSON.stringify(scores, null, 4))
+		console.vlog("DEBUG: BR: RESULTS: "+JSON.stringify(scores, null, 4))
+
 		if (explain>0)
 		{
 			scores = _.sortBy(scores, function(num){ return num[1] }).reverse()
@@ -171,6 +184,8 @@ BinaryRelevance.prototype = {
 		labels = _.map(labels.reverse(), function(num){ return num[0] });
 	
 		console.log("DEBUG: BR: labels: "+JSON.stringify(labels, null, 4))
+		console.vlog("DEBUG: BR: labels: "+JSON.stringify(labels, null, 4))
+
 		return (explain>0?
 			{
 				classes: labels, 

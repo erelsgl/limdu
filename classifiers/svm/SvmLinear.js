@@ -145,7 +145,7 @@ SvmLinear.prototype = {
 			console.log(process.pid+"DEBUGTRAIN: set model file "+modelFile)
 			console.vlog(process.pid+"DEBUGTRAIN: set model file "+modelFile)
 
-			this.setModel(this.modelFileString)
+			//this.setModel(this.modelFileString)
 
 			if (this.debug) console.log("trainBatch end");
 		},
@@ -203,7 +203,7 @@ SvmLinear.prototype = {
 			return result
 		},
 */
-		classifyP: function(features, explain, continuous_output) {
+		classify: function(features, explain, continuous_output) {
 
 			var timestamp = new Date().getTime()+"_"+process.pid
 
@@ -231,6 +231,7 @@ SvmLinear.prototype = {
  			
 			var output = child_process.execSync(command)	
 			console.log(process.pid+" DEBUGCLASSIFY: "+command)
+			console.vlog(process.pid+" DEBUGCLASSIFY: "+command)
   			
 			var result = parseInt(fs.readFileSync("/tmp/out_" + timestamp, "utf-8").split("\n"))
 
@@ -244,7 +245,9 @@ SvmLinear.prototype = {
 			}
 			
 			console.log(process.pid+" DEBUGCLASSIFY: " + this.allLabels)
+			console.vlog(process.pid+" DEBUGCLASSIFY: " + this.allLabels)
 			console.log(process.pid+" DEBUGCLASSIFY: " +result+ " label "+this.allLabels[result])
+			console.vlog(process.pid+" DEBUGCLASSIFY: " +result+ " label "+this.allLabels[result])
 
 //			return	{
 //				classes: this.allLabels[result],
@@ -259,13 +262,14 @@ SvmLinear.prototype = {
 		 	    this.allLabels[result]);
 		},
 
-		classify: function(features, explain, continuous_output) {
+		classifyM: function(features, explain, continuous_output) {
 			
 			console.log("DEBUG: SVMLINEAR: classify: labels:"+this.allLabels)
 			console.vlog("DEBUG: SVMLINEAR: classify: labels:"+this.allLabels)
 		
-			// if (!this.mapLabelToMapFeatureToWeight)
-				// this.setModel(this.modelFileString)
+			// it's nneded to be here because of svm-predict classification which doesn't require setModel 
+			 if (!this.mapLabelToMapFeatureToWeight)
+				 this.setModel(this.modelFileString)
 
 			if (this.allLabels.length==1) {  // a single label
 				var result = (
@@ -385,7 +389,7 @@ function modelStringToModelMap(modelString) {
 	var matches = LIB_LINEAR_MODEL_PATTERN.exec(modelString);
 	if (!matches) {
 		console.log(modelString);
-		throw new Error("Model does not match SVM-Linear format");
+		throw new Error("Model does not match SVM-Linear format "+modelString);
 	};
 	var labels = matches[1].split(/\s+/);
 	var mapLabelToMapFeatureToWeight = {};

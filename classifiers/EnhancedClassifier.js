@@ -185,18 +185,20 @@ EnhancedClassifier.prototype = {
 
 	sampleToFeaturesAsync: function(sample, featureExtractor, train, callback) {
 		var features = {}
+	
+        	console.vlog("sampleToFeaturesAsync: DEBUG GET FEATURES FROM:"+JSON.stringify(sample, null, 4))
 
 		async.eachSeries(featureExtractor, (function(FE, callback1){
 			var tempsam = JSON.parse(JSON.stringify(sample))
-            FE(tempsam, features, train, this.featureOptions, function(err, results){
-                features = JSON.parse(JSON.stringify(results))
-                callback1()
-            })
-        }).bind(this), function(err){
-        	console.log("DEBUGFEATURES:"+JSON.stringify(features, null, 4))
-        	console.vlog("DEBUGFEATURES:"+JSON.stringify(features, null, 4))
-            callback(null, features)
-        })
+		            FE(tempsam, features, train, this.featureOptions, function(err, results){
+                		features = JSON.parse(JSON.stringify(results))
+		                callback1()
+		            })
+		        }).bind(this), function(err){
+	        	console.log("sampleToFeaturesAsync: DEBUGFEATURES:"+JSON.stringify(features, null, 4))
+	        	console.vlog("sampleToFeaturesAsync: DEBUGFEATURES:"+JSON.stringify(features, null, 4))
+			callback(null, features)
+        		})
 
 		// features = {}
 		// featureExtractor(sample, features, train, this.featureOptions, function(err, results){
@@ -356,6 +358,12 @@ EnhancedClassifier.prototype = {
 
 		async.forEachOfSeries(dataset, (function(datum, dind, callback2){ 
 
+			if (!("input" in datum))
+			{
+				console.vlog("DEBUG: TRAINBATCH: for some reason input not in the datum: "+JSON.stringify(datum, null, 4))
+				process.exit(0)
+			}
+
 			console.vlog("DEBUG: TRAINBATCH: INPUT: "+datum.input.text+" OUTPUT:"+datum.output)
 			
 			if (_.isObject(datum.input))
@@ -368,11 +376,13 @@ EnhancedClassifier.prototype = {
 			var orig = JSON.parse(JSON.stringify(datum))
 		
 			// just in order to eliminate multiclass in output and multisentence in sentences 
-			if (typeof this.preProcessor === 'function')
+/*			if (typeof this.preProcessor === 'function')
 			{
+				console.vlog("DEBUG: TRAINBATCH: post is defined")
 				datum = this.preProcessor(datum)
-				console.log("DEBUG: TRAINBATCH: preProcessor is finished Undefined? "+_.isUndefined(datum))
+				console.vlog("DEBUG: TRAINBATCH: preProcessor is finished Undefined? "+_.isUndefined(datum))
 			}
+*/
 
 			if (!_.isUndefined(datum))
 			{
@@ -399,7 +409,9 @@ EnhancedClassifier.prototype = {
 				}
 				else
 				{
-					console.vlog("DEBUG: TRAINBATCH: features were found in the sample")
+					var features = JSON.parse(JSON.stringify(datum['input']['features']))
+	
+					console.vlog("DEBUG: TRAINBATCH: features were found in the sample: "+JSON.stringify(features, null, 4))
 
 					if (this.multiplyFeaturesByIDF)
 						this.tfidf.addDocument(features)

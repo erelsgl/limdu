@@ -203,21 +203,38 @@ BinaryRelevance.prototype = {
 		var results = {}
 		var output = []
 
+		var testResults = []
+		var testSetCopy = JSON.parse(JSON.stringify(testSet))
+
+		console.vlog("DEBUG: BR: classifyBatch: test of size "+testSet.length)
+		console.vlog("DEBUG: BR: classifyBatch: example of one instance "+JSON.stringify(testSet[0], null, 4))
+		console.vlog("DEBUG: BR: classifyBatch: list of classes: "+_.keys(this.mapClassnameToClassifier))
+
 		for (var label in this.mapClassnameToClassifier) {
+			results[label] = []
+
+			console.vlog("DEBUG: BR: classifyBatch: test for label "+label)
 			var classifier = this.mapClassnameToClassifier[label]
-			var scoreWithExplain = classifier.classifyBatch(testSet)
-			results[label] = scoreWithExplain
+			var scores = classifier.classifyBatch(testSetCopy)
+			console.vlog("DEBUG: BR: classifyBatch: the length of output "+scores.length)
+			results[label] = scores
 		}
 
+		console.vlog("DEBUG: BR: classifyBatch: aggregated results of indexes "+JSON.stringify(results))
+
 		_.each(testSet, function(value, key, list){
-			testSet[key]['output'] = []
+			var output = []
 			_.each(results, function(ar, label, list){
 				if (ar[key]!=0)
-					testSet[key]['output'].push(label)
+					output.push(label)
 			}, this)
+
+			testResults.push({'input': value, 'output': output})
 		}, this)
 
-		return testSet
+		console.vlog("DEBUG: BR: classifyBatch: results "+JSON.stringify(testResults))
+
+		return testResults
 	},
 	
 	getAllClasses: function() {

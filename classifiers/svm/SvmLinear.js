@@ -78,8 +78,7 @@ SvmLinear.prototype = {
             }, this)
 
             // filter out all "out of domain" istances
-			console.log(process.pid+" DEBUGTRAIN: trainsize before compacting "+dataset.length)
-			console.vlog(process.pid+" DEBUGTRAIN: trainsize before compacting "+dataset.length)
+			console.vlog("DEBUGTRAIN: trainBatch: trainsize before compacting "+dataset.length)
 			
 			/*dataset = _.map(dataset, function(datum){
 				if (_.isArray(datum.output))
@@ -93,8 +92,7 @@ SvmLinear.prototype = {
             }, this)*/
 
             dataset = _.compact(dataset)
-			console.log(process.pid+" DEBUGTRAIN: trainsize after compacting "+dataset.length)
-			console.vlog(process.pid+" DEBUGTRAIN: trainsize after compacting "+dataset.length)
+			console.vlog("DEBUGTRAIN: trainBatch: trainsize after compacting "+dataset.length)
 
             //  convert all array-like outputs to just values
 			dataset = _.map(dataset, function(datum){ 
@@ -110,16 +108,12 @@ SvmLinear.prototype = {
 			this.allLabelsCount = _.pairs(_.countBy(this.allLabels, function(num) { return num }))
 			this.allLabelsCount = _.sortBy(this.allLabelsCount, function(num){ return num[1] }).reverse()
 
-			console.log("DEBUGTRAIN: label counts: "+JSON.stringify(this.allLabelsCount))		
-			console.vlog("DEBUGTRAIN: label counts: "+JSON.stringify(this.allLabelsCount))		
-
-			console.log("DEBUGTRAIN: majority class: "+this.allLabelsCount[0][0])
-			console.vlog("DEBUGTRAIN: majority class: "+this.allLabelsCount[0][0])
+			console.vlog("DEBUGTRAIN: trainBatch: label counts: "+JSON.stringify(this.allLabelsCount))		
+			console.vlog("DEBUGTRAIN: trainBatch: majority class: "+this.allLabelsCount[0][0])
 			
 			this.allLabels = _.uniq(this.allLabels)
 
-			console.log("DEBUGTRAIN: all possible labels "+this.allLabels)
-			console.vlog("DEBUGTRAIN: all possible labels "+this.allLabels)
+			console.vlog("DEBUGTRAIN: trainBatch: all possible labels: "+this.allLabels)
 
 			 dataset = _.map(dataset, function(datum){ 
 				datum.output = this.allLabels.indexOf(datum.output)
@@ -129,25 +123,23 @@ SvmLinear.prototype = {
 //				throw new Error(process.pid+" DEBUGTRAIN: single label")
 				
 			//console.log(util.inspect(dataset,{depth:1}));
-			if (this.debug) console.log("trainBatch start");
 			var learnFile = svmcommon.writeDatasetToFile(
 					dataset, this.bias, /*binarize=*/false, this.model_file_prefix+"_"+this.timestamp, "SvmLinear", FIRST_FEATURE_NUMBER);
 			var modelFile = learnFile.replace(/[.]learn/,".model");
 
 			var command = this.train_command+" "+this.learn_args+" "+learnFile + " "+modelFile;
-			console.log(process.pid+" DEBUGTRAIN: running "+command);
+			console.vlog("DEBUGTRAIN: trainBatch: running "+command);
 
 			var result = child_process.execSync(command);
 			if (result.code>0)
 				throw new Error("Failed to execute: "+command);
 
 			this.modelFileString = modelFile;
-			console.log(process.pid+"DEBUGTRAIN: set model file "+modelFile)
-			console.vlog(process.pid+"DEBUGTRAIN: set model file "+modelFile)
+			console.vlog("DEBUGTRAIN: trainBatch: set model file "+modelFile)
 
 			//this.setModel(this.modelFileString)
 
-			if (this.debug) console.log("trainBatch end");
+			// if (this.debug) console.log("trainBatch end");
 		},
 		
 		setModel: function(modelFileString) {
@@ -183,26 +175,49 @@ SvmLinear.prototype = {
 		 * @return the binary classification - 0 or 1.
 		 */
 		
-/*		classifyBatch: function(trainset) {
+		classifyBatch: function(testSet) {
 
+			var timestamp = new Date().getTime()+"_"+process.pid
+			var trainset = []
+			var explain = 0
 
-			_.each(trainset, function(value, key, list){
-				trainset[key].output = 0
+			console.vlog("DEBUGCLASSIFY: classifyBatch: test size: "+testSet.length)
+
+			_.each(testSet, function(value, key, list){
+				trainset.push({ 'input': value, 'output':999 })
 			}, this)
 			
 			var testFile = svmcommon.writeDatasetToFile(
-  */
-//                          trainset, this.bias, /*binarize=*/false, "/tmp/test_"+this.timestamp, "SvmLinear", FIRST_FEATURE_NUMBER);
+                                        trainset, this.bias, /*binarize=*/false, "/tmp/test_"+timestamp, "SvmLinear", FIRST_FEATURE_NUMBER);
 
-/*			var command = this.test_command+" "+testFile + " " + this.modelFileString + " /tmp/out_" + this.timestamp;
+			var command = this.test_command+" "+testFile + " " + this.modelFileString + " /tmp/out_" + timestamp;
+ 			
 			var output = child_process.execSync(command)	
-			console.log(command)
+
+			console.vlog("DEBUGCLASSIFY: classifyBatch: "+command)
+  			console.vlog("DEBUGCLASSIFY: classifyBatch: read result file "+"/tmp/out_" + timestamp)
   			
-			var result = fs.readFileSync("/tmp/out_" + this.timestamp, "utf-8").split("\n")
-  			 			
-			return result
+			var result = fs.readFileSync("/tmp/out_" + timestamp, "utf-8").split("\n")
+
+			console.vlog("DEBUGCLASSIFY: classifyBatch: result "+JSON.stringify(result))
+
+			var resultInt = _.map(_.compact(result), function(num){ return this.allLabels[parseInt(num)] }, this)
+
+			if (result == -1)
+				throw new Error("something happened")
+
+			console.vlog("DEBUGCLASSIFY: classifyBatch: result "+JSON.stringify(resultInt))
+			
+
+		 	return (explain>0?
+		 	 {
+		 	    classes: resultInt,
+		 	    classification: resultInt,
+		 	    explanation: [],
+		 	 }:
+		 	    resultInt  )
 		},
-*/
+
 		classify: function(features, explain, continuous_output) {
 
 			var timestamp = new Date().getTime()+"_"+process.pid

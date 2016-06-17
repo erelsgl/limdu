@@ -610,6 +610,9 @@ EnhancedClassifier.prototype = {
 		var explanations = [];
 
 		console.vlog("DEBUG: ENHANCE: classifyAsync:"+JSON.stringify(sample, null, 4))
+
+		if (!_.isArray(sample['sentences']))
+			sample['sentences'] = [sample['sentences']]
 			
 		async.eachSeries(sample['sentences'], (function(sentence, callback1){
 				
@@ -670,6 +673,58 @@ EnhancedClassifier.prototype = {
 
     		callback_global(null, classes)
 		})
+	},
+
+
+
+	classifyBatchAsync: function(samples, explain, callback_global) {
+
+		var classes = []         
+		var accumulatedClasses = [];
+		var explanations = [];
+		var testSet = []
+
+		console.vlog("DEBUG: classifyBatchAsync: size of test:"+samples.length)
+
+		async.eachSeries(samples, (function(sample, callbacksample){
+
+			console.vlog("DEBUG: classifyBatchAsync: sample:"+JSON.stringify(sample, null, 4))
+			
+
+			if (_.isArray(sample['sentences']))
+				throw new Error("classifyBatchAsync: sentences is array")
+
+			// var sentence = sample['sentences']
+			
+			// if sentences is empty
+			if (sample.sentences.tokens.length==0) return;
+
+			var sample_parted = JSON.parse(JSON.stringify(sample))
+						
+			// sample_parted['sentences'] = sentence
+
+			// we clean attr and values in every fe...
+			// if (typeof this.preProcessor === 'function')
+			// part_filtered.text = this.preProcessor(part)
+							
+			this.sampleToFeaturesAsync(sample_parted, this.featureExtractors, false, (function(err, features){
+
+				this.editFeatureValues(features, /*remove_unknown_features=*/false);
+				testSet.push(this.featuresToArray(features))
+				callbacksample()
+				
+			}).bind(this))
+
+
+		}).bind(this), (function(err){
+
+			console.vlog("DEBUG: classifyBatchAsync: sending further :"+testSet.length)
+			var results = this.classifier.classifyBatch(testSet);
+			console.vlog("DEBUG: classifyBatchAsync: results:"+JSON.stringify(results))
+
+    		callback_global(null, results)
+		
+		}).bind(this))
 	},
 
 

@@ -195,7 +195,6 @@ EnhancedClassifier.prototype = {
 		                callback1()
 		            })
 		        }).bind(this), function(err){
-	        	console.log("sampleToFeaturesAsync: DEBUGFEATURES:"+JSON.stringify(features, null, 4))
 	        	console.vlog("sampleToFeaturesAsync: DEBUGFEATURES:"+JSON.stringify(features, null, 4))
 			callback(null, features)
         		})
@@ -697,7 +696,7 @@ EnhancedClassifier.prototype = {
 			// var sentence = sample['sentences']
 			
 			// if sentences is empty
-			if (sample.sentences.tokens.length==0) return;
+		//	#if (sample.sentences.tokens.length==0) return;
 
 			var sample_parted = JSON.parse(JSON.stringify(sample))
 						

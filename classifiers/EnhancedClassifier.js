@@ -11,7 +11,7 @@ var multilabelutils = require('./multilabel/multilabelutils');
 var fs = require('fs');
 
 
-var log_file = "/tmp/logs/" + process.pid
+var log_file = "~/nlu-server/logs/" + process.pid
 console.vlog = function(data) {
     fs.appendFileSync(log_file, data + '\n', 'utf8')
 };
@@ -186,7 +186,7 @@ EnhancedClassifier.prototype = {
 	sampleToFeaturesAsync: function(sample, featureExtractor, train, callback) {
 		var features = {}
 	
-        	console.vlog("sampleToFeaturesAsync: DEBUG GET FEATURES FROM:"+JSON.stringify(sample, null, 4))
+        	console.vlog("sampleToFeaturesAsync:"+JSON.stringify({"text": sample.input.text, "output": sample.output}, null, 4))
 
 		async.eachSeries(featureExtractor, (function(FE, callback1){
 			var tempsam = JSON.parse(JSON.stringify(sample))
@@ -354,6 +354,7 @@ EnhancedClassifier.prototype = {
 		var pastTrainingSamples = this.pastTrainingSamples;
 
 		var processed_dataset = []
+		console.vlog("DEBUG: TRAINBATCH: start")
 
 		async.forEachOfSeries(dataset, (function(datum, dind, callback2){ 
 
@@ -364,6 +365,10 @@ EnhancedClassifier.prototype = {
 			}
 
 			console.vlog("DEBUG: TRAINBATCH: INPUT: "+datum.input.text+" OUTPUT:"+datum.output)
+
+			if (datum.output.length > 1)
+				console.vlog("DEBUG: TRAINBATCH: MULTILABEL")
+
 			
 			if (_.isObject(datum.input))
 				datum.input.text = this.normalizedSample(datum.input.text);	
@@ -387,6 +392,7 @@ EnhancedClassifier.prototype = {
 			{
 				if (!('features' in datum['input']))
 				{
+					console.vlog("DEBUG: TRAINBATCH: features not in the sample")
 					this.sampleToFeaturesAsync(datum, this.featureExtractors, true, (function(err, features){
 		
 						console.vlog("DEBUG: TRAINBATCH: input: " + orig.input.unproc)
@@ -425,8 +431,10 @@ EnhancedClassifier.prototype = {
 				}
 			}
 			else
-			callback2()
-
+			{	
+				throw new Error("DEBUG: TRAINBATCH: error")
+				callback2()
+			}
 		}).bind(this), (function(err){
 
 //			processed_dataset = _.compact(processed_dataset)

@@ -185,8 +185,21 @@ EnhancedClassifier.prototype = {
 
 	sampleToFeaturesAsync: function(sample, featureExtractor, train, callback) {
 		var features = {}
-	
-        	console.vlog("sampleToFeaturesAsync:"+JSON.stringify({"text": sample.input.text, "output": sample.output}, null, 4))
+
+		var view_sample = {}
+		if (train)
+		{
+			view_sample["text"] = sample["input"]["text"]
+			view_sample["context"] = sample["input"]["context"]
+			view_sample["output"] = sample["output"]
+		}
+		else
+		{
+			view_sample["text"] = sample["text"]
+			view_sample["context"] = sample["context"]
+		}
+
+        	console.vlog("sampleToFeaturesAsync:"+JSON.stringify(view_sample, null, 4))
 
 		async.eachSeries(featureExtractor, (function(FE, callback1){
 			var tempsam = JSON.parse(JSON.stringify(sample))

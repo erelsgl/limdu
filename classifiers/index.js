@@ -1,15 +1,16 @@
 module.exports = {
 	// basic classifiers:
 	//NeuralNetwork: require('./brain/lib/neuralnetwork').NeuralNetwork,
+	Synaptic: require('./synaptic/synaptic'),
 	NeuralNetwork: require('./neural/NeuralNetwork'),
 	Bayesian: require('./bayesian/bayesian'),
 
 	kNN: require('./kNN/kNN'),
-	
+
 	SvmJs: require('./svm/SvmJs'),
 	SvmPerf: require('./svm/SvmPerf'),
 	SvmLinear: require('./svm/SvmLinear'),
-	
+
 	//BayesClassifier: require('./apparatus/lib/apparatus/classifier/bayes_classifier'),
 	//LogisticRegressionClassifier: require('./apparatus/lib/apparatus/classifier/logistic_regression_classifier'),
 	Perceptron: require('./perceptron/PerceptronHash'),
@@ -18,7 +19,7 @@ module.exports = {
 	DecisionTree: require('./decisiontree/DecisionTree'),
 
 	multilabel: require('./multilabel'),
-	
+
 	// meta classifier:
 	EnhancedClassifier: require('./EnhancedClassifier'),
 }

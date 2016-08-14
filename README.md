@@ -38,6 +38,44 @@ You can run the demos from this project: [limdu-demo](https://github.com/erelsgl
 
 ## Binary Classification
 
+### Synaptic - architecture-free neural network library for node.js and the browser:
+
+```js
+var limdu = require('limdu');
+
+var Options = [{ Inputs: 2, Hidden: 2, Outputs: 1 }]
+//All options in https://github.com/cazala/synaptic/wiki/Trainer#options
+
+var Classifier = new limdu.classifiers.Synaptic(Options);
+
+var TrainingSet =
+[
+      { input: [0,0], output: [0] },
+      { input: [0,1], output: [1] },
+      { input: [1,0], output: [1] },
+      { input: [1,1], output: [0] }
+]
+
+Classifier.trainBatch(TrainingSet);
+
+console.log(Classifier.classify([1,0]));
+
+/* Response
+iterations 1000 error 0.7186739001361462 rate 0.1
+iterations 2000 error 0.6491794090041461 rate 0.1
+iterations 3000 error 0.5252686333641889 rate 0.1
+iterations 4000 error 0.5120039035297583 rate 0.1
+iterations 5000 error 0.5074936397380782 rate 0.1
+iterations 6000 error 0.5006203011889089 rate 0.1
+iterations 7000 error 0.028994141931717198 rate 0.1
+iterations 8000 error 0.012387254089101019 rate 0.1
+iterations 9000 error 0.00799815060929144 rate 0.1
+iterations 10000 error 0.005932337534569962 rate 0.1
+[ 0.9954244092543398 ]
+```
+
+Note: this example uses [Synaptic, by Juan Cazala](https://github.com/cazala/synaptic).
+
 ### Batch Learning - learn from an array of input-output pairs:
 
 ```js

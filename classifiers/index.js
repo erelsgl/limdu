@@ -18,6 +18,7 @@ module.exports = {
 	DecisionTree: require('./decisiontree/DecisionTree'),
 
 	multilabel: require('./multilabel'),
+	scikit: require('./scikit'),
 	
 	// meta classifier:
 	EnhancedClassifier: require('./EnhancedClassifier'),

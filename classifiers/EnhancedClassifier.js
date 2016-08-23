@@ -697,7 +697,7 @@ EnhancedClassifier.prototype = {
 			// var sentence = sample['sentences']
 			
 			// if sentences is empty
-			if (sample.sentences.tokens.length==0) return;
+			// if (sample.sentences.tokens.length==0) return;
 
 			var sample_parted = JSON.parse(JSON.stringify(sample))
 						

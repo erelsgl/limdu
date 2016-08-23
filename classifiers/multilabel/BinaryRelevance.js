@@ -4,7 +4,9 @@ var _ = require("underscore")._;
 var multilabelutils = require('./multilabelutils');
 
 var log_file = "~/nlu-server/logs/" + process.pid
+
 console.vlog = function(data) {
+    console.log(data)
     fs.appendFileSync(log_file, data + '\n', 'utf8')
 };
 
@@ -224,6 +226,9 @@ BinaryRelevance.prototype = {
 			}, this)
 
 			testResults.push({'input': value, 'output': output})
+			if (output.length > 1) console.vlog("DEBUG: BR: classifyBatch: multilabel:"+output)
+			if (output.length == 1) console.vlog("DEBUG: BR: classifyBatch: singlelabel:"+output)
+			if (output.length == 0) console.vlog("DEBUG: BR: classifyBatch: zerolabel:"+output)
 		}, this)
 
 		console.vlog("DEBUG: BR: classifyBatch: results "+JSON.stringify(testResults))

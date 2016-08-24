@@ -189,16 +189,16 @@ SvmLinear.prototype = {
 			}, this)
 			
 			var testFile = svmcommon.writeDatasetToFile(
-                                        trainset, this.bias, /*binarize=*/false, "/u/ir/konovav/nlu-server/trainedClassifiers/tempfiles/test_"+timestamp, "SvmLinear", FIRST_FEATURE_NUMBER);
+                                        trainset, this.bias, /*binarize=*/false, "/tmp/logs/test_"+timestamp, "SvmLinear", FIRST_FEATURE_NUMBER);
 
-			var command = this.test_command+" "+testFile + " " + this.modelFileString + " /u/ir/konovav/nlu-server/trainedClassifiers/tempfiles/out_" + timestamp;
+			var command = this.test_command+" "+testFile + " " + this.modelFileString + " /tmp/logs/out_" + timestamp;
  			
 			var output = child_process.execSync(command)	
 
 			console.vlog("DEBUGCLASSIFY: classifyBatch: "+command)
 //  			console.vlog("DEBUGCLASSIFY: classifyBatch: read result file "/out_" + timestamp)
   			
-			var result = fs.readFileSync("/u/ir/konovav/nlu-server/trainedClassifiers/tempfiles/out_" + timestamp, "utf-8").split("\n")
+			var result = fs.readFileSync("/tmp/logs/out_" + timestamp, "utf-8").split("\n")
 
 			console.vlog("DEBUGCLASSIFY: classifyBatch: result "+JSON.stringify(result))
 

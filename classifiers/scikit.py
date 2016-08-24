@@ -7,19 +7,17 @@ from sklearn import tree
 from sklearn.naive_bayes import MultinomialNB
 from sklearn import ensemble
 
-#print 'Number of arguments:', len(sys.argv), 'arguments.'
-if (len(sys.argv)<3):
-	raise ValueError('The number of the parameters is less than 3')
-
+if (len(sys.argv)!=5):
+	raise ValueError('The number of the parameters is not equal 4 '+len(sys.argv))
 
 train_filename = sys.argv[1]
 test_filename = sys.argv[2]
 classifier = sys.argv[3]
+N_FEATURES = sys.argv[4]
 #sys.exit()
 #clf = MultinomialNB(alpha=0.1)
 
-N_FEATURES = 800
-X_train,y_train = load_svmlight_file(train_filename, n_features=N_FEATURES, dtype=np.float64)
+X_train,y_train = load_svmlight_file(train_filename, n_features=N_FEATURES, dtype=np.float64, multilabel=True)
 
 if (classifier == "svm"):
 	clf = SVC(C=100.0, kernel='rbf', cache_size=200);
@@ -39,7 +37,11 @@ else:
 
 clf.fit(X_train.toarray(), y_train)
 
-X_test,y_test = load_svmlight_file(test_filename, n_features=N_FEATURES, dtype=np.float64)
+X_test,y_test = load_svmlight_file(test_filename, n_features=N_FEATURES, dtype=np.float64, multilabel=True)
 y_pred = clf.predict(X_test.toarray())
 #print json.dumps(y_pred,indent=4)
-sys.stdout.write(str(y_pred.tolist()))
+y_pred = list(y_pred)
+
+res = [list(tup) if type(tup)==tuple else [tup] for tup in y_pred]
+
+sys.stdout.write(str(res))

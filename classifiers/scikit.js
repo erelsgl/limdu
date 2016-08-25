@@ -35,14 +35,18 @@ scikit.prototype = {
 		trainBatch: function(dataset) {
 			this.timestamp = new Date().getTime()+"_"+process.pid
 
-			_.each(dataset, function(datum, key, list){
+/*			_.each(dataset, function(datum, key, list){
 				if (!_.isArray(datum.output))
-					// throw new Error("not array "+datum.output)
 					dataset[key]["output"] = [datum.output]
 			}, this)
+*/
 
+			_.each(dataset, function(datum, key, list){
+				if (_.isArray(datum.output))
+					dataset[key]["output"] = datum.output[0]
+			}, this)
 
-			var dataset = _.filter(dataset, function(num){ return num.output.length>0 });
+			// var dataset = _.filter(dataset, function(num){ return num.output.length>0 });
 
 			this.nr_feature = dataset[0]["input"].length
         
@@ -55,10 +59,16 @@ scikit.prototype = {
 			this.allLabels = _.uniq(_.flatten(this.allLabels))
 			console.vlog("DEBUGTRAIN: trainBatch: all possible labels: "+this.allLabels)
 
-			 dataset = _.map(dataset, function(datum){ 
+			/*dataset = _.map(dataset, function(datum){ 
 				datum.output = convertfromLabels(datum.output, this.allLabels)
 			return datum }, this);
-				
+			*/	
+			
+			 dataset = _.map(dataset, function(datum){ 
+				datum.output = this.allLabels.indexOf(datum.output)
+				return datum }, this);
+
+
 			//console.log(util.inspect(dataset,{depth:1}));
 			var learnFile = svmcommon.writeDatasetToFile(
 					dataset, this.bias, /*binarize=*/false, "/tmp/logs/train_svm_" + this.timestamp, "SvmLinear", FIRST_FEATURE_NUMBER);
@@ -105,7 +115,9 @@ scikit.prototype = {
 			console.vlog("DEBUGCLASSIFY: classifyBatch: result "+JSON.stringify(result))
 			console.vlog("DEBUGCLASSIFY: classifyBatch: result number "+result.length)
 
-			var resultInt = _.map(result, function(num){ return converttoLabels(num, this.allLabels) }, this)
+			// var resultInt = _.map(result, function(num){ return converttoLabels(num, this.allLabels) }, this)
+			var resultInt = _.map(result, function(num){ return this.allLabels[parseInt(num)] }, this)
+
 
 			console.vlog("DEBUGCLASSIFY: classifyBatch: result "+JSON.stringify(resultInt))
 			console.vlog("DEBUGCLASSIFY: classifyBatch: result number "+resultInt.length)

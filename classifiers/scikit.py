@@ -24,9 +24,11 @@ if (classifier == "svm"):
 elif (classifier == "decisiontree"):
 	clf = tree.DecisionTreeClassifier()
 elif (classifier == "randomforest"):
-	clf = ensemble.RandomForestClassifier(n_estimators=10)
+	# clf = ensemble.RandomForestClassifier(n_estimators=20, max_depth=None, min_samples_split=1, max_features=log2)
+	clf = ensemble.RandomForestClassifier(n_estimators=20, max_features="auto")
 elif (classifier == "adaboost"):
-	clf = ensemble.AdaBoostClassifier()
+	clf = ensemble.AdaBoostClassifier(n_estimators=100, learning_rate=0.3)
+	# clf = ensemble.AdaBoostClassifier()
 else:
 	raise ValueError("The classifier " + classifier + " is not found")
 #clf = SVC(C=100.0, cache_size=200, class_weight=None, coef0=0.0,

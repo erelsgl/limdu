@@ -33,6 +33,10 @@ console.vlog = function(data) {
 scikit.prototype = {
 		
 		trainBatch: function(dataset) {
+		
+			console.vlog("trainBatch")	
+			console.vlog(JSON.stringify(dataset, null, 4))			
+
 			this.timestamp = new Date().getTime()+"_"+process.pid
 
 /*			_.each(dataset, function(datum, key, list){
@@ -40,6 +44,7 @@ scikit.prototype = {
 					dataset[key]["output"] = [datum.output]
 			}, this)
 */
+			
 
 			_.each(dataset, function(datum, key, list){
 				if (_.isArray(datum.output))
@@ -53,6 +58,8 @@ scikit.prototype = {
             dataset = _.compact(dataset)
 
 			console.vlog("DEBUGTRAIN: trainBatch: trainsize after compacting "+dataset.length)
+	
+              //          dataset = _.filter(dataset, function(num){ return num.output != "" });
 
  
 			this.allLabels = _(dataset).map(function(datum){return datum.output});
@@ -86,6 +93,13 @@ scikit.prototype = {
 		 */
 		
 		classifyBatch: function(testSet) {
+
+
+          if (this.allLabels.length == 1)
+                               {
+                               allLabels = this.allLabels
+                               return Array.apply(null, Array(testSet.length)).map(function (x, i) { return [allLabels[0]] })                          
+                              }
 
 			var timestamp = new Date().getTime()+"_"+process.pid
 			var trainset = []

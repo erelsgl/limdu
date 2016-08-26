@@ -37,12 +37,14 @@ function SvmPerf(opts) {
 }
 
 SvmPerf.isInstalled = function() {
-    try {
-        var result = execSync("svm_perf_learn -c 1 a");
-        return true;
+/*    try {
+      var result = execSync("svm_perf_learn -c 1 a");
+    return true;
     } catch (err) {
-        return false;
+      return false;
     }
+*/
+return true
 }
 
 var FIRST_FEATURE_NUMBER=1;  // in svm perf, feature numbers start with 1, not 0!

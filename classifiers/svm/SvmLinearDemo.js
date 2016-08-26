@@ -1,8 +1,9 @@
 // simple demonstration of binary SVM, based on LibLinear
 
 var SvmLinear = require('./SvmLinear');
+var partitions = require(__dirname+'/../../utils/partitions');
 
-var trainSet = [
+var dataset = [
 		{input: [0,0], output: 0},
 		{input: [1,1], output: 0},
 		{input: [0,1], output: 1},
@@ -12,15 +13,16 @@ var trainSet = [
 //       0.5+x-y = 0
 // or:   -1-2x+2y = 0
 
-
 var classifier = new SvmLinear(
 	{
 		learn_args: "-c 20", 
 		model_file_prefix: "tempfiles/SvmLinearDemo",
-		debug: false
+		train_command: "liblinear_train",
+		test_command: "liblinear_test",
+	        multiclass: false
 	}
 );
-classifier.trainBatch(trainSet);
+classifier.trainBatch(dataset);
 
 console.log("simple classification: ");
 console.dir(classifier.classify([0,2]));  // 1
@@ -29,14 +31,14 @@ console.dir(classifier.classify([1,0]));  // 0
 console.log("model: ");
 console.dir(classifier.mapLabelToMapFeatureToWeight);   // { '0': -1, '1': -2, '2': 2 }
 
-console.log("explained classification: ");
-console.dir(classifier.classify([0,2], 3));  // 1
-console.dir(classifier.classify([1,0], 3));  // 0
+partitions.partitions(dataset.concat(dataset), 2, function(train, test, index) {
 
-console.log("classification with scores: ");
-console.dir(classifier.classify([0,2], 0, true));  // 3
-console.dir(classifier.classify([1,0], 0, true));  // -3
-
-console.log("explained classification with scores: ");
-console.dir(classifier.classify([0,2], 3, true));  // 1
-console.dir(classifier.classify([1,0], 3, true));  // 0
+	console.log("fold: "+index)
+	classifier.trainBatch(train)
+		
+	test.forEach(function(instance) {
+		console.dir("Classify instance:")
+		console.dir(instance)
+		console.dir(classifier.classify(instance.input));
+	});
+});

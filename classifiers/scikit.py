@@ -13,14 +13,16 @@ if (len(sys.argv)!=5):
 train_filename = sys.argv[1]
 test_filename = sys.argv[2]
 classifier = sys.argv[3]
-N_FEATURES = sys.argv[4]
+N_FEATURES = int(sys.argv[4])+1
+
+
 #sys.exit()
 #clf = MultinomialNB(alpha=0.1)
 
 X_train,y_train = load_svmlight_file(train_filename, n_features=N_FEATURES, dtype=np.float64, multilabel=False)
 
 if (classifier == "svm"):
-	clf = SVC(C=100.0, kernel='rbf', cache_size=200);
+	clf = SVC(C=100.0, kernel='linear');
 elif (classifier == "decisiontree"):
 	clf = tree.DecisionTreeClassifier()
 elif (classifier == "randomforest"):
@@ -42,8 +44,9 @@ clf.fit(X_train.toarray(), y_train)
 X_test,y_test = load_svmlight_file(test_filename, n_features=N_FEATURES, dtype=np.float64, multilabel=False)
 y_pred = clf.predict(X_test.toarray())
 #print json.dumps(y_pred,indent=4)
-y_pred = list(y_pred)
+#y_pred = list(y_pred)
 
-res = [list(tup) if type(tup)==tuple else [tup] for tup in y_pred]
+#res = [list(tup) if type(tup)==tuple else [tup] for tup in y_pred]
 
-sys.stdout.write(str(res))
+#sys.stdout.write(str(res))
+sys.stdout.write(str(list(y_pred)))

@@ -16,7 +16,7 @@ exports.toSvmLight = function(dataset, bias, binarize, firstFeatureNumber) {
 	var lines = "";
 	for (var i=0; i<dataset.length; ++i) {
 		var line = (i>0? "\n": "") + 
-			(binarize? (dataset[i].output>0? "1": "-1"): dataset[i].output) +  // in svm-light, the output comes first:
+			(binarize? (dataset[i].output>0? "1": "-1"): dataset[i].output.toString()) +  // in svm-light, the output comes first:
 			featureArrayToFeatureString(dataset[i].input, bias, firstFeatureNumber)
 			;
 		lines += line;

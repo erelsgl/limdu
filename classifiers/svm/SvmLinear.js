@@ -59,10 +59,11 @@ var util  = require('util')
 
 var FIRST_FEATURE_NUMBER=1;  // in lib linear, feature numbers start with 1
 
-var log_file = "/tmp/logs/" + process.pid
+var log_file = "~/nlu-server/logs/" + process.pid
 
 console.vlog = function(data) {
-    fs.appendFileSync(log_file, data + '\n', 'utf8')
+    //fs.appendFileSync(log_file, data + '\n', 'utf8')
+    fs.writeFileSync(log_file, data + '\n', 'utf8')
 };
 
 
@@ -108,6 +109,9 @@ SvmLinear.prototype = {
 				if (_.isArray(datum.output))
 					datum.output = datum.output[0]
 				return datum });            
+
+	
+		 //       dataset = _.filter(dataset, function(num){ return num.output != "" });
 
 			//console.log(process.pid+" DEBUGTRAIN: count output "+JSON.stringify(_.countBy(dataset, function(datum) { return datum.output }), null, 4))
 
@@ -188,6 +192,12 @@ SvmLinear.prototype = {
 		
 		classifyBatch: function(testSet) {
 
+/*	               if (this.allLabels.length == 1)
+                                {
+                                allLabels = this.allLabels
+                                return Array.apply(null, Array(testSet.length)).map(function (x, i) { return [allLabels[0]] })                          
+                                }		
+*/
 			var timestamp = new Date().getTime()+"_"+process.pid
 			var trainset = []
 			var explain = 0
@@ -199,16 +209,16 @@ SvmLinear.prototype = {
 			}, this)
 			
 			var testFile = svmcommon.writeDatasetToFile(
-                                        trainset, this.bias, /*binarize=*/false, "/tmp/test_"+timestamp, "SvmLinear", FIRST_FEATURE_NUMBER);
+                                        trainset, this.bias, /*binarize=*/false, "/tmp/logs/test_"+timestamp, "SvmLinear", FIRST_FEATURE_NUMBER);
 
-			var command = this.test_command+" "+testFile + " " + this.modelFileString + " /tmp/out_" + timestamp;
+			var command = this.test_command+" "+testFile + " " + this.modelFileString + " /tmp/logs/out_" + timestamp;
  			
 			var output = child_process.execSync(command)	
 
 			console.vlog("DEBUGCLASSIFY: classifyBatch: "+command)
-  			console.vlog("DEBUGCLASSIFY: classifyBatch: read result file "+"/tmp/out_" + timestamp)
+//  			console.vlog("DEBUGCLASSIFY: classifyBatch: read result file "/out_" + timestamp)
   			
-			var result = fs.readFileSync("/tmp/out_" + timestamp, "utf-8").split("\n")
+			var result = fs.readFileSync("/tmp/logs/out_" + timestamp, "utf-8").split("\n")
 
 			console.vlog("DEBUGCLASSIFY: classifyBatch: result "+JSON.stringify(result))
 
@@ -219,14 +229,20 @@ SvmLinear.prototype = {
 
 			console.vlog("DEBUGCLASSIFY: classifyBatch: result "+JSON.stringify(resultInt))
 			
-
-		 	return (explain>0?
-		 	 {
-		 	    classes: resultInt,
-		 	    classification: resultInt,
-		 	    explanation: [],
-		 	 }:
-		 	    resultInt  )
+		//	if ((this.allLabels.lenght == 1) && (_.uniq(resultInt).length > 1))
+		//	{
+				console.vlog("MAGIC")
+				console.vlog(JSON.stringify(this.allLabels, null, 4))
+				console.vlog(_.uniq(resultInt).length)
+		//	}
+		 	//return (explain>0?
+		 	 //{
+		 	   // classes: resultInt,
+		 	  //  classification: resultInt,
+		 	   // explanation: [],
+		 	// }:
+		 	    //resultInt  )
+		 	    return resultInt
 		},
 
 		classify: function(features, explain, continuous_output) {
@@ -251,15 +267,15 @@ SvmLinear.prototype = {
 			})
 
 			var testFile = svmcommon.writeDatasetToFile(
-                                        trainset, this.bias, /*binarize=*/false, "/tmp/test_"+timestamp, "SvmLinear", FIRST_FEATURE_NUMBER);
+                                        trainset, this.bias, /*binarize=*/false, "/u/ir/konovav/nlu-server/trainedClassifiers/tempfiles/test_"+timestamp, "SvmLinear", FIRST_FEATURE_NUMBER);
 
-			var command = this.test_command+" "+testFile + " " + this.modelFileString + " /tmp/out_" + timestamp;
+			var command = this.test_command+" "+testFile + " " + this.modelFileString + " /u/ir/konovav/nlu-server/trainedClassifiers/tempfiles/out_" + timestamp;
  			
 			var output = child_process.execSync(command)	
 			console.log(process.pid+" DEBUGCLASSIFY: "+command)
 			console.vlog(process.pid+" DEBUGCLASSIFY: "+command)
   			
-			var result = parseInt(fs.readFileSync("/tmp/out_" + timestamp, "utf-8").split("\n"))
+			var result = parseInt(fs.readFileSync("/u/ir/konovav/nlu-server/trainedClassifiers/tempfiles/out_" + timestamp, "utf-8").split("\n"))
 
 			if (result == -1)
 			{

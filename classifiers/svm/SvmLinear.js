@@ -101,6 +101,9 @@ SvmLinear.prototype = {
 					datum.output = datum.output[0]
 				return datum });            
 
+	
+		 //       dataset = _.filter(dataset, function(num){ return num.output != "" });
+
 			//console.log(process.pid+" DEBUGTRAIN: count output "+JSON.stringify(_.countBy(dataset, function(datum) { return datum.output }), null, 4))
 
 			this.allLabels = _(dataset).map(function(datum){return datum.output});
@@ -178,6 +181,12 @@ SvmLinear.prototype = {
 		
 		classifyBatch: function(testSet) {
 
+/*	               if (this.allLabels.length == 1)
+                                {
+                                allLabels = this.allLabels
+                                return Array.apply(null, Array(testSet.length)).map(function (x, i) { return [allLabels[0]] })                          
+                                }		
+*/
 			var timestamp = new Date().getTime()+"_"+process.pid
 			var trainset = []
 			var explain = 0
@@ -209,14 +218,20 @@ SvmLinear.prototype = {
 
 			console.vlog("DEBUGCLASSIFY: classifyBatch: result "+JSON.stringify(resultInt))
 			
-
-		 	return (explain>0?
-		 	 {
-		 	    classes: resultInt,
-		 	    classification: resultInt,
-		 	    explanation: [],
-		 	 }:
-		 	    resultInt  )
+		//	if ((this.allLabels.lenght == 1) && (_.uniq(resultInt).length > 1))
+		//	{
+				console.vlog("MAGIC")
+				console.vlog(JSON.stringify(this.allLabels, null, 4))
+				console.vlog(_.uniq(resultInt).length)
+		//	}
+		 	//return (explain>0?
+		 	 //{
+		 	   // classes: resultInt,
+		 	  //  classification: resultInt,
+		 	   // explanation: [],
+		 	// }:
+		 	    //resultInt  )
+		 	    return resultInt
 		},
 
 		classify: function(features, explain, continuous_output) {

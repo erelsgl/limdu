@@ -10,7 +10,6 @@ var util = require('../utils/list');
 var multilabelutils = require('./multilabel/multilabelutils');
 var fs = require('fs');
 
-
 var log_file = "~/nlu-server/logs/" + process.pid
 console.vlog = function(data) {
     fs.appendFileSync(log_file, data + '\n', 'utf8')
@@ -100,6 +99,11 @@ var EnhancedClassifier = function(opts) {
 
 
 EnhancedClassifier.prototype = {
+
+	getDataFile: function ()
+	{
+		return this.classifier.getDataFile() 
+	},
 
 	setInstanceFilter: function (instanceFilter) {
 		this.instanceFilter = instanceFilter;

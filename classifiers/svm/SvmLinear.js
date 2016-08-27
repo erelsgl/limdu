@@ -30,6 +30,9 @@ function SvmLinear(opts) {
   	this.train_command = opts.train_command || 'liblinear_train'
   	this.test_command = opts.test_command || 'liblinear_test'
   	this.timestamp = ""
+	
+	this.trainFile = ""
+	this.testFile = ""
 
 	if (!SvmLinear.isInstalled()) {
                 var msg = "Cannot find the executable 'liblinear_train'. Please download it from the LibLinear website, and put a link to it in your path.";
@@ -68,6 +71,15 @@ console.vlog = function(data) {
 
 
 SvmLinear.prototype = {
+
+		getDataFile: function()
+                {
+                        return {
+                                "train": this.trainFile,
+                                "test": this.testFile
+                                }
+                },
+
 		trainOnline: function(features, expected) {
 			throw new Error("LibLinear does not support online training");
 		},
@@ -139,6 +151,8 @@ SvmLinear.prototype = {
 			var learnFile = svmcommon.writeDatasetToFile(
 					dataset, this.bias, /*binarize=*/false, this.model_file_prefix+"_"+this.timestamp, "SvmLinear", FIRST_FEATURE_NUMBER);
 			var modelFile = learnFile.replace(/[.]learn/,".model");
+			
+			this.trainFile = learnFile
 
 			var command = this.train_command+" "+this.learn_args+" "+learnFile + " "+modelFile;
 			console.vlog("DEBUGTRAIN: trainBatch: running "+command);
@@ -211,6 +225,8 @@ SvmLinear.prototype = {
 			var testFile = svmcommon.writeDatasetToFile(
                                         trainset, this.bias, /*binarize=*/false, "/tmp/logs/test_"+timestamp, "SvmLinear", FIRST_FEATURE_NUMBER);
 
+			this.testFile = testFile
+			
 			var command = this.test_command+" "+testFile + " " + this.modelFileString + " /tmp/logs/out_" + timestamp;
  			
 			var output = child_process.execSync(command)	

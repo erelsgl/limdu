@@ -12,6 +12,8 @@ function scikit(opts) {
   	// this.train_command = opts.train_command //|| 'liblinear_train'
   	// this.test_command = opts.test_command //|| 'liblinear_test'
   	// this.timestamp = ""
+	this.trainFile = ""
+	this.testFile = ""
 }
 
 var util  = require('util')
@@ -22,7 +24,6 @@ var util  = require('util')
   , _ = require('underscore')._
 
 var FIRST_FEATURE_NUMBER=1;  // in lib linear, feature numbers start with 1
-var trainFile = ""
 var log_file = "~/nlu-server/logs/" + process.pid
 
 console.vlog = function(data) {
@@ -31,6 +32,14 @@ console.vlog = function(data) {
 };
 
 scikit.prototype = {
+
+		getDataFile: function()
+		{
+			return {
+				"train": this.trainFile,
+				"test": this.testFile
+				}
+		},
 		
 		trainBatch: function(dataset) {
 		
@@ -118,6 +127,8 @@ scikit.prototype = {
                                         trainset, this.bias, /*binarize=*/false, "/tmp/logs/test_svm_" + timestamp, "SvmLinear", FIRST_FEATURE_NUMBER);
 
 			// var command = this.test_command+" "+testFile + " " + this.modelFileString + " /u/ir/konovav/nlu-server/trainedClassifiers/tempfiles/out_" + timestamp;
+	                this.testFile = testFile
+
 			var command = "python "+__dirname+"/scikit.py " + this.trainFile + " " + testFile + " " + this.classifier + " " + this.nr_feature
 			// var command = this.test_command+" "+testFile + " " + this.modelFileString + " /u/ir/konovav/nlu-server/trainedClassifiers/tempfiles/out_" + timestamp;
  	

@@ -31,6 +31,15 @@ var BinaryRelevance = function(opts) {
 
 BinaryRelevance.prototype = {
 
+	getDataFile: function ()
+        	{
+		var output = {}
+		_.each(this.mapClassnameToClassifier, function(value, key, list){
+        		output[key] = value.getDataFile() 
+		}, this)
+                return output
+        	},
+
 	/**
 	 * Tell the classifier that the given sample belongs to the given labels.
 	 * 

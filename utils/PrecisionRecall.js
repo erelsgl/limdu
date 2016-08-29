@@ -8,6 +8,8 @@ var _ = require('underscore')._;
  * @author Erel Segal-haLevi
  * @since 2013-06
  */
+console.vlog = function(data) { fs.appendFileSync(log_file, data + '\n', 'utf8') };
+
 var PrecisionRecall = function() {
 	this.labels = {}
 	this.intents = {}
@@ -98,8 +100,8 @@ PrecisionRecall.prototype = {
         var actualIntents = _.unique(actualClasses)
         var expectedIntents = _.unique(expectedClasses)
 
-	console.log("DEBUGEVAL: addIntentHash: actualIntents: "+JSON.stringify(actualIntents))
-	console.log("DEBUGEVAL: addIntentHash: expectedIntents: "+JSON.stringify(expectedIntents))
+	console.vlog("DEBUGEVAL: addIntentHash: actualIntents: "+JSON.stringify(actualIntents))
+	console.vlog("DEBUGEVAL: addIntentHash: expectedIntents: "+JSON.stringify(expectedIntents))
        
      	if (expectedIntents.length == 1)
 		{
@@ -142,7 +144,7 @@ PrecisionRecall.prototype = {
 				this.intents[expectedIntent]['FN'] += 1 
 		}
 	
-		console.log("DEBUGEVAL: addIntentHash: intents: "+JSON.stringify(this.intents))
+		console.vlog("DEBUGEVAL: addIntentHash: intents: "+JSON.stringify(this.intents))
 	},
 
 	addCasesHash: function (expectedClasses, actualClasses, logTruePositives ) {
@@ -169,8 +171,8 @@ PrecisionRecall.prototype = {
 		actualClasses = hash.normalized(actualClasses);
 		expectedClasses = hash.normalized(expectedClasses);
 		
-		console.log("DEBUGEVAL: addCasesHash: actualClasses: "+JSON.stringify(actualClasses))
-		console.log("DEBUGEVAL: addCasesHash: expectedClasses: "+JSON.stringify(expectedClasses))
+		console.vlog("DEBUGEVAL: addCasesHash: actualClasses: "+JSON.stringify(actualClasses))
+		console.vlog("DEBUGEVAL: addCasesHash: expectedClasses: "+JSON.stringify(expectedClasses))
 
 		var allTrue = true;
 		for (var actualClass in actualClasses) {
@@ -226,7 +228,7 @@ PrecisionRecall.prototype = {
 		if (explanations['FN'].length == 0)
 			delete explanations['FN']
 
-                console.log("DEBUGEVAL: addCasesHash: explanations: "+JSON.stringify(explanations))
+                console.vlog("DEBUGEVAL: addCasesHash: explanations: "+JSON.stringify(explanations))
 
 		return explanations;
 	},

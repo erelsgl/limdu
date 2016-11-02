@@ -144,7 +144,7 @@ PrecisionRecall.prototype = {
 				this.intents[expectedIntent]['FN'] += 1 
 		}
 	
-		console.vlog("DEBUGEVAL: addIntentHash: intents: "+JSON.stringify(this.intents))
+		console.vlog("DEBUGEVAL: addIntentHash: intents: "+JSON.stringify(this.intents, null, 4))
 	},
 
 	addCasesHash: function (expectedClasses, actualClasses, logTruePositives ) {
@@ -281,6 +281,8 @@ PrecisionRecall.prototype = {
 		var temp_stats = {}
 		
 		this.retrieveLabels()
+		
+		console.vlog("DEBUGEVAL: labels: "+ JSON.stringify(this.labels, null, 4))
 
 		var labelsstats = _.values(this.labels)
 
@@ -288,15 +290,21 @@ PrecisionRecall.prototype = {
 
 			temp_stats[param] = _.pluck(labelsstats, param)
 
+			console.vlog("DEBUGEVAL: temp_stats: param: "+param+" plucked: "+ JSON.stringify(temp_stats[param], null, 4))
 			// temp_stats[param] = _.filter(temp_stats[param], function(elem){ return (!_.isNaN(elem) && !_.isNull(elem) && elem>-1)  })
 			// temp_stats[param] = _.reduce(temp_stats[param], function(memo, num){ if (!_.isNaN(num) && !_.isNull(num) && num>-1) {return (memo + num)} else return memo }) / temp_stats[param].length
 			temp_stats[param] = _.reduce(temp_stats[param], function(memo, num){ if (!_.isNaN(num)) {return (memo + num)} else return memo }, 0) / temp_stats[param].length
 		})
+	
+		console.vlog("DEBUGEVAL: temp_stats: "+ JSON.stringify(temp_stats, null, 4))
 
 		_.each(['TP', 'FP', 'FN'], function(param, key, list){ 
 			stats[param] = _.pluck(labelsstats, param)
 			stats[param] = _.reduce(stats[param], function(memo, num){ return memo + num })
 		})
+
+
+		console.vlog("DEBUGEVAL: INTENTS: "+ JSON.stringify(this.intents, null, 4))
 
 		_.each(this.intents, function(value, key, list){
 			this.intents[key]["Recall"] = this.intents[key]['TP']/(this.intents[key]['TP']+this.intents[key]['FN'])

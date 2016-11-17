@@ -114,6 +114,8 @@ BinaryRelevance.prototype = {
 		// train all classifiers:
 		for (var label in mapClassnameToDataset) {
 			console.vlog("DEBUG: BR: trainBatch: class:"+label);
+			console.vlog("DEBUG: BR: trainBatch: class:"+label+ " positive: "+_.filter(mapClassnameToDataset[label], function(num){ return num.output == 1}).length + " negative: "+_.filter(mapClassnameToDataset[label], function(num){ return num.output == 0}));
+
 			this.mapClassnameToClassifier[label]
 					.trainBatch(mapClassnameToDataset[label]);
 		}

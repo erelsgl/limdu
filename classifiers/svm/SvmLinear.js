@@ -33,6 +33,7 @@ function SvmLinear(opts) {
 	
 	this.trainFile = ""
 	this.testFile = ""
+	this.modelFile = ""
 
 	if (!SvmLinear.isInstalled()) {
                 var msg = "Cannot find the executable 'liblinear_train'. Please download it from the LibLinear website, and put a link to it in your path.";
@@ -74,9 +75,13 @@ SvmLinear.prototype = {
 
 		getDataFile: function()
                 {
+			fs.writeFileSync("/tmp/logs/features_map_"+this.timestamp, JSON.stringify(this.featureLookupTable, null, 4), 'utf8')
+		
                         return {
                                 "train": this.trainFile,
-                                "test": this.testFile
+                                "test": this.testFile,
+                                "model": this.modelFileString,
+				"features": "/tmp/logs/features_map_"+this.timestamp
                                 }
                 },
 
@@ -217,7 +222,7 @@ SvmLinear.prototype = {
 			var explain = 0
 
 			console.vlog("DEBUGCLASSIFY: classifyBatch: test size: "+testSet.length)
-
+			
 			_.each(testSet, function(value, key, list){
 				trainset.push({ 'input': value, 'output':999 })
 			}, this)

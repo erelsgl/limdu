@@ -14,6 +14,11 @@ var PrecisionRecall = function() {
 	this.labels = {}
 	this.intents = {}
 	this.confusion = {} // only in single label case
+	this.multi = {
+				'all':0,
+				'accuracy':0,
+				'coverage':0
+				}
 
 	this.confusion_intents = {} // only in single label case
 	
@@ -173,6 +178,15 @@ PrecisionRecall.prototype = {
 		
 		console.vlog("DEBUGEVAL: addCasesHash: actualClasses: "+JSON.stringify(actualClasses))
 		console.vlog("DEBUGEVAL: addCasesHash: expectedClasses: "+JSON.stringify(expectedClasses))
+
+		if (_.keys(expectedClasses).length > 1)
+			multi.all += 1
+
+		if (_.isEqual(_.keys(expectedClasses).sort(), _.keys(actualClasses).sort()))
+			multi.accuracy += 1
+
+		if (_.isEqual(actualClasses.sort(), _.intersection(expectedClasses.sort(), actualClasses.sort())))
+			multi.coverage += 1
 
 		var allTrue = true;
 		for (var actualClass in actualClasses) {
@@ -346,6 +360,10 @@ PrecisionRecall.prototype = {
 		this.FP = stats.FP
 		this.FN = stats.FN
 		this.Accuracy = (this.TRUE) / (this.count);
+		
+		this["multi-Accuracy"] = multi.accuracy/multi.all
+		this["multi-Coverage"] = multi.coverage/multi.all
+		
 		this["macro-Precision"] = temp_stats['Precision']
 		this["macro-Recall"] = temp_stats['Recall']
 		this["macro-F1"] = temp_stats['F1']

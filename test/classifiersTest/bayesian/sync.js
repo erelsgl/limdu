@@ -1,3 +1,9 @@
+#!mocha
+
+// These tests were mostly adapted from the 'classifier' project by Heather Arthur:
+// https://github.com/harthur/classifier
+
+
 var assert = require('should'),
     classifiers = require("../../../classifiers");
 
@@ -37,10 +43,10 @@ function testBasic(createNewClassifierFunction) {
   assert.equal(bayes.classify(wordcounts("check out the docs")), "notspam");
   assert.equal(bayes.classify(wordcounts("recently, I've been thinking that I should")), "notspam");
   assert.equal(bayes.classify(wordcounts("come buy these cheap pills")), "spam");
-  
+
 
   var json = JSON.stringify(bayes.toJSON());
-  
+
   var bayes2 = createNewClassifierFunction();
   bayes2.fromJSON(JSON.parse(json));
 

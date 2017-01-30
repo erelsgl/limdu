@@ -1,6 +1,7 @@
+#!mocha
 /**
  * a unit-test for Multi-Label classification
- * 
+ *
  * @author Erel Segal-Halevi
  * @since 2013-08
  */

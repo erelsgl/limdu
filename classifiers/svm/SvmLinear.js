@@ -1,14 +1,14 @@
 /**
  * A wrapper for the LibLinear package, by Fan, Chang, Hsieh, Wang and Lin.
- * 
- * To use this wrapper, the LibLinear executable (liblinear_train) should be in your path. 
- * 
+ *
+ * To use this wrapper, the LibLinear executable (liblinear_train) should be in your path.
+ *
  * You can download LibLinear here: http://www.csie.ntu.edu.tw/~cjlin/liblinear/
  * subject to the copyright license.
  *
  * @author Erel Segal-haLevi
  * @since 2013-09-09
- * 
+ *
  * @param opts options: <ul>
  *	<li>learn_args - a string with arguments for liblinear_train
  *  <li>model_file_prefix - prefix to path to model file (optional; the default is to create a temporary file in the system temp folder).
@@ -20,7 +20,7 @@ function SvmLinear(opts) {
 	if (!SvmLinear.isInstalled()) {
 		var msg = "Cannot find the executable 'liblinear_train'. Please download it from the LibLinear website, and put a link to it in your path.";
 		console.error(msg)
-		throw new Error(msg); 
+		throw new Error(msg);
 	}
 	this.learn_args = opts.learn_args || "";
 	this.model_file_prefix = opts.model_file_prefix || null;
@@ -39,14 +39,11 @@ function SvmLinear(opts) {
 }
 
 SvmLinear.isInstalled = function() {
-/*    try {
-        var result = execSync(this.train_command);
-        return true;
-    } catch (err) {
-	if (!('stderr' in err))
-		return true
-        return err["stderr"].length == 0
-    }*/
+	try {
+	    var result = execSync(this.train_command);
+	} catch (err) {
+	    return false
+	}
 	return true
 };
 
@@ -68,7 +65,7 @@ SvmLinear.prototype = {
 		/**
 		 * Send the given dataset to liblinear_train.
 		 *
-		 * @param dataset an array of samples of the form {input: [value1, value2, ...] , output: 0/1} 
+		 * @param dataset an array of samples of the form {input: [value1, value2, ...] , output: 0/1}
 		 */
 		trainBatch: function(dataset) {
 			this.timestamp = new Date().getTime()+"_"+process.pid
@@ -85,15 +82,15 @@ SvmLinear.prototype = {
             }, this)
 
             //  convert all arraay-like outputs to just values
-			dataset = _.map(dataset, function(datum){ 
+			dataset = _.map(dataset, function(datum){
 				if (_.isArray(datum.output))
 					datum.output = datum.output[0]
-				return datum });            
+				return datum });
 
 			this.allLabels = _(dataset).map(function(datum){return datum.output});
 			this.allLabels = _.uniq(_.flatten(this.allLabels))
 
-			// dataset = _.map(dataset, function(datum){ 
+			// dataset = _.map(dataset, function(datum){
 			// 	datum.output = this.allLabels.indexOf(datum.output)
 			// 	return datum });
 
@@ -119,7 +116,7 @@ SvmLinear.prototype = {
 
 			if (this.debug) console.log("trainBatch end");
 		},
-		
+
 		setModel: function(modelFileString) {
 			// this.modelFileString = modelFileString;
 			this.modelString = fs.readFileSync(modelFileString, "utf-8")
@@ -127,37 +124,37 @@ SvmLinear.prototype = {
 			this.allLabels = Object.keys(this.mapLabelToMapFeatureToWeight);
 			if (this.debug) console.dir(this.mapLabelToMapFeatureToWeight);
 		},
-		
+
 		getModelWeights: function() {
 			if (!this.mapLabelToMapFeatureToWeight)
                                 this.setModel(this.modelFileString)
 			return (this.multiclass? this.mapLabelToMapFeatureToWeight: this.mapLabelToMapFeatureToWeight[1]);
 		},
-	
+
 		/**
 		 * @param features - a feature-value hash.
-		 * @param explain - int - if positive, an "explanation" field, with the given length, will be added to the result.  
+		 * @param explain - int - if positive, an "explanation" field, with the given length, will be added to the result.
 		 * @param continuous_output if true, return the net classification score. If false [default], return 0 or 1.
 		 * @return the binary classification - 0 or 1.
 		 */
-		
+
 		classifyBatch: function(trainset) {
 
 			// console.log(JSON.stringify(this.modelFileString, null, 4))
 			_.each(trainset, function(value, key, list){
 				trainset[key].output = 0
 			}, this)
-			
+
 			var testFile = svmcommon.writeDatasetToFile(
                                         trainset, this.bias, /*binarize=*/false, "/tmp/test_"+this.timestamp, "SvmLinear", FIRST_FEATURE_NUMBER);
 
 			var command = this.test_command+" "+testFile + " " + this.modelFileString + " /tmp/out_" + this.timestamp;
- 			
-			var output = child_process.execSync(command)	
+
+			var output = child_process.execSync(command)
 			console.log(command)
-  			
+
 			var result = fs.readFileSync("/tmp/out_" + this.timestamp, "utf-8").split("\n")
-  			 			
+
 			return result
 		},
 
@@ -171,7 +168,7 @@ SvmLinear.prototype = {
 						!continuous_output?   this.allLabels[0]:
 							!this.multiclass? 1.0:
 							                  [[this.allLabels[0], 1.0]]);
-				return (explain>0? 
+				return (explain>0?
 						{
 							classes: result,
 							explanation: ["Single label ("+result+") - no classification needed"],
@@ -185,19 +182,19 @@ SvmLinear.prototype = {
 
 				var scoreWithExplain = svmcommon.classifyWithModelMap(
 					mapFeatureToWeight, this.bias, features, explain, /*continuous_output=*/true, this.featureLookupTable);
-				
+
 				var score = (explain>0? scoreWithExplain.classification: scoreWithExplain);
-				
+
 				var labelAndScore = [parseInt(label), score];
 				if (scoreWithExplain.explanation && explain>0) {
-					labelAndScore.push(this.multiclass? 
+					labelAndScore.push(this.multiclass?
 						scoreWithExplain.explanation.join(" "):
 						scoreWithExplain.explanation)
 				}
 
 				labels.push(labelAndScore);
 			}
-			
+
 			labels.sort(function(a,b) {return b[1]-a[1]}); // sort by decreasing score
 
 			if (explain>0) {
@@ -211,12 +208,12 @@ SvmLinear.prototype = {
 					var explanations = (labels[0][0]>0? labels[0][2]: labels[1][2])
 				}
 			}
-			
+
 			var result = (
 				!continuous_output?   labels[0][0]:
 					!this.multiclass? (labels[0][0]>0? labels[0][1]: labels[1][1]):
 					                  labels);
-			return (explain>0? 
+			return (explain>0?
 				{
 					classes: result,
 					classification: result,
@@ -226,18 +223,18 @@ SvmLinear.prototype = {
 		},
 
 		/**
-		 * Link to a FeatureLookupTable from a higher level in the hierarchy (typically from an EnhancedClassifier), used ONLY for generating meaningful explanations. 
+		 * Link to a FeatureLookupTable from a higher level in the hierarchy (typically from an EnhancedClassifier), used ONLY for generating meaningful explanations.
 		 */
 		setFeatureLookupTable: function(featureLookupTable) {
 			this.featureLookupTable = featureLookupTable;
 		},
-		
+
 		toJSON: function() {
-			return this.mapFeatureToWeight; 
+			return this.mapFeatureToWeight;
 		},
-		
+
 		fromJSON: function(json) {
-			this.mapFeatureToWeight = json;  
+			this.mapFeatureToWeight = json;
 		},
 };
 
@@ -279,7 +276,7 @@ function modelStringToModelMap(modelString) {
 
 	var weightsMatrix = matches[3];
 	// each line represents a feature; each column represents a label:
-	
+
 	var weightsLines = weightsMatrix.split(NEWLINE);
 	for (var feature in weightsLines) {
 		var weights = weightsLines[feature].split(/\s+/);
@@ -306,5 +303,3 @@ function modelStringToModelMap(modelString) {
 
 
 module.exports = SvmLinear;
-
-

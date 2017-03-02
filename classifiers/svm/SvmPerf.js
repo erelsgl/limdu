@@ -1,14 +1,14 @@
 /**
  * A wrapper for Thorsten Joachims' SVM-perf package.
- * 
- * To use this wrapper, the SVM-perf executable (svm_perf_learn) should be in your path. 
- * 
+ *
+ * To use this wrapper, the SVM-perf executable (svm_perf_learn) should be in your path.
+ *
  * You can download SVM-perf here: http://www.cs.cornell.edu/people/tj/svm_light/svm_perf.html
  * subject to the copyright license.
  *
  * @author Erel Segal-haLevi
  * @since 2013-09-02
- * 
+ *
  * @param opts options: <ul>
  *	<li>learn_args - a string with arguments for svm_perf_learn  (see http://www.cs.cornell.edu/people/tj/svm_light/svm_perf.html )
  *  <li>model_file_prefix - prefix to path to model file (optional; the default is to create a temporary file in the system temp folder).
@@ -18,15 +18,15 @@
 var fs   = require('fs')
   , util  = require('util')
   , execSync = require('child_process').execSync
-  , svmcommon = require('./svmcommon')	
+  , svmcommon = require('./svmcommon')
   , _ = require("underscore")._;
-  
+
 
 function SvmPerf(opts) {
 	if (!SvmPerf.isInstalled()) {
 	 	var msg = "Cannot find the executable 'svm_perf_learn'. Please download it from the SvmPerf website, and put a link to it in your path.";
 	 	console.error(msg)
-	 	throw new Error(msg); 
+	 	throw new Error(msg);
 	}
 	this.learn_args = opts.learn_args || "";
 	this.learn_args += " --b 0 ";  // we add the bias here, so we don't need SvmPerf to add it
@@ -37,14 +37,12 @@ function SvmPerf(opts) {
 }
 
 SvmPerf.isInstalled = function() {
-/*    try {
-      var result = execSync("svm_perf_learn -c 1 a");
-    return true;
-    } catch (err) {
-      return false;
-    }
-*/
-return true
+  try {
+    var result = execSync("svm_perf_learn");
+  } catch (err) {
+    return false;
+  }
+  return true
 }
 
 var FIRST_FEATURE_NUMBER=1;  // in svm perf, feature numbers start with 1, not 0!
@@ -58,18 +56,18 @@ SvmPerf.prototype = {
 		/**
 		 * Send the given dataset to svm_perf_learn.
 		 *
-		 * @param dataset an array of samples of the form {input: [value1, value2, ...] , output: 0/1} 
+		 * @param dataset an array of samples of the form {input: [value1, value2, ...] , output: 0/1}
 		 */
 		trainBatch: function(dataset) {
 			if (this.debug) console.log("trainBatch start");
-			
+
 			var timestamp = new Date().getTime()+"_"+process.pid
 			var learnFile = svmcommon.writeDatasetToFile(dataset, this.bias, /*binarize=*/true, this.model_file_prefix+"_"+timestamp, "SvmPerf", FIRST_FEATURE_NUMBER);
 			var modelFile = learnFile.replace(/[.]learn/,".model");
 			var command = "svm_perf_learn "+this.learn_args+" "+learnFile + " "+modelFile;
 			if (this.debug) console.log("running "+command);
 			console.log(command)
-	
+
 			var result = execSync(command);
 			if (result.code>0) {
 				console.dir(result);
@@ -80,7 +78,7 @@ SvmPerf.prototype = {
 			this.setModel(fs.readFileSync(modelFile, "utf-8"));
 			if (this.debug) console.log("trainBatch end");
 		},
-		
+
 		setModel: function(modelString) {
 			this.modelString = modelString;
 			this.mapFeatureToWeight = modelStringToModelMap(modelString);  // weights in modelMap start from 0 (- the bias).
@@ -100,14 +98,14 @@ SvmPerf.prototype = {
 			featlist = _.sortBy(featlist, function(num){return num[1]})
 			return featlist
 		},
-		
+
 		getModelWeights: function() {
 			return this.mapFeatureToWeight;
 		},
 
 		/**
 		 * @param features - a feature-value hash.
-		 * @param explain - int - if positive, an "explanation" field, with the given length, will be added to the result.  
+		 * @param explain - int - if positive, an "explanation" field, with the given length, will be added to the result.
 		 * @param continuous_output if true, return the net classification score. If false [default], return 0 or 1.
 		 * @return the binary classification - 0 or 1.
 		 */
@@ -117,19 +115,19 @@ SvmPerf.prototype = {
 		},
 
 		/**
-		 * Link to a FeatureLookupTable from a higher level in the hierarchy (typically from an EnhancedClassifier), used ONLY for generating meaningful explanations. 
+		 * Link to a FeatureLookupTable from a higher level in the hierarchy (typically from an EnhancedClassifier), used ONLY for generating meaningful explanations.
 		 */
 		setFeatureLookupTable: function(featureLookupTable) {
 			//console.log("SVMPERF setFeatureLookupTable "+featureLookupTable);
 			this.featureLookupTable = featureLookupTable;
 		},
-		
+
 		toJSON: function() {
-			return this.mapFeatureToWeight; 
+			return this.mapFeatureToWeight;
 		},
-		
+
 		fromJSON: function(json) {
-			this.mapFeatureToWeight = json;  
+			this.mapFeatureToWeight = json;
 		},
 };
 
@@ -139,7 +137,7 @@ SvmPerf.prototype = {
  */
 
 var SVM_PERF_MODEL_PATTERN = new RegExp(
-		"[\\S\\s]*"+ 
+		"[\\S\\s]*"+
 		"^([\\S\\s]*) # threshold b[\\S\\s]*"+  // parse the threshold line
 		"^([\\S\\s]*) #[\\S\\s]*" + // parse the weights line
 		"", "m");
@@ -161,7 +159,7 @@ function modelStringToModelMap(modelString) {
 	var featuresAndWeights = matches[2].split(" ");
 	var mapFeatureToWeight = {};
 	//mapFeatureToWeight.threshold = threshold; // not needed - we use our own bias
-	
+
 	//String alphaTimesY = featuresAndWeights[0]; // always 1 in svmperf
 	for (var i=1; i<featuresAndWeights.length; ++i) {
 		var featureAndWeight = featuresAndWeights[i];
@@ -182,4 +180,3 @@ function modelStringToModelMap(modelString) {
 
 
 module.exports = SvmPerf;
-

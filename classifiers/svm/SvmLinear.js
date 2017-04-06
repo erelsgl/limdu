@@ -15,47 +15,42 @@
  *  <li>bias - constant (bias) factor (default: 1).
  *  <li>multiclass - if true, the 'classify' function returns an array [label,score]. If false (default), it returns only a score.
  */
+ 
+ var util  = require('util')
+   , child_process = require('child_process')
+   , exec = require('child_process').exec
+   , fs   = require('fs')
+   , svmcommon = require('./svmcommon')
+   , _ = require('underscore')._
+
+ var FIRST_FEATURE_NUMBER=1;  // in lib linear, feature numbers start with 1
+
 
 function SvmLinear(opts) {
-	if (!SvmLinear.isInstalled()) {
-		var msg = "Cannot find the executable 'liblinear_train'. Please download it from the LibLinear website, and put a link to it in your path.";
-		console.error(msg)
-		throw new Error(msg);
-	}
 	this.learn_args = opts.learn_args || "";
 	this.model_file_prefix = opts.model_file_prefix || null;
 	this.bias = opts.bias || 1.0;
 	this.multiclass = opts.multiclass || false;
 	this.debug = opts.debug||false;
-  	this.train_command = opts.train_command || 'liblinear_train'
-  	this.test_command = opts.test_command || 'liblinear_test'
-  	this.timestamp = ""
+	this.train_command = opts.train_command || 'liblinear_train';
+	this.test_command = opts.test_command || 'liblinear_test';
+	this.timestamp = ""
 
 	if (!SvmLinear.isInstalled()) {
                 var msg = "Cannot find the executable 'liblinear_train'. Please download it from the LibLinear website, and put a link to it in your path.";
                 console.error(msg)
                 throw new Error(msg);
-        }
+  }
 }
 
 SvmLinear.isInstalled = function() {
 	try {
-	    var result = execSync(this.train_command);
+	    var result = child_process.execSync('liblinear_train');
 	} catch (err) {
 	    return false
 	}
 	return true
 };
-
-var util  = require('util')
-  , child_process = require('child_process')
-  , exec = require('child_process').exec
-  , fs   = require('fs')
-  , svmcommon = require('./svmcommon')
-  , _ = require('underscore')._
-
-var FIRST_FEATURE_NUMBER=1;  // in lib linear, feature numbers start with 1
-
 
 SvmLinear.prototype = {
 		trainOnline: function(features, expected) {

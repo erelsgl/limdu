@@ -128,8 +128,12 @@ DecisionTree.prototype = {
             while (root.type !== "result") {
                 var attr = root.name;
                 var sampleVal = features[attr];
-                        var childNode = _.detect(root.vals,function(x) { return x.name == sampleVal });                        
-                        root = childNode.child;
+                        var childNode = _.detect(root.vals,function(x) { return x.name == sampleVal });
+                        if (childNode) {
+                                root = childNode.child;
+                        } else {
+                                root = root.vals[0].child;
+                        }
                 }
             return root.val;
 		},

@@ -177,6 +177,10 @@ PrecisionRecall.prototype = {
 		return this.labels
 	},
 
+	
+	/**
+	 * After the experiment is done, call this method to calculate the performance statistics.
+	 */
 	calculateStats: function()
 	{
 		var stats = {}
@@ -212,195 +216,35 @@ PrecisionRecall.prototype = {
 		this.microF1 = 2 / (1/this.microRecall + 1/this.microPrecision);
 		this.HammingLoss = (stats.FN+stats.FP) / (stats.FN+stats.TP); // "the percentage of the wrong labels to the total number of labels"
 		this.HammingGain = 1-this.HammingLoss;
-		
-		// this.shortStatsString = sprintf("Accuracy=%d/%d=%1.0f%% HammingGain=1-%d/%d=%1.0f%% Precision=%1.0f%% Recall=%1.0f%% F1=%1.0f%% timePerSample=%1.0f[ms]",
-				// this.TRUE, this.count, this.Accuracy*100, (this.FN+this.FP), (this.FN+this.TP), this.HammingGain*100, this.Precision*100, this.Recall*100, this.F1*100, this.timePerSampleMillis);
-		
-		// _.each(this.labels, function(st, lab, list){ 
-		// 	_.each(st, function(val, par, list){ 
-		// 		stats[lab+"_"+par] = val
-		// 	}, this)
-		// }, this)
+		this.shortStatsString = sprintf("Accuracy=%d/%d=%1.0f%% HammingGain=1-%d/%d=%1.0f%% Precision=%1.0f%% Recall=%1.0f%% F1=%1.0f%% timePerSample=%1.0f[ms]",
+this.TRUE, this.count, this.Accuracy*100, (this.FN+this.FP), (this.FN+this.TP), this.HammingGain*100, this.Precision*100, this.Recall*100, this.F1*100, this.timePerSampleMillis);
+	},
 
-		// return stats
-	}
+
+calculateMacroAverageStats: function(numOfFolds) {
+	hash.multiply_scalar(this, 1.0/numOfFolds);
+	this.shortStatsString = sprintf("Accuracy=%1.0f%% HammingGain=%1.0f%% Precision=%1.0f%% Recall=%1.0f%% F1=%1.0f%% timePerSample=%1.0f[ms]",
+			this.Accuracy*100, this.HammingGain*100, this.Precision*100, this.Recall*100, this.F1*100, this.timePerSampleMillis);
+},
+
+
+/**
+ * @return the full set of statistics for the most recent experiment.
+ */
+fullStats: function() { 
+	return this; 
+},
+
+/**
+ * @return a one-line summary of the main results of the most recent experiment.
+ */
+shortStats: function() {
+	return this.shortStatsString;
+}
 }
 
 module.exports = PrecisionRecall;
 
 
-// example of usage see in test
-	// addCasesHashSeq: function (expectedClasses, actualClasses, logTruePositives ) {
 
-	// 	var ex = []
-	// 	var ac = []
-	// 	var matchlist = []
-
-	// 	// clean up expected list
-	// 	_.each(expectedClasses, function(expected, key, list){ 
-	// 		if ((expected.length == 2) || (expected.length == 3))
-	// 			ex.push(expected)
-	// 	}, this)
-
-	// 	// ac = actualClasses
-	// 	// // filtering actual classes		
-	// 	// _.each(actualClasses, function(actual, key, list){ 
-	// 	// 	var found = _.filter(ac, function(num){ return ((num[0] == actual[0]) && (this.intersection(num[1], actual[1]) == true)) }, this);
-	// 	// 	if (found.length == 0)
-	// 	// 		ac.push(actual)
-	// 	// }, this)
-
-	// 	// console.log(JSON.stringify(actualClasses, null, 4))
-
-	// 	// var ac = this.uniquecandidate(this.uniqueaggregate(actualClasses))
-	// 	var ac = actualClasses
-
-
-	// 	// filling interdependencies between labels 
-	// 	// for every candidate (actual) it looks for intersection between actual labels with different 
-	// 	// intents, intersection means that different intents came to the common substring, then arrange 
-	// 	// all the data in the hash, and mention only keyphrases.
-
-	// 	_.each(ac, function(actual, key, list){
-	// 	if (actual.length > 3)
-	// 		{	 
-	// 		label = actual[0]
-	// 		// keyphrase
-	// 		str = actual[2]
-	// 		if (!(label in this.dep))
-	// 			{
-	// 			this.dep[label] = {}
-	// 			this.dep[label][label] = []
-	// 			}
-	// 		this.dep[label][label].push(str)
-
-	// 		// intersection, different intents but actual intersection
-	// 		var found = _.filter(ac, function(num){ return ((num[0] != actual[0]) && (this.intersection(num[1], actual[1]) == true)) }, this);
-	// 		_.each(found, function(sublabel, key, list){
-	// 			if (!(sublabel[0] in this.dep[label]))
-	// 				this.dep[label][sublabel[0]] = []
-	// 			this.dep[label][sublabel[0]].push([[actual[2],actual[4]], [sublabel[2],sublabel[4]]])
-	// 		}, this)
-	// 		}
-	// 	}, this)
-
-	// 	var explanations = {};
-	// 	explanations['TP'] = []; explanations['FP'] = []; explanations['FN'] = [];
-		
-	// 	var explanations_detail = {};
-	// 	explanations_detail['TP'] = []; explanations_detail['FP'] = []; explanations_detail['FN'] = [];
-		
-	// 	var allTrue = true;
-	// 	for (var actualClassindex in ac) {
-			
-	// 		if (!(ac[actualClassindex][0] in this.labels)) {
-	// 			this.labels[ac[actualClassindex][0]]={}
-	// 			this.labels[ac[actualClassindex][0]]['TP']=0
-	// 			this.labels[ac[actualClassindex][0]]['FP']=0
-	// 			this.labels[ac[actualClassindex][0]]['FN']=0
-	// 			}
-
-	// 		var found = false
-	// 		_.each(ex, function(exc, key, list){
-	// 			if (ac[actualClassindex][0] == exc[0])
-	// 				{
-	// 				if ((exc[1].length == 0) || (ac[actualClassindex][1][0] == -1))
-	// 					{
-	// 					found = true
-	// 					matchlist.push(ac[actualClassindex])
-	// 					}
-	// 				else
-	// 					{
-	// 					if (this.intersection(ac[actualClassindex][1], exc[1]))
-	// 						{
-	// 						found = true
-	// 						matchlist.push(ac[actualClassindex])
-	// 						}
-	// 					}
-	// 				}
-	// 		}, this)
-
-	// 		if (found) { 
-	// 			if (logTruePositives)
-	// 				{
-	// 					explanations['TP'].push(ac[actualClassindex][0]);
-	// 					explanations_detail['TP'].push(ac[actualClassindex]);
-	// 					this.labels[ac[actualClassindex][0]]['TP'] += 1
-	// 					this.TP++
-	// 				}
-	// 		} else {
-	// 			explanations['FP'].push(ac[actualClassindex][0]);
-	// 			explanations_detail['FP'].push(ac[actualClassindex]);
-	// 			this.labels[ac[actualClassindex][0]]['FP'] += 1
-	// 			this.FP++
-	// 			allTrue = false;
-	// 		}
-	// 	}
-
-	// 	for (var expectedClassindex in ex) {
-	// 		var found = false
-
-	// 		if (!(ex[expectedClassindex][0] in this.labels)) {
-	// 			this.labels[ex[expectedClassindex][0]]={}
-	// 			this.labels[ex[expectedClassindex][0]]['TP']=0
-	// 			this.labels[ex[expectedClassindex][0]]['FP']=0
-	// 			this.labels[ex[expectedClassindex][0]]['FN']=0
-	// 			}
-
-	// 		_.each(ac, function(acc, key, list){ 
-	// 			if (ex[expectedClassindex][0] == acc[0])
-	// 				{
-	// 					if ((ex[expectedClassindex][1].length == 0) || (acc[1][0] == -1))
-	// 						found = true
-	// 					else
-	// 						{
-	// 						if (this.intersection(ex[expectedClassindex][1], acc[1]))
-	// 							found = true
-	// 						}
-	// 				}
-	// 		}, this)
-
-	// 		if (!found)
-	// 			{
-	// 			explanations['FN'].push(ex[expectedClassindex][0]);
-	// 			explanations_detail['FN'].push(ex[expectedClassindex]);
-	// 			this.labels[ex[expectedClassindex][0]]['FN'] += 1
-	// 			this.FN++;
-	// 			allTrue = false;
-	// 			}
-	// 	}
-
-	// 	if (allTrue) {
-	// 		// if ((logTruePositives)&& (!only_false_cases)) explanations.push("\t\t*** ALL TRUE!");
-	// 		this.TRUE++;
-	// 	}
-	// 	this.count++;
-
-	// 	// _.each(explanations, function(value, key, list){ 
-	// 		// explanations[key] = _.sortBy(explanations[key], function(num){ num });
-	// 		// explanations[key].sort()
-	// 	// }, this)
-
-	// 	// console.log(explanations)
-	// 	// console.log(matchlist)
-		
-	// 	// if (expectedClasses.length > 1)
-	// 		// process.exit(0)
-
-	// 	return {
-	// 			'explanations': explanations,
-	// 			'match': matchlist,
-	// 			'explanations_detail': explanations_detail
-	// 			}
-	// },
-
-	// simple intersection
-	// intersection:function(begin, end)
-	// {
-	// 	if ((begin[0]<=end[0])&&(begin[1]>=end[0]))
-	// 		return true
-	// 	if ((begin[0]>=end[0])&&(begin[0]<=end[1]))
-	// 		return true
-	// 	return false
-	// },
 	

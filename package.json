@@ -7,19 +7,19 @@
     "type": "git",
     "url": "https://github.com/erelsgl/limdu.git"
   },
-  "engines" : {
-	  "node" : ">=0.12"
+  "engines": {
+    "node": ">=0.12"
   },
   "dependencies": {
-    "brain": "*",
+    "async": "*",
+    "brain.js": "^1.0.5",
     "graph-paths": "latest",
     "languagemodel": "latest",
     "sprintf": "*",
     "svm": "*",
     "temp": "*",
     "underscore": "*",
-    "wordsworth": "*",
-    "async": "*"
+    "wordsworth": "*"
   },
   "devDependencies": {
     "mocha": ">=1.0.0",
@@ -34,15 +34,15 @@
       "email": "erelsgl@gmail.com"
     },
     {
-        "name": "Vasily Konovalov",
-        "email": "vasili.konov@gmail.com"
+      "name": "Vasily Konovalov",
+      "email": "vasili.konov@gmail.com"
     },
     {
-        "name": "Mikkel Oscar Lyderik"
+      "name": "Mikkel Oscar Lyderik"
     },
     {
-        "name": "junchaowu"
-    }    
+      "name": "junchaowu"
+    }
   ],
   "keywords": [
     "classifier",

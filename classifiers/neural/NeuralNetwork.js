@@ -5,7 +5,7 @@
  * @since 2013-09-29
  */
 
-var NeuralNetwork = require('brain').NeuralNetwork;
+var NeuralNetwork = require('brain.js').NeuralNetwork;
 
 NeuralNetwork.prototype.trainOnline = function () {throw new Error("NeuralNetwork does not support online training");}; 
 NeuralNetwork.prototype.trainBatch  = function(dataset) {

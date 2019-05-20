@@ -15,7 +15,7 @@
     "brain.js": "^1.0.5",
     "graph-paths": "latest",
     "languagemodel": "latest",
-    "sprintf": "*",
+    "sprintf-js": "^1.1.2",
     "svm": "*",
     "temp": "*",
     "underscore": "*",

@@ -1,6 +1,6 @@
 var hash = require("./hash");
-var sprintf = require('sprintf').sprintf;
-var _ = require('underscore')._;
+var sprintf = require("sprintf-js").sprintf;
+var _ = require("underscore")._;
 
 /**
  * PrecisionRecall - an object for tracking results of experiments: precision, recall, f1, and execution time.

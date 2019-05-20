@@ -1,5 +1,5 @@
 var hash = require("../../utils/hash");
-var sprintf = require("sprintf").sprintf;
+var sprintf = require("sprintf-js").sprintf;
 var multilabelutils = require('./multilabelutils');
 var _ = require("underscore")._;
 var PrecisionRecall = require('../../utils/PrecisionRecall');

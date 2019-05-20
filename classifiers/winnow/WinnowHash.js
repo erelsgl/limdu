@@ -14,7 +14,7 @@
  */
  
 var hash = require("../../utils/hash");
-var sprintf = require("sprintf").sprintf;  // for explanations
+var sprintf = require("sprintf-js").sprintf;  // for explanations
 
 function WinnowHash(opts) {
 	if (!opts) opts = {}

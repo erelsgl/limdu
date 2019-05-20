@@ -3,7 +3,7 @@
  */
 var _ = require('underscore');
 var hash = require("../../utils/hash");
-var sprintf = require("sprintf").sprintf;  // for explanations
+var sprintf = require("sprintf-js").sprintf;  // for explanations
 
 function DecisionTree(opts) {
 	if (!opts) opts = {}

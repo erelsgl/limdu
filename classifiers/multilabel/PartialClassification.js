@@ -1,4 +1,4 @@
-var sprintf = require("sprintf").sprintf;
+var sprintf = require("sprintf-js").sprintf;
 var _ = require("underscore")._;
 var multilabelutils = require('./multilabelutils');
 

@@ -1,6 +1,6 @@
 var hash = require("../../utils/hash");
 var FeaturesUnit = require("../../features");
-var sprintf = require("sprintf").sprintf;
+var sprintf = require("sprintf-js").sprintf;
 var _ = require("underscore")._;
 
 /**

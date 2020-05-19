@@ -17,16 +17,16 @@ var _ = require("underscore")._;
  https://github.com/erelsgl/limdu/blob/d61166c91a81daee62e3d67d5fff2b06cee8191f/utils/PrecisionRecall.js
  
 var PrecisionRecall = function() {
-	this.count = 0;
-	this.TP = 0;
-	this.TN = 0;
-	this.FP = 0;
-	this.FN = 0;
-	this.TRUE = 0;
-	this.startTime = new Date();
+	this.count = 0; // total count
+	this.TP = 0;   // True Positive count
+	this.TN = 0;   // True Negative count
+	this.FP = 0;   // False Positive count
+	this.FN = 0;   // False Negative count
+	this.TRUE = 0; // Total true count (TP+TN)
+	this.startTime = new Date(); 
 	this.labels = {}
 	this.dep = {}
-	this.confusion = {}
+	this.confusion = {}  // confusion matrix
 }
 
 PrecisionRecall.prototype = {
@@ -53,25 +53,24 @@ PrecisionRecall.prototype = {
 	 * @param actualClasses   - the actual   set of classes (as an array or a hash).
 	 * @return an array of explanations "FALSE POSITIVE", "FALSE NEGATIVE", and maybe also "TRUE POSITIVE"
 	 */
-
 	addCasesLabels: function (expectedClasses, actualClasses ) {
 		var explanations = [];
 
-		actualClasses = hash.normalized(actualClasses);
+		actualClasses = hash.normalized(actualClasses);    // converts e.g. ['a', 'b', 'c'..] to a hash {'a': true, 'b': true, 'c': true};
 		expectedClasses = hash.normalized(expectedClasses);
 
-		var allTrue = true;
+		actualClassesList = Object.keys(actualClasses)
+		expectedClassesList = Object.keys(expectedClasses)
 
-		if (!(Object.keys(expectedClasses)[0] in this.confusion)) 
-			this.confusion[Object.keys(expectedClasses)[0]] = {}
+		if (!(expectedClassesList[0] in this.confusion)) 
+			this.confusion[expectedClassesList[0]] = {}
 
-		if (!(Object.keys(actualClasses)[0] in this.confusion[Object.keys(expectedClasses)[0]])) 
-			this.confusion[Object.keys(expectedClasses)[0]][Object.keys(actualClasses)[0]] = 0
+		if (!(Object.keys(actualClasses)[0] in this.confusion[expectedClassesList[0]])) 
+			this.confusion[expectedClassesList[0]][Object.keys(actualClasses)[0]] = 0
 
-		this.confusion[Object.keys(expectedClasses)[0]][Object.keys(actualClasses)[0]] += 1 
+		this.confusion[expectedClassesList[0]][Object.keys(actualClasses)[0]] += 1 
 
 		for (var actualClass in actualClasses) {
-
 			if (!(actualClass in this.confusion)) 
 				this.confusion[actualClass]={}
 
@@ -80,7 +79,7 @@ PrecisionRecall.prototype = {
 				this.labels[actualClass]['TP']=0
 				this.labels[actualClass]['FP']=0
 				this.labels[actualClass]['FN']=0
-				}
+			}
 
 			if (actualClass in expectedClasses) { 
 				this.labels[actualClass]['TP'] += 1 
@@ -105,10 +104,9 @@ PrecisionRecall.prototype = {
 	},
 
 	/* intented to calculate macro and micro average */
-	addPredicition: function(expected, actual)
-	{
-		this.addCasesHash(expected, actual, 1)
-		this.addCasesLabels(expected, actual)
+	addPredicition: function(expectedClasses, actualClasses) {
+		this.addCasesHash(expectedClasses, actualClasses, 1)
+		this.addCasesLabels(expectedClasses, actualClasses)
 	},
 
 	/**
@@ -150,17 +148,15 @@ PrecisionRecall.prototype = {
 		return explanations;
 	},
 
-/**
+	/**
 	 * Record the result of a new classes experiment in a hash manner.
-	 * Doesn't allowed to do a inner output, all stats are put in hash
+	 * Does not do external output -- all stats are put in hash.
 	 * @param expectedClasses - the expected set of classes (as an array or a hash).
 	 * @param actualClasses   - the actual   set of classes (as an array or a hash).
 	 * @param logTruePositives- if true, log the true positives. 
 	 * @return an array of explanations "FALSE POSITIVE", "FALSE NEGATIVE", and maybe also "TRUE POSITIVE"
      * @author Vasily Konovalov
 	 */
-
-	 //  micro - average
 	addCasesHash: function (expectedClasses, actualClasses, logTruePositives ) {
 		var explanations = {};
 		explanations['TP'] = []; explanations['FP'] = []; explanations['FN'] = [];
@@ -187,13 +183,11 @@ PrecisionRecall.prototype = {
 			}
 		}
 		if (allTrue) {
-			// if ((logTruePositives)&& (!only_false_cases)) explanations.push("\t\t*** ALL TRUE!");
 			this.TRUE++;
 		}
 		this.count++;
 
 		_.each(explanations, function(value, key, list){ 
-			// explanations[key] = _.sortBy(explanations[key], function(num){ num });
 			explanations[key].sort()
 		}, this)
 

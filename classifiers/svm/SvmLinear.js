@@ -10,15 +10,13 @@
  * @since 2013-09-09
  *
  * @param opts options: <ul>
- *	<li>learn_args - a string with arguments for liblinear_train
+ *	<li>learn_args - an array with arguments for liblinear_train
  *  <li>model_file_prefix - prefix to path to model file (optional; the default is to create a temporary file in the system temp folder).
  *  <li>bias - constant (bias) factor (default: 1).
  *  <li>multiclass - if true, the 'classify' function returns an array [label,score]. If false (default), it returns only a score.
  */
  
- var util  = require('util')
-   , child_process = require('child_process')
-   , exec = require('child_process').exec
+ var child_process = require('child_process')
    , fs   = require('fs')
    , svmcommon = require('./svmcommon')
    , _ = require('underscore')._
@@ -27,7 +25,7 @@
 
 
 function SvmLinear(opts) {
-	this.learn_args = opts.learn_args || "";
+	this.learn_args = opts.learn_args || [];
 	this.model_file_prefix = opts.model_file_prefix || null;
 	this.bias = opts.bias || 1.0;
 	this.multiclass = opts.multiclass || false;
@@ -45,7 +43,7 @@ function SvmLinear(opts) {
 
 SvmLinear.isInstalled = function() {
 	try {
-	    var result = child_process.execSync('liblinear_train .');
+	    child_process.execFileSync('liblinear_train .');
 	} catch (err) {
 	    return false
 	}
@@ -85,22 +83,18 @@ SvmLinear.prototype = {
 			this.allLabels = _(dataset).map(function(datum){return datum.output});
 			this.allLabels = _.uniq(_.flatten(this.allLabels))
 
-			// dataset = _.map(dataset, function(datum){
-			// 	datum.output = this.allLabels.indexOf(datum.output)
-			// 	return datum });
-
 			if (this.allLabels.length==1) // a single label
 				return;
-			//console.log(util.inspect(dataset,{depth:1}));
 			if (this.debug) console.log("trainBatch start");
 			var learnFile = svmcommon.writeDatasetToFile(
 					dataset, this.bias, /*binarize=*/false, this.model_file_prefix+"_"+this.timestamp, "SvmLinear", FIRST_FEATURE_NUMBER);
 			var modelFile = learnFile.replace(/[.]learn/,".model");
 
-			var command = this.train_command+" "+this.learn_args+" "+learnFile + " "+modelFile;
-			console.log("running "+command);
+			var command = this.train_command
+			var args = this.learn_args.concat([learnFile, modelFile])
+			console.log("running "+command+" "+args.join(" "));
 
-			var result = child_process.execSync(command);
+			var result = child_process.execFileSync(command, args);
 			if (result.code>0) {
 				console.dir(result);
 				console.log(fs.readFileSync(learnFile, 'utf-8'));
@@ -143,9 +137,10 @@ SvmLinear.prototype = {
 			var testFile = svmcommon.writeDatasetToFile(
                                         trainset, this.bias, /*binarize=*/false, "/tmp/test_"+this.timestamp, "SvmLinear", FIRST_FEATURE_NUMBER);
 
-			var command = this.test_command+" "+testFile + " " + this.modelFileString + " /tmp/out_" + this.timestamp;
+			var command = this.test_command
+			var args = [testFile, this.modelFileString, "/tmp/out_" + this.timestamp];
 
-			var output = child_process.execSync(command)
+			var output = child_process.execFileSync(command, args)
 			console.log(command)
 
 			var result = fs.readFileSync("/tmp/out_" + this.timestamp, "utf-8").split("\n")

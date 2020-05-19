@@ -1,3 +1,5 @@
+#!mocha
+
 /**
  * a unit-test for Partitions unit (creating partitions for train and test)
  * 

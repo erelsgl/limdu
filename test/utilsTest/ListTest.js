@@ -1,3 +1,5 @@
+#!mocha
+
 var ulist = require('../../utils/list');
 var should = require('should');
 var _ = require('underscore');

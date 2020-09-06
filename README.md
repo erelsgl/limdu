@@ -10,10 +10,12 @@ Limdu currently runs on Node.js 0.12 and later versions.
 
 	npm install limdu
 
+<a href="https://tracking.gitads.io/?repo=limdu"> <img src="https://images.gitads.io/limdu" alt="GitAds"/> </a>
+
 ## Demos
 
 You can run the demos from this project: [limdu-demo](https://github.com/erelsgl/limdu-demo).
-
+ 
 **Table of Contents**  *generated with [DocToc](http://doctoc.herokuapp.com/)*
 
 - [Binary Classification](#binary-classification)

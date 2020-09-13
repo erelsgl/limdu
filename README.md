@@ -10,7 +10,7 @@ Limdu currently runs on Node.js 0.12 and later versions.
 
 	npm install limdu
 
-<a href="https://tracking.gitads.io/?repo=limdu"> <img src="https://images.gitads.io/limdu" alt="GitAds"/> </a>
+<!--a href="https://tracking.gitads.io/?repo=limdu"> <img src="https://images.gitads.io/limdu" alt="GitAds"/> </a-->
 
 ## Demos
 

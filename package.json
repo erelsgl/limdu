@@ -11,22 +11,22 @@
     "node": ">=0.12"
   },
   "dependencies": {
-    "async": "*",
-    "brain.js": "^1.0.5",
+    "async": "^3.2.4",
+    "brain.js": "^1.6.1",
+    "diff": "^5.1.0",
     "graph-paths": "latest",
     "languagemodel": "latest",
+    "lodash": ">=4.17.12",
+    "minimist": "^1.2.8",
     "sprintf-js": "^1.1.2",
     "svm": "*",
-    "temp": "*",
-    "underscore": "*",
-    "wordsworth": "*",
-    "minimist": ">=0.2.1",
-    "lodash": ">=4.17.12",
-    "diff": ">=3.5.0"
+    "temp": "^0.9.4",
+    "underscore": "^1.13.6",
+    "wordsworth": "*"
   },
   "devDependencies": {
     "mocha": ">=1.0.0",
-    "should": ">=0.6.0"
+    "should": "^13.2.3"
   },
   "scripts": {
     "test": "mocha"

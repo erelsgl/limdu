@@ -1,7 +1,7 @@
 {
   "name": "limdu",
   "description": "A machine learning framework for Node.js. Supports multi-level classification and online learning.",
-  "version": "0.9.5",
+  "version": "0.9.6",
   "author": "Erel Segal-haLevi <erelsgl@gmail.com>",
   "repository": {
     "type": "git",
@@ -45,6 +45,10 @@
     },
     {
       "name": "junchaowu"
+    },
+    {
+      "name": "Maximilian Berkmann",
+      "email": "maxieberkmann@gmail.com"
     }
   ],
   "keywords": [

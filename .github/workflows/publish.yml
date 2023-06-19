@@ -13,7 +13,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v1
         with:
-          node-version: 'node'
+          node-version: '20.x'
       - run: |
           npm ci
       - name: Semantic Release

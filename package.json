@@ -26,7 +26,13 @@
   },
   "devDependencies": {
     "mocha": ">=1.0.0",
-    "should": "^13.2.3"
+    "should": "^13.2.3",
+    "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/commit-analyzer": "^9.0.2",
+    "@semantic-release/git": "^10.0.1",
+    "@semantic-release/github": "^8.0.7",
+    "@semantic-release/npm": "^10.0.3",
+    "@semantic-release/release-notes-generator": "^11.0.1"
   },
   "scripts": {
     "test": "mocha"

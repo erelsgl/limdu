@@ -13,7 +13,7 @@
   "dependencies": {
     "async": "^3.2.4",
     "brain.js": "^1.6.1",
-    "diff": "^5.1.0",
+    "diff": "^8.0.3",
     "graph-paths": "latest",
     "languagemodel": "latest",
     "lodash": ">=4.17.12",
